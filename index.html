@@ -3697,6 +3697,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
               </table>
             </div>
             <button type="button" class="btn btn-gold" id="btnConfirmImportClients" style="margin-top:1rem;" onclick="confirmImportClients()">Importar Novos Clientes</button>
+            <button type="button" class="btn btn-secondary" style="margin-top:1rem;" onclick="cancelImportClients()">Cancelar</button>
             <span id="importClientsResult" style="margin-left:0.75rem; font-size:0.85rem; font-weight:600;"></span>
           </div>
         </div>
@@ -3727,6 +3728,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
               </table>
             </div>
             <button type="button" class="btn btn-gold" id="btnConfirmImportCases" style="margin-top:1rem;" onclick="confirmImportCases()">Importar Novos Processos</button>
+            <button type="button" class="btn btn-secondary" style="margin-top:1rem;" onclick="cancelImportCases()">Cancelar</button>
             <span id="importCasesResult" style="margin-left:0.75rem; font-size:0.85rem; font-weight:600;"></span>
           </div>
         </div>
@@ -3743,6 +3745,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <button type="button" class="btn btn-secondary" onclick="document.getElementById('importElawlabFile').click()">Selecionar PDF</button>
             <span id="importElawlabFileName" style="font-size:0.85rem; color:var(--text-muted);">Nenhum arquivo selecionado</span>
             <span id="importElawlabStatus" style="font-size:0.85rem; color:var(--accent-text); font-weight:600;"></span>
+            <button type="button" class="btn btn-sm btn-secondary" id="btnCancelElawlabReading" style="display:none;" onclick="cancelImportElawlab()">Cancelar</button>
           </div>
           <div id="importElawlabPreview" style="display:none; margin-top:1.25rem;">
             <div class="detail-grid" style="margin-bottom:1rem;">
@@ -3755,6 +3758,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
               </table>
             </div>
             <button type="button" class="btn btn-gold" id="btnConfirmImportElawlab" style="margin-top:1rem;" onclick="confirmImportElawlab()">Confirmar e Lançar na Agenda/Tarefas</button>
+            <button type="button" class="btn btn-secondary" style="margin-top:1rem;" onclick="cancelImportElawlab()">Cancelar importação</button>
             <span id="importElawlabResult" style="margin-left:0.75rem; font-size:0.85rem; font-weight:600;"></span>
           </div>
         </div>
@@ -4927,7 +4931,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261005-214212";
+const APP_VERSION = "20261005-214934";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -11268,12 +11272,16 @@ function fileToBase64(file) {
   });
 }
 
+let elawlabRequestId = 0;
+
 async function handleImportElawlabFile(evt) {
   const file = evt.target.files[0];
   if (!file) return;
+  const myRequest = ++elawlabRequestId;
   document.getElementById("importElawlabFileName").textContent = file.name;
   const statusEl = document.getElementById("importElawlabStatus");
   statusEl.textContent = "Lendo o PDF com IA... (pode levar até 1 minuto)";
+  document.getElementById("btnCancelElawlabReading").style.display = "";
   document.getElementById("importElawlabPreview").style.display = "none";
 
   try {
@@ -11281,6 +11289,9 @@ async function handleImportElawlabFile(evt) {
     const { data, error } = await sb.functions.invoke("parse-elawlab", {
       body: { pdfBase64 }
     });
+    // Se a pessoa cancelou (ou escolheu outro arquivo) enquanto a IA lia, descarta o resultado.
+    if (myRequest !== elawlabRequestId) return;
+    document.getElementById("btnCancelElawlabReading").style.display = "none";
     if (error) {
       statusEl.textContent = "";
       alert("Não foi possível processar o relatório: " + error.message);
@@ -11327,9 +11338,41 @@ async function handleImportElawlabFile(evt) {
       alert("Nenhum item identificado nesse relatório.");
     }
   } catch (err) {
+    if (myRequest !== elawlabRequestId) return;
     statusEl.textContent = "";
+    document.getElementById("btnCancelElawlabReading").style.display = "none";
     alert("Erro ao ler o arquivo: " + err.message);
   }
+}
+
+function cancelImportClients() {
+  importClientsNewRows = [];
+  document.getElementById("importClientsPreview").style.display = "none";
+  document.getElementById("importClientsFile").value = "";
+  document.getElementById("importClientsFileName").textContent = "Nenhum arquivo selecionado";
+  document.getElementById("importClientsResult").textContent = "";
+  showToast("Importação de clientes cancelada. Nada foi gravado.", "✖");
+}
+
+function cancelImportCases() {
+  importCasesNewRows = [];
+  document.getElementById("importCasesPreview").style.display = "none";
+  document.getElementById("importCasesFile").value = "";
+  document.getElementById("importCasesFileName").textContent = "Nenhum arquivo selecionado";
+  document.getElementById("importCasesResult").textContent = "";
+  showToast("Importação de processos cancelada. Nada foi gravado.", "✖");
+}
+
+function cancelImportElawlab() {
+  elawlabRequestId++;
+  importElawlabItems = [];
+  document.getElementById("importElawlabPreview").style.display = "none";
+  document.getElementById("btnCancelElawlabReading").style.display = "none";
+  document.getElementById("importElawlabStatus").textContent = "";
+  document.getElementById("importElawlabFile").value = "";
+  document.getElementById("importElawlabFileName").textContent = "Nenhum arquivo selecionado";
+  document.getElementById("importElawlabResult").textContent = "";
+  showToast("Importação do relatório cancelada. Nada foi gravado.", "✖");
 }
 
 function renderElawlabPreview() {
