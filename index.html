@@ -3707,7 +3707,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <h2 class="card-box-title"><span class="title-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4l2 2.5H19.5A1.5 1.5 0 0 1 21 9v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z"/></svg></span> Importar Processos (eLawAdv)</h2>
           </div>
           <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.1rem; line-height:1.5;">
-            Selecione o arquivo <strong>.xlsx</strong> exportado do eLawAdv (relatório de processos). Processos com o mesmo <strong>Número do Processo</strong> já cadastrado não são duplicados. O cliente só é vinculado automaticamente quando o nome do Autor/Réu bate exatamente com um cliente já cadastrado — os demais entram sem cliente vinculado, pra você associar depois. Status inicial de todo processo novo: <strong>Em andamento</strong>.
+            Selecione o arquivo <strong>.xlsx</strong> exportado do eLawAdv (relatório de processos). Processos com o mesmo <strong>Número do Processo</strong> já cadastrado não são duplicados. Não é preciso ter o cliente cadastrado: o processo entra com o nome das partes (autor x réu) que constam no relatório, sem vincular cliente. Status inicial de todo processo novo: <strong>Em andamento</strong>.
           </p>
           <input type="file" id="importCasesFile" accept=".xlsx,.xls" style="display:none;" onchange="handleImportCasesFile(event)">
           <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
@@ -3719,11 +3719,10 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
               <div class="detail-item"><span class="detail-label">Total no arquivo</span><span class="detail-value" id="importCasesTotalCount">0</span></div>
               <div class="detail-item"><span class="detail-label">Já existem no sistema</span><span class="detail-value" id="importCasesDupeCount">0</span></div>
               <div class="detail-item"><span class="detail-label">Novos a importar</span><span class="detail-value" id="importCasesNewCount" style="color:var(--success); font-weight:700;">0</span></div>
-              <div class="detail-item"><span class="detail-label">Sem cliente vinculado</span><span class="detail-value" id="importCasesNoClientCount" style="color:var(--warning);">0</span></div>
             </div>
             <div class="table-responsive" style="max-height:320px;">
               <table class="data-table">
-                <thead><tr><th>Número do Processo</th><th>Tribunal/Comarca</th><th>Cliente</th><th>Valor da Causa</th></tr></thead>
+                <thead><tr><th>Número do Processo</th><th>Tribunal/Comarca</th><th>Partes (autor x réu)</th><th>Valor da Causa</th></tr></thead>
                 <tbody id="importCasesPreviewBody"></tbody>
               </table>
             </div>
@@ -4243,9 +4242,9 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         </div>
         <div class="form-row">
           <div class="form-field">
-            <label for="caseClient">Cliente Vinculado *</label>
-            <select id="caseClient" required>
-              <option value="">Selecione o Cliente</option>
+            <label for="caseClient">Cliente Vinculado (opcional)</label>
+            <select id="caseClient">
+              <option value="">Sem cliente vinculado</option>
             </select>
           </div>
           <div class="form-field">
@@ -4931,7 +4930,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261005-214934";
+const APP_VERSION = "20261005-215112";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -5846,7 +5845,7 @@ function renderCases() {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td><strong>${esc(c.number)}</strong></td>
-      <td>${esc(c.client)}</td>
+      <td>${esc(c.client || c.clientName || "-")}</td>
       <td>${esc(c.opposingParty || '-')}</td>
       <td style="font-size:0.8rem;">${esc(c.court)}</td>
       <td>${esc(getLawyerName(c.lawyerId))}</td>
@@ -6840,7 +6839,7 @@ function populateCaseClientSelect() {
   const sel = document.getElementById("caseClient");
   if (!sel) return;
   const curVal = sel.value;
-  sel.innerHTML = '<option value="">Selecione o Cliente</option>';
+  sel.innerHTML = '<option value="">Sem cliente vinculado</option>';
   AppState.clients.forEach(c => {
     const opt = document.createElement("option");
     opt.value = c.id;
@@ -9426,12 +9425,13 @@ function mapCaseFromDb(row, clientsList) {
     firstHearingScheduled: row.first_hearing_scheduled,
     firstHearingDate: row.first_hearing_date,
     sentenceText: row.sentence_text,
-    sentenceOutcome: row.sentence_outcome
+    sentenceOutcome: row.sentence_outcome,
+    clientName: row.client_name
   };
 }
 
 function mapCaseToDb(obj) {
-  return {
+  const payload = {
     number: obj.number || null,
     client_id: obj.clientId || null,
     // area/fee_value não são mais coletados neste formulário — omitidos de
@@ -9447,6 +9447,8 @@ function mapCaseToDb(obj) {
     sentence_text: obj.sentenceText || null,
     sentence_outcome: obj.sentenceOutcome || null
   };
+  if (obj.clientName !== undefined) payload.client_name = obj.clientName || null;
+  return payload;
 }
 
 async function fetchCases() {
@@ -11139,18 +11141,21 @@ async function handleImportCasesFile(evt) {
   const records = impRowsToObjects(rawRows, headerIdx);
 
   const existingNumbers = new Set(AppState.cases.map(c => impOnlyDigits(c.number)).filter(Boolean));
-  const clientsByName = new Map(AppState.clients.map(c => [impNormalizeName(c.name), c.id]));
 
-  function findClientId(text) {
-    if (!text) return null;
-    const namePart = impNormalizeName(text.split("(")[0]);
-    return clientsByName.get(namePart) || null;
+  // Cada parte vem como "NOME (CPF mascarado)", às vezes várias, uma por linha.
+  // Fica só o nome, sem o documento entre parênteses.
+  function cleanParties(text) {
+    return (text || "").toString()
+      .split(/\r?\n/)
+      .map(p => p.replace(/\s*\([^)]*\)\s*$/, "").trim())
+      .filter(p => p && !/^n[ãa]o informad/i.test(p))
+      .join(", ");
   }
+  const getCol = (r, names) => { for (const n of names) if (r[n] !== undefined && r[n] !== "") return r[n]; return ""; };
 
   const seenInFile = new Set();
   const newRows = [];
   let dupeCount = 0;
-  let noClientCount = 0;
 
   records.forEach(r => {
     const number = (r["Número do Processo"] || "").toString().trim();
@@ -11162,13 +11167,9 @@ async function handleImportCasesFile(evt) {
     }
     if (numDigits) seenInFile.add(numDigits);
 
-    const autor = (r["Autor(es)"] || "").toString().split("\n")[0].trim();
-    const reu = (r["Réu(s)"] || "").toString().split("\n")[0].trim();
-    const clienteRaw = (r["Cliente(s)"] || "").toString().trim();
-    let clientId = null;
-    if (clienteRaw && !/informad/i.test(clienteRaw)) clientId = findClientId(clienteRaw);
-    if (!clientId) clientId = findClientId(autor) || findClientId(reu);
-    if (!clientId) noClientCount++;
+    const autor = cleanParties(getCol(r, ["Autor(es)", "Autor"]));
+    const reu = cleanParties(getCol(r, ["Reu(s)", "Réu(s)", "Réu", "Reu"]));
+    const partes = [autor, reu].filter(Boolean).join(" x ");
 
     const tribunal = (r["Tribunal"] || "").toString().trim();
     const comarca = (r["Comarca"] || "").toString().trim();
@@ -11177,22 +11178,16 @@ async function handleImportCasesFile(evt) {
     const causeValueRaw = (r["Valor da Causa"] || "").toString().trim().replace(/\./g, "").replace(",", ".");
     const causeValue = parseFloat(causeValueRaw) || null;
 
-    const opposingParts = [];
-    if (autor) opposingParts.push(`Autor: ${autor}`);
-    if (reu) opposingParts.push(`Réu: ${reu}`);
-
-    const clientObj = clientId ? AppState.clients.find(c => c.id === clientId) : null;
-
     newRows.push({
       number,
-      clientId,
+      clientId: null,
+      clientName: partes || null,
       court: court || null,
       status: "Em andamento",
       causeValue,
-      opposingParty: opposingParts.join(" | ") || null,
+      opposingParty: null,
       firstHearingScheduled: false,
-      firstHearingDate: null,
-      _clientLabel: clientObj ? clientObj.name : "(sem cliente vinculado)"
+      firstHearingDate: null
     });
   });
 
@@ -11200,13 +11195,12 @@ async function handleImportCasesFile(evt) {
   document.getElementById("importCasesTotalCount").textContent = records.length;
   document.getElementById("importCasesDupeCount").textContent = dupeCount;
   document.getElementById("importCasesNewCount").textContent = newRows.length;
-  document.getElementById("importCasesNoClientCount").textContent = noClientCount;
   const tbody = document.getElementById("importCasesPreviewBody");
   tbody.innerHTML = newRows.slice(0, 50).map(c => `
     <tr>
       <td><code>${esc(c.number)}</code></td>
       <td>${esc(c.court || "-")}</td>
-      <td>${esc(c._clientLabel)}</td>
+      <td>${esc(c.clientName || "-")}</td>
       <td>${c.causeValue ? "R$ " + c.causeValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 }) : "-"}</td>
     </tr>
   `).join("") + (newRows.length > 50 ? `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">+ ${newRows.length - 50} outro(s)...</td></tr>` : "");
