@@ -1710,6 +1710,8 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
     /* Contraste: opções de caixas de seleção (fundo claro do navegador) */
     select option, select optgroup { background: #17141f; color: #ededed; }
 
+    #updateBanner { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 10000; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; justify-content: center; max-width: calc(100vw - 32px); padding: 0.7rem 1rem; border-radius: 14px; background: rgba(23, 20, 31, 0.96); backdrop-filter: blur(16px); box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(189, 163, 94, 0.35); color: var(--text); font-size: 0.85rem; font-weight: 600; }
+
     .ap-period-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem; margin: 0 0 1rem; }
     .ap-period-group { display: flex; gap: 0.35rem; flex-wrap: wrap; }
     .ap-period-btn { padding: 0.4rem 0.85rem; border-radius: var(--radius); border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-primary); font-size: 0.82rem; font-weight: 600; cursor: pointer; }
@@ -4921,6 +4923,47 @@ function esc(value) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
+
+// Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
+// (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
+// fica "dev" e a checagem não roda.
+const APP_VERSION = "20261005-213900";
+let updateBannerShown = false;
+
+async function checkForNewVersion() {
+  if (APP_VERSION === "dev" || updateBannerShown) return;
+  try {
+    const res = await fetch("version.json?x=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) return;
+    const remote = (await res.json()).version;
+    if (remote && remote !== APP_VERSION) showUpdateBanner();
+  } catch (e) {
+    // sem rede ou arquivo ausente: tenta de novo na próxima checagem
+  }
+}
+
+function showUpdateBanner() {
+  if (updateBannerShown) return;
+  updateBannerShown = true;
+  const bar = document.createElement("div");
+  bar.id = "updateBanner";
+  bar.innerHTML = `
+    <span>Há uma versão nova do sistema.</span>
+    <button type="button" id="updateBannerReload" class="btn btn-sm btn-gold">Atualizar agora</button>
+    <button type="button" id="updateBannerLater" class="btn btn-sm btn-secondary">Depois</button>`;
+  document.body.appendChild(bar);
+  document.getElementById("updateBannerReload").addEventListener("click", () => location.reload());
+  document.getElementById("updateBannerLater").addEventListener("click", () => {
+    bar.remove();
+    // volta a avisar daqui a 30 minutos se ainda não atualizou
+    setTimeout(() => { updateBannerShown = false; checkForNewVersion(); }, 30 * 60 * 1000);
+  });
+}
+
+setInterval(checkForNewVersion, 5 * 60 * 1000);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") checkForNewVersion();
+});
 
 // Helper to calculate relative date string YYYY-MM-DD
 function getOffsetDate(daysOffset) {
