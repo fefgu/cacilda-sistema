@@ -4966,7 +4966,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261005-233023";
+const APP_VERSION = "20261005-234950";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -11457,7 +11457,7 @@ async function handleImportElawlabFile(evt) {
   try {
     const pdfBase64 = await fileToBase64(file);
     const { data, error } = await sb.functions.invoke("parse-elawlab", {
-      body: { pdfBase64 }
+      body: { pdfBase64, hoje: apDateKeyLocal(new Date()) }
     });
     // Se a pessoa cancelou (ou escolheu outro arquivo) enquanto a IA lia, descarta o resultado.
     if (myRequest !== elawlabRequestId) return;
@@ -11545,6 +11545,15 @@ function cancelImportElawlab() {
   showToast("Importação do relatório cancelada. Nada foi gravado.", "✖");
 }
 
+// Prazo, audiência e perícia são compromissos futuros: data de mais de uma
+// semana atrás quase sempre é ano errado (o relatório traz só DD/MM).
+function elawlabDateLooksOld(item) {
+  if (!item.data || !["prazo", "audiencia", "pericia"].includes(item.tipo)) return false;
+  const limite = new Date();
+  limite.setDate(limite.getDate() - 7);
+  return item.data < apDateKeyLocal(limite);
+}
+
 function renderElawlabPreview() {
   const tbody = document.getElementById("importElawlabPreviewBody");
   tbody.innerHTML = importElawlabItems.map(item => `
@@ -11559,7 +11568,8 @@ function renderElawlabPreview() {
         <input type="text" class="form-control-inline" style="font-size:0.78rem; padding:0.3rem; width:100%;" value="${esc(item.partes)}" placeholder="Autor x Réu" onchange="importElawlabItems[${item._idx}].partes = this.value.trim()">
       </td>
       <td>
-        <input type="date" class="form-control-inline" style="font-size:0.78rem; padding:0.3rem;" value="${item.data}" onchange="importElawlabItems[${item._idx}].data = this.value">
+        <input type="date" class="form-control-inline" style="font-size:0.78rem; padding:0.3rem;${elawlabDateLooksOld(item) ? " border-color:var(--danger);" : ""}" value="${item.data}" onchange="importElawlabItems[${item._idx}].data = this.value; renderElawlabPreview();">
+        ${elawlabDateLooksOld(item) ? `<div style="font-size:0.7rem; color:var(--danger); margin-top:0.2rem; font-weight:600;">Data no passado: confira o ano</div>` : ""}
         ${item.tipo === "prazo" && item.prazoFinal ? `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.2rem;">Prazo final: ${formatDateBR(item.prazoFinal)} (agenda: 2 dias antes)</div>` : ""}
         ${item.publicacao ? `<div style="font-size:0.7rem; color:var(--text-muted);">Publicação: ${formatDateBR(item.publicacao)}</div>` : ""}
       </td>
