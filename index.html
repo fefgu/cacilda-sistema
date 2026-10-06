@@ -2130,7 +2130,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           <div class="filter-group">
             <div style="position:relative;">
               <span style="position:absolute; left:0.65rem; top:50%; transform:translateY(-50%); pointer-events:none; opacity:0.6;">🔍</span>
-              <input type="text" class="form-control-inline" id="searchAppointments" placeholder="Buscar por cliente..." style="padding-left:2rem; min-width:220px;">
+              <input type="text" class="form-control-inline" id="searchAppointments" placeholder="Buscar por cliente, processo ou assunto..." style="padding-left:2rem; min-width:260px;">
             </div>
             <select class="form-control-inline" id="filterEventType">
               <option value="">Todos os Tipos de Evento</option>
@@ -2757,6 +2757,11 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
               </div>
             </div>
 
+            <div class="module-toolbar">
+              <div class="filter-group">
+                <input type="text" class="form-control-inline" id="searchDocHistory" placeholder="Buscar por cliente, tipo ou nº do processo..." autocomplete="off" style="min-width:260px;">
+              </div>
+            </div>
             <div class="table-responsive">
               <table class="data-table" id="tableDocHistory">
                 <thead>
@@ -2799,6 +2804,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
 
         <div class="module-toolbar">
           <div class="filter-group">
+            <input type="text" class="form-control-inline" id="searchCases" placeholder="Buscar por nº do processo, parte, vara..." autocomplete="off" style="min-width:260px;">
             <select class="form-control-inline" id="filterProcessArea">
               <option value="">Todas as Áreas</option>
               <option value="Cível / Família">Cível / Família</option>
@@ -2854,6 +2860,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           </div>
           <div class="module-toolbar">
             <div class="filter-group">
+              <input type="text" class="form-control-inline" id="searchInss" placeholder="Buscar por cliente, tipo ou protocolo..." autocomplete="off" style="min-width:240px;">
               <select class="form-control-inline" id="filterInssStatus">
                 <option value="">Todos os Status</option>
                 <option value="Protocolado">Protocolado</option>
@@ -2910,6 +2917,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
 
         <div class="module-toolbar">
           <div class="filter-group">
+            <input type="text" class="form-control-inline" id="searchTasks" placeholder="Buscar tarefa, responsável ou nota..." autocomplete="off" style="min-width:240px;">
             <select class="form-control-inline" id="filterTaskAssignee">
               <option value="">Todos os Responsáveis</option>
             </select>
@@ -2993,6 +3001,11 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <h2 class="card-box-title">📥 Contas a Receber (Honorários)</h2>
             <button class="btn btn-sm btn-primary" id="btnOpenNewReceivableModal">+ Adicionar Recebível</button>
           </div>
+          <div class="module-toolbar">
+            <div class="filter-group">
+              <input type="text" class="form-control-inline" id="searchReceivables" placeholder="Buscar por descrição, cliente ou status..." autocomplete="off" style="min-width:260px;">
+            </div>
+          </div>
           <div class="table-responsive">
             <table class="data-table" id="tableReceivables">
               <thead>
@@ -3017,6 +3030,11 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           <div class="card-box-header">
             <h2 class="card-box-title">📤 Contas a Pagar (Despesas &amp; Custas)</h2>
             <button class="btn btn-sm btn-secondary" id="btnOpenNewPayableModal">+ Adicionar Conta a Pagar</button>
+          </div>
+          <div class="module-toolbar">
+            <div class="filter-group">
+              <input type="text" class="form-control-inline" id="searchPayables" placeholder="Buscar por descrição, favorecido ou status..." autocomplete="off" style="min-width:260px;">
+            </div>
           </div>
           <div class="table-responsive">
             <table class="data-table" id="tablePayables">
@@ -3060,6 +3078,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           </div>
           <div class="module-toolbar">
             <div class="filter-group">
+              <input type="text" class="form-control-inline" id="searchRpv" placeholder="Buscar por cliente ou nº do processo..." autocomplete="off" style="min-width:240px;">
               <select class="form-control-inline" id="filterRpvStatus">
                 <option value="">Todos os Status</option>
                 <option value="Aguardando Expedição">Aguardando Expedição</option>
@@ -3098,6 +3117,11 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           <div class="card-box-header">
             <h2 class="card-box-title">👥 Corpo Jurídico &amp; Equipe</h2>
             <button class="btn btn-primary" id="btnOpenNewLawyerModal" style="display:none;">+ Adicionar Membro da Equipe</button>
+          </div>
+          <div class="module-toolbar">
+            <div class="filter-group">
+              <input type="text" class="form-control-inline" id="searchLawyers" placeholder="Buscar por nome, OAB ou área..." autocomplete="off" style="min-width:240px;">
+            </div>
           </div>
           <div class="lawyer-grid" id="lawyersContainer"></div>
         </div>
@@ -3184,6 +3208,11 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             Use aqui só o que NÃO vem de um Recebível nem de um Pagável — ex: retirada de sócio, despesa avulsa de caixinha.
           </div>
 
+          <div class="module-toolbar">
+            <div class="filter-group">
+              <input type="text" class="form-control-inline" id="searchCashbook" placeholder="Buscar por descrição ou categoria..." autocomplete="off" style="min-width:260px;">
+            </div>
+          </div>
           <div class="table-responsive">
             <table class="data-table" id="tableCashbook">
               <thead>
@@ -4930,7 +4959,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261005-230153";
+const APP_VERSION = "20261005-230819";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -5524,7 +5553,7 @@ function renderAppointments() {
     if (filterType && itemType !== filterType) return false;
     if (filterLawyer && String(a.lawyerId) !== filterLawyer) return false;
     if (filterStatus && a.status !== filterStatus) return false;
-    if (searchTerm && !(a.client || "").toLowerCase().includes(searchTerm)) return false;
+    if (!matchesSearch(searchTerm, a.client, a.clientName, a.title, a.linkedCase, a.notes, a.location, a.court)) return false;
     if (!apInPeriod(a.date)) return false;
     return true;
   }).sort((a,b) => {
@@ -5763,8 +5792,7 @@ function renderClients() {
   const searchTerm = (document.getElementById("searchClients").value || "").toLowerCase().trim();
 
   const filtered = AppState.clients.filter(c => {
-    if (!searchTerm) return true;
-    return c.name.toLowerCase().includes(searchTerm) || (c.doc || "").toLowerCase().includes(searchTerm);
+    return matchesSearch(searchTerm, c.name, c.doc, c.phone, c.email);
   });
 
   // Client KPIs
@@ -5844,10 +5872,13 @@ function renderCases() {
   const filterStatus = document.getElementById("filterProcessStatus").value;
   const filterLawyer = document.getElementById("filterProcessLawyer").value;
 
+  const searchTerm = document.getElementById("searchCases")?.value || "";
+
   const filtered = AppState.cases.filter(c => {
     if (filterArea && c.area !== filterArea) return false;
     if (filterStatus && c.status !== filterStatus) return false;
     if (filterLawyer && String(c.lawyerId) !== filterLawyer) return false;
+    if (!matchesSearch(searchTerm, c.number, c.client, c.clientName, c.opposingParty, c.court, getLawyerName(c.lawyerId), c.status)) return false;
     return true;
   });
 
@@ -5942,7 +5973,12 @@ function renderFinancial() {
   // Receivables Table
   const tbodyRec = document.querySelector("#tableReceivables tbody");
   tbodyRec.innerHTML = "";
-  AppState.receivables.forEach(r => {
+  const searchRec = document.getElementById("searchReceivables")?.value || "";
+  const recList = AppState.receivables.filter(r => matchesSearch(searchRec, r.desc, r.client, r.notes, r.status, r.paymentMethod));
+  if (recList.length === 0) {
+    tbodyRec.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:1.5rem; color:var(--text-muted);">${AppState.receivables.length ? "Nenhum recebível encontrado com esta busca." : "Nenhum recebível cadastrado."}</td></tr>`;
+  }
+  recList.forEach(r => {
     let badge = "badge-neutral";
     if (r.status === "Recebido") badge = "badge-success";
     if (r.status === "Vencido") badge = "badge-danger";
@@ -6006,7 +6042,12 @@ function renderFinancial() {
   // Payables Table
   const tbodyPay = document.querySelector("#tablePayables tbody");
   tbodyPay.innerHTML = "";
-  AppState.payables.forEach(p => {
+  const searchPay = document.getElementById("searchPayables")?.value || "";
+  const payList = AppState.payables.filter(p => matchesSearch(searchPay, p.desc, p.supplier, p.status));
+  if (payList.length === 0) {
+    tbodyPay.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-muted);">${AppState.payables.length ? "Nenhuma conta encontrada com esta busca." : "Nenhuma conta a pagar cadastrada."}</td></tr>`;
+  }
+  payList.forEach(p => {
     let badge = "badge-neutral";
     if (p.status === "Pago") badge = "badge-success";
     if (p.status === "Vencido") badge = "badge-danger";
@@ -6039,7 +6080,8 @@ function renderLawyers() {
   const btnAdd = document.getElementById("btnOpenNewLawyerModal");
   if (btnAdd) btnAdd.style.display = isAdmin ? "inline-flex" : "none";
 
-  AppState.lawyers.forEach(l => {
+  const searchLaw = document.getElementById("searchLawyers")?.value || "";
+  AppState.lawyers.filter(l => matchesSearch(searchLaw, l.name, l.oab, l.position, l.email, (l.areas || []).join(" "))).forEach(l => {
     const isLawyer = l.position === "Advogado(a)";
     const caseCount = isLawyer ? AppState.cases.filter(c => c.lawyerId === l.id && (c.status === "Em andamento" || (c.status || "").startsWith("Aguardando"))).length : 0;
     const feesGenerated = isLawyer ? AppState.receivables
@@ -7454,13 +7496,7 @@ function renderReceipts() {
 
   const filtered = AppState.receipts.filter(r => {
     if (methodFilter && r.paymentMethod !== methodFilter) return false;
-    if (search) {
-      const matchNum = (r.receiptNumber || "").toLowerCase().includes(search);
-      const matchClient = (r.client || "").toLowerCase().includes(search);
-      const matchDesc = (r.desc || "").toLowerCase().includes(search);
-      return matchNum || matchClient || matchDesc;
-    }
-    return true;
+    return matchesSearch(search, r.receiptNumber, r.client, r.desc);
   });
 
   // KPIs
@@ -7817,9 +7853,11 @@ function renderRpvAlvaras() {
 
   const filterStatus = document.getElementById("filterRpvStatus").value;
   const filterType = document.getElementById("filterRpvType").value;
+  const searchTerm = document.getElementById("searchRpv")?.value || "";
   const filtered = AppState.rpvAlvaras.filter(r => {
     if (filterStatus && r.status !== filterStatus) return false;
     if (filterType && r.type !== filterType) return false;
+    if (!matchesSearch(searchTerm, r.client, r.clientName, r.caseNumber, r.type, r.status)) return false;
     return true;
   });
 
@@ -7980,7 +8018,10 @@ function renderInssProcesses() {
   if (!tbody) return;
 
   const filterStatus = document.getElementById("filterInssStatus").value;
-  const filtered = AppState.inssProcesses.filter(p => !filterStatus || p.status === filterStatus);
+  const searchTerm = document.getElementById("searchInss")?.value || "";
+  const filtered = AppState.inssProcesses.filter(p =>
+    (!filterStatus || p.status === filterStatus) &&
+    matchesSearch(searchTerm, p.client, p.type, p.protocolNumber, p.status));
 
   if (filtered.length === 0) {
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Nenhum processo administrativo cadastrado.</td></tr>`;
@@ -8035,9 +8076,12 @@ function renderCashbook() {
   }
 
   let runningBalance = 0;
+  const searchCash = document.getElementById("searchCashbook")?.value || "";
   const rowsHtml = sorted.map(entry => {
     const val = Number(entry.value || 0);
     runningBalance += entry.type === "entrada" ? val : -val;
+    // o saldo acumulado conta todos os lançamentos; a busca só esconde linhas
+    if (!matchesSearch(searchCash, entry.desc, entry.category, entry.type === "entrada" ? "entrada" : "saida saída")) return "";
     const typeBadge = entry.type === "entrada"
       ? `<span class="badge badge-success">Entrada</span>`
       : `<span class="badge badge-danger">Saída</span>`;
@@ -8059,7 +8103,10 @@ function renderCashbook() {
     `;
   });
   // mostra o lançamento mais recente primeiro, mantendo o saldo acumulado calculado em ordem cronológica
-  tbody.innerHTML = rowsHtml.reverse().join("");
+  const visibleRows = rowsHtml.filter(Boolean);
+  tbody.innerHTML = visibleRows.length
+    ? visibleRows.reverse().join("")
+    : `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Nenhum lançamento encontrado com esta busca.</td></tr>`;
 }
 
 document.getElementById("btnOpenNewCashbookModal").addEventListener("click", () => {
@@ -8163,6 +8210,21 @@ function setupNavigation() {
   document.getElementById("filterAppointmentStatus").addEventListener("change", renderAppointments);
   document.getElementById("searchAppointments").addEventListener("input", renderAppointments);
   document.getElementById("searchClients").addEventListener("input", renderClients);
+  // Campos de busca das demais listas: filtram enquanto digita
+  [
+    ["searchCases", renderCases],
+    ["searchInss", renderInssProcesses],
+    ["searchTasks", renderTasks],
+    ["searchRpv", renderRpvAlvaras],
+    ["searchReceivables", renderFinancial],
+    ["searchPayables", renderFinancial],
+    ["searchCashbook", renderCashbook],
+    ["searchDocHistory", renderDocHistory],
+    ["searchLawyers", renderLawyers]
+  ].forEach(([id, fn]) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", fn);
+  });
   document.getElementById("filterProcessArea").addEventListener("change", renderCases);
   document.getElementById("filterProcessStatus").addEventListener("change", renderCases);
   document.getElementById("filterProcessLawyer").addEventListener("change", renderCases);
@@ -8241,6 +8303,7 @@ function renderTasks() {
   const filterAssignee = document.getElementById("filterTaskAssignee").value;
   const filterStatus = document.getElementById("filterTaskStatus").value;
   const filterPriority = document.getElementById("filterTaskPriority").value;
+  const searchTerm = document.getElementById("searchTasks")?.value || "";
 
   // KPIs
   const allTasks = AppState.tasks;
@@ -8260,6 +8323,7 @@ function renderTasks() {
     if (filterAssignee && t.assignee !== filterAssignee) return false;
     if (filterStatus && t.status !== filterStatus) return false;
     if (filterPriority && t.priority !== filterPriority) return false;
+    if (!matchesSearch(searchTerm, t.title, t.assignee, t.desc, t.status, t.priority)) return false;
     return true;
   }).sort((a,b) => (a.dueDate || "").localeCompare(b.dueDate || ""));
 
@@ -10894,7 +10958,14 @@ function renderDocHistory() {
     return;
   }
 
-  AppState.documents.forEach(doc => {
+  const searchDocs = document.getElementById("searchDocHistory")?.value || "";
+  const docsShown = AppState.documents.filter(d => matchesSearch(searchDocs, d.typeName, d.clientName, d.linkedCase));
+  if (docsShown.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Nenhum documento encontrado com esta busca.</td></tr>`;
+    return;
+  }
+
+  docsShown.forEach(doc => {
     let constTypeBadge = '<span class="badge badge-neutral">Pessoa Física</span>';
     if (doc.constituentType === "pj") constTypeBadge = '<span class="badge badge-info">Pessoa Jurídica</span>';
     else if (doc.constituentType === "menor") constTypeBadge = '<span class="badge badge-warn">Menor de Idade</span>';
@@ -10982,6 +11053,24 @@ let importCasesNewRows = [];
 
 function impOnlyDigits(s) {
   return (s || "").toString().replace(/\D/g, "");
+}
+
+// Busca das listas: ignora acentos e maiúsculas, aceita várias palavras em
+// qualquer ordem e acha número de processo/CPF digitado com ou sem pontuação.
+function searchNorm(s) {
+  return (s ?? "").toString().normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+function matchesSearch(term, ...fields) {
+  const t = searchNorm(term).trim();
+  if (!t) return true;
+  const hay = fields.map(searchNorm).join(" | ");
+  if (t.split(/\s+/).every(w => hay.includes(w))) return true;
+  const tDigits = t.replace(/\D/g, "");
+  // só números e pontuação (CNJ, CPF/CNPJ): compara só os dígitos
+  if (tDigits.length >= 4 && /^[\d.\-\/\s]+$/.test(t)) {
+    return fields.some(f => String(f ?? "").replace(/\D/g, "").includes(tDigits));
+  }
+  return false;
 }
 
 // Converte valor em dinheiro vindo de planilha, aceitando "R$ 1.234,56" (BR),
