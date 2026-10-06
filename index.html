@@ -2103,9 +2103,10 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
 
           <div class="card-box">
             <div class="card-box-header">
-              <h2 class="card-box-title"><span class="title-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/><line x1="5" y1="7" x2="19" y2="7"/><path d="M5 7 2 13a3.2 3.2 0 0 0 6 0z"/><path d="M19 7l-3 6a3.2 3.2 0 0 0 6 0z"/><line x1="8" y1="21" x2="16" y2="21"/></svg></span> Processos por Área de Atuação</h2>
+              <h2 class="card-box-title"><span class="title-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/><line x1="5" y1="7" x2="19" y2="7"/><path d="M5 7 2 13a3.2 3.2 0 0 0 6 0z"/><path d="M19 7l-3 6a3.2 3.2 0 0 0 6 0z"/><line x1="8" y1="21" x2="16" y2="21"/></svg></span> Processos por Situação</h2>
             </div>
             <div class="chart-box chart-box-donut" id="chartCasesByArea" style="height: 250px;"></div>
+            <div id="chartCasesByAreaLegend" style="display:flex; flex-wrap:wrap; gap:0.4rem 1rem; justify-content:center; margin-top:0.6rem; font-size:0.78rem; color:var(--text-muted);"></div>
           </div>
         </div>
 
@@ -5097,7 +5098,7 @@ function showToast(message, icon = "✔") {
 
 // --- RENDER FUNCTIONS ---
 function renderOverview() {
-  const activeCases = AppState.cases.filter(c => c.status === "Em andamento" || c.status.startsWith("Aguardando"));
+  const activeCases = AppState.cases.filter(c => c.status === "Em andamento" || (c.status || "").startsWith("Aguardando"));
   document.getElementById("kpiActiveCases").textContent = activeCases.length;
 
   const todayStr = getOffsetDate(0);
@@ -5281,30 +5282,41 @@ function renderCharts() {
     });
   }
 
-  // Cases by Area
-  const areaCounts = {
-    "Cível / Família": 0,
-    "Trabalhista": 0,
-    "Empresarial / Contratos": 0,
-    "Consumidor": 0,
-    "Previdenciário": 0,
-    "Não informado": 0
+  // Cases by status (a área não é mais coletada no cadastro de processo)
+  const statusColors = {
+    "Em andamento": "#BDA35E",
+    "Aguardando audiência": "#6d28d9",
+    "Aguardando sentença": "#564F75",
+    "Ganho": "#15803d",
+    "Perdido": "#b91c1c",
+    "Arquivado": "#94a3b8",
+    "Sem situação": "#475569"
   };
-
+  const statusCounts = {};
   AppState.cases.forEach(c => {
-    const key = areaCounts[c.area] !== undefined ? c.area : "Não informado";
-    areaCounts[key]++;
+    const key = statusColors[c.status] ? c.status : "Sem situação";
+    statusCounts[key] = (statusCounts[key] || 0) + 1;
   });
 
   const elDonut = document.getElementById("chartCasesByArea");
   if (elDonut) {
     elDonut.innerHTML = "";
-    const activeAreaLabels = Object.keys(areaCounts).filter(k => areaCounts[k] > 0);
-    window.skipChart.donut(elDonut, {
-      labels: activeAreaLabels,
-      values: activeAreaLabels.map(k => areaCounts[k]),
-      colors: ["#403C5B", "#BDA35E", "#564F75", "#8C7845", "#7c3aed", "#94a3b8"]
-    });
+    const activeLabels = Object.keys(statusCounts);
+    const legendEl = document.getElementById("chartCasesByAreaLegend");
+    if (legendEl) {
+      legendEl.innerHTML = activeLabels.map(k =>
+        `<span style="display:inline-flex; align-items:center; gap:0.35rem;"><span style="width:10px; height:10px; border-radius:2px; background:${statusColors[k]}; display:inline-block;"></span>${esc(k)} (${statusCounts[k]})</span>`
+      ).join("");
+    }
+    if (activeLabels.length === 0) {
+      elDonut.innerHTML = '<div style="height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:0.85rem;">Nenhum processo cadastrado ainda.</div>';
+    } else {
+      window.skipChart.donut(elDonut, {
+        labels: activeLabels,
+        values: activeLabels.map(k => statusCounts[k]),
+        colors: activeLabels.map(k => statusColors[k])
+      });
+    }
   }
 }
 
@@ -5679,7 +5691,7 @@ function renderClients() {
 
   // Client KPIs
   document.getElementById("kpiTotalClients").textContent = AppState.clients.length;
-  const activeClientsSet = new Set(AppState.cases.filter(c => c.status === "Em andamento" || c.status.startsWith("Aguardando")).map(c => c.client));
+  const activeClientsSet = new Set(AppState.cases.filter(c => c.status === "Em andamento" || (c.status || "").startsWith("Aguardando")).map(c => c.client));
   document.getElementById("kpiActiveClients").textContent = activeClientsSet.size;
 
   const currentMonth = new Date().getMonth();
@@ -5951,7 +5963,7 @@ function renderLawyers() {
 
   AppState.lawyers.forEach(l => {
     const isLawyer = l.position === "Advogado(a)";
-    const caseCount = isLawyer ? AppState.cases.filter(c => c.lawyerId === l.id && (c.status === "Em andamento" || c.status.startsWith("Aguardando"))).length : 0;
+    const caseCount = isLawyer ? AppState.cases.filter(c => c.lawyerId === l.id && (c.status === "Em andamento" || (c.status || "").startsWith("Aguardando"))).length : 0;
     const feesGenerated = isLawyer ? AppState.receivables
       .filter(r => r.lawyerId === l.id && r.status === "Recebido")
       .reduce((sum, r) => sum + Number(r.value || 0), 0) : 0;
@@ -11523,6 +11535,14 @@ async function confirmImportElawlab() {
     var palette = cfg.colors || [accent(), "#1baf7a", "#eda100", "#e34948", "#4a3aa7", "#e87ba4"];
     var a0 = -Math.PI / 2;
     cfg.values.forEach(function (v, i) {
+      if (v / total >= 0.9999) {
+        var ring = svgEl("circle", { cx: cx, cy: cy, r: (R + r) / 2, fill: "none", stroke: palette[i % palette.length], "stroke-width": R - r });
+        var rt = svgEl("title", {});
+        rt.textContent = cfg.labels[i] + ": " + fmt.num(v) + " (100%)";
+        ring.appendChild(rt);
+        svg.appendChild(ring);
+        return;
+      }
       var a1 = a0 + (v / total) * Math.PI * 2;
       var large = a1 - a0 > Math.PI ? 1 : 0;
       var p = ["M", cx + R * Math.cos(a0), cy + R * Math.sin(a0),
