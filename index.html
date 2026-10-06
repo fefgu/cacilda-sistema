@@ -4930,7 +4930,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261005-224125";
+const APP_VERSION = "20261005-230153";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -10984,6 +10984,29 @@ function impOnlyDigits(s) {
   return (s || "").toString().replace(/\D/g, "");
 }
 
+// Converte valor em dinheiro vindo de planilha, aceitando "R$ 1.234,56" (BR),
+// "R$ 1,234.56" (EUA) e "1234.56" (número puro). Antes, o ponto era sempre
+// apagado como se fosse milhar, e "48290102.79" virava 4.829.010.279.
+function parseMoneyBR(value) {
+  if (typeof value === "number") return isFinite(value) ? value : null;
+  let s = String(value ?? "").replace(/R\$|\s/g, "");
+  if (!s) return null;
+  const lastDot = s.lastIndexOf(".");
+  const lastComma = s.lastIndexOf(",");
+  if (lastDot !== -1 && lastComma !== -1) {
+    // o separador que aparece por último é o decimal
+    s = lastDot > lastComma ? s.replace(/,/g, "") : s.replace(/\./g, "").replace(",", ".");
+  } else if (lastComma !== -1) {
+    // só vírgula: decimal (BR) a menos que seja grupo de milhar (1,234 / 1,234,567)
+    s = /^\d{1,3}(,\d{3})+$/.test(s) ? s.replace(/,/g, "") : s.replace(",", ".");
+  } else if (lastDot !== -1) {
+    // só ponto: milhar (BR) se for 1.234 / 1.234.567; senão decimal
+    s = /^\d{1,3}(\.\d{3})+$/.test(s) ? s.replace(/\./g, "") : s;
+  }
+  const n = parseFloat(s);
+  return isFinite(n) ? n : null;
+}
+
 function impNormalizeName(s) {
   return (s || "")
     .toString()
@@ -11208,8 +11231,7 @@ async function handleImportCasesFile(evt) {
     const comarca = (r["Comarca"] || "").toString().trim();
     const court = [tribunal, (comarca && !/informad/i.test(comarca)) ? comarca : ""].filter(Boolean).join(" — ");
 
-    const causeValueRaw = (r["Valor da Causa"] || "").toString().trim().replace(/\./g, "").replace(",", ".");
-    const causeValue = parseFloat(causeValueRaw) || null;
+    const causeValue = parseMoneyBR(r["Valor da Causa"]) || null;
 
     newRows.push({
       number,
