@@ -2177,6 +2177,13 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <span class="ap-period-label" id="apPeriodLabel"></span>
             <button type="button" class="ap-arrow" id="apNext" aria-label="Próximo">&#8250;</button>
           </div>
+          <div class="ap-period-nav" style="gap:0.4rem;">
+            <label for="apDateFrom" style="font-size:0.8rem; color:var(--text-muted);">Data</label>
+            <input type="date" class="form-control-inline" id="apDateFrom" aria-label="Data inicial (ou data única)">
+            <label for="apDateTo" style="font-size:0.8rem; color:var(--text-muted);">até</label>
+            <input type="date" class="form-control-inline" id="apDateTo" aria-label="Data final (opcional)">
+            <button type="button" class="btn btn-sm btn-secondary" id="apDateClear">Limpar</button>
+          </div>
         </div>
 
         <div class="table-responsive">
@@ -4959,7 +4966,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261005-230819";
+const APP_VERSION = "20261005-233023";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -5500,6 +5507,16 @@ function apPeriodRange() {
     const e = new Date(base.getFullYear(), base.getMonth() + 1, 0);
     return { from: apDateKeyLocal(s), to: apDateKeyLocal(e), label: s.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }) };
   }
+  if (apPeriod === "intervalo") {
+    // uma data só = aquele dia; duas datas = do primeiro ao último dia
+    let from = document.getElementById("apDateFrom").value || "";
+    let to = document.getElementById("apDateTo").value || "";
+    if (!from) from = to;
+    if (!to) to = from;
+    if (from > to) [from, to] = [to, from];
+    const br = (k) => k.split("-").reverse().join("/");
+    return { from, to, label: from === to ? br(from) : `${br(from)} a ${br(to)}` };
+  }
   return { from: "", to: "", label: "Todos os eventos" };
 }
 
@@ -5512,7 +5529,7 @@ function apInPeriod(dateStr) {
 function apUpdatePeriodBar() {
   document.querySelectorAll("[data-ap-period]").forEach(b => b.classList.toggle("active", b.dataset.apPeriod === apPeriod));
   document.getElementById("apPeriodLabel").textContent = apPeriodRange().label;
-  const hidden = apPeriod === "tudo";
+  const hidden = apPeriod === "tudo" || apPeriod === "intervalo";
   document.getElementById("apPrev").style.visibility = hidden ? "hidden" : "visible";
   document.getElementById("apNext").style.visibility = hidden ? "hidden" : "visible";
 }
@@ -5530,8 +5547,23 @@ document.querySelectorAll("[data-ap-period]").forEach(b => {
   b.addEventListener("click", () => {
     apPeriod = b.dataset.apPeriod;
     apAnchor = new Date();
+    document.getElementById("apDateFrom").value = "";
+    document.getElementById("apDateTo").value = "";
     renderAppointments();
   });
+});
+function apOnDateInput() {
+  const hasDate = !!(document.getElementById("apDateFrom").value || document.getElementById("apDateTo").value);
+  apPeriod = hasDate ? "intervalo" : "mes";
+  apAnchor = new Date();
+  renderAppointments();
+}
+document.getElementById("apDateFrom").addEventListener("change", apOnDateInput);
+document.getElementById("apDateTo").addEventListener("change", apOnDateInput);
+document.getElementById("apDateClear").addEventListener("click", () => {
+  document.getElementById("apDateFrom").value = "";
+  document.getElementById("apDateTo").value = "";
+  apOnDateInput();
 });
 document.getElementById("apPrev").addEventListener("click", () => apShift(-1));
 document.getElementById("apNext").addEventListener("click", () => apShift(1));
