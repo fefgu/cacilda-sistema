@@ -4930,7 +4930,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261005-215112";
+const APP_VERSION = "20261005-224125";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -4967,6 +4967,38 @@ setInterval(checkForNewVersion, 5 * 60 * 1000);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") checkForNewVersion();
 });
+
+// Remove nomes repetidos de uma lista, tratando como iguais as variações de
+// maiúscula/minúscula, acento e pontuação ("serviços ltda." = "SERVICOS LTDA").
+// Entre as variações, fica a que tem acento (mais completa) e em maiúsculas.
+function dedupeNameList(names) {
+  // A chave ignora a sigla depois de um hífen ("... SOCIAL - INSS" = "... SOCIAL").
+  const keyOf = n => String(n).split(/\s+-\s+/)[0].normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase().replace(/[^A-Z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+  const hasAccent = s => /[^\u0000-\u007f]/.test(s);
+  const hasSigla = s => /\s+-\s+/.test(s);
+  const order = [];
+  const best = new Map();
+  names.forEach(n => {
+    const name = String(n).trim();
+    if (!name) return;
+    const key = keyOf(name);
+    if (!best.has(key)) { best.set(key, name); order.push(key); return; }
+    const cur = best.get(key);
+    const better = (hasAccent(name) && !hasAccent(cur)) ||
+      (hasAccent(name) === hasAccent(cur) && hasSigla(name) && !hasSigla(cur));
+    if (better) best.set(key, name);
+  });
+  return order.map(k => best.get(k).toLocaleUpperCase("pt-BR"));
+}
+
+// Limpa um texto "A, A x B, B" já gravado: tira repetidos de cada lado do " x ".
+function dedupePartes(text) {
+  if (!text) return "";
+  return String(text).split(" x ")
+    .map(side => dedupeNameList(side.split(",")).join(", "))
+    .filter(Boolean)
+    .join(" x ");
+}
 
 // Helper to calculate relative date string YYYY-MM-DD
 function getOffsetDate(daysOffset) {
@@ -5845,7 +5877,7 @@ function renderCases() {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td><strong>${esc(c.number)}</strong></td>
-      <td>${esc(c.client || c.clientName || "-")}</td>
+      <td>${esc(c.client || dedupePartes(c.clientName) || "-")}</td>
       <td>${esc(c.opposingParty || '-')}</td>
       <td style="font-size:0.8rem;">${esc(c.court)}</td>
       <td>${esc(getLawyerName(c.lawyerId))}</td>
@@ -11145,11 +11177,12 @@ async function handleImportCasesFile(evt) {
   // Cada parte vem como "NOME (CPF mascarado)", às vezes várias, uma por linha.
   // Fica só o nome, sem o documento entre parênteses.
   function cleanParties(text) {
-    return (text || "").toString()
-      .split(/\r?\n/)
-      .map(p => p.replace(/\s*\([^)]*\)\s*$/, "").trim())
-      .filter(p => p && !/^n[ãa]o informad/i.test(p))
-      .join(", ");
+    return dedupeNameList(
+      (text || "").toString()
+        .split(/\r?\n/)
+        .map(p => p.replace(/\s*\([^)]*\)\s*$/, "").trim())
+        .filter(p => p && !/^n[ãa]o informad/i.test(p))
+    ).join(", ");
   }
   const getCol = (r, names) => { for (const n of names) if (r[n] !== undefined && r[n] !== "") return r[n]; return ""; };
 
