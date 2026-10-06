@@ -4927,7 +4927,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261005-213900";
+const APP_VERSION = "20261005-214212";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -10016,7 +10016,12 @@ const ROLE_ALLOWED_TABS = {
 
 function applyRoleBasedNav() {
   const role = currentProfile && currentProfile.role;
-  const allowed = ROLE_ALLOWED_TABS[role];
+  const baseAllowed = ROLE_ALLOWED_TABS[role];
+  // Permissão individual (profiles.can_import) libera a aba Importar Dados
+  // pra quem não a tem pelo perfil.
+  const allowed = baseAllowed && currentProfile && currentProfile.can_import === true
+    ? [...baseAllowed, "importar"]
+    : baseAllowed;
 
   document.querySelectorAll("#navList .nav-btn").forEach(btn => {
     const target = btn.getAttribute("data-target");
@@ -11362,6 +11367,11 @@ async function confirmImportElawlab() {
 
   if (!rpvItems.length && !agendaItems.length) {
     alert("Marque pelo menos um item pra importar (com data preenchida, no caso de compromissos).");
+    return;
+  }
+  const canLaunchRpv = currentProfile && ["admin_geral", "atendimento"].includes(currentProfile.role);
+  if (rpvItems.length && !canLaunchRpv) {
+    alert("Seu usuário não tem acesso à aba RPV/Alvarás. Desmarque os itens do tipo RPV/Alvará na lista (coluna Importar?) e confirme de novo; peça à Dra. Cacilda ou ao Neto para lançar esses.");
     return;
   }
   const rpvSemValor = rpvItems.filter(i => !i.valor || i.valor <= 0);
