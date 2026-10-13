@@ -4576,6 +4576,17 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <input type="date" id="recDueDate" required>
           </div>
         </div>
+        <div class="form-field" id="recRepeatField">
+          <label for="recRepeat">Repetir todo mês</label>
+          <select id="recRepeat">
+            <option value="1">Não repetir (lançamento único)</option>
+            <option value="3">Por 3 meses</option>
+            <option value="6">Por 6 meses</option>
+            <option value="12">Por 12 meses</option>
+            <option value="24">Por 24 meses</option>
+          </select>
+          <small style="color:var(--text-muted);">Para honorários mensais fixos. Cria todos os meses de uma vez, no mesmo dia, com a descrição "(1/12)", "(2/12)"... Cada mês é baixado e editado separadamente.</small>
+        </div>
         <div class="form-row">
           <div class="form-field">
             <label for="recPaymentMethod">Forma de Pagamento *</label>
@@ -4858,6 +4869,17 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           <label for="payDueDate">Data de Vencimento *</label>
           <input type="date" id="payDueDate" required>
         </div>
+        <div class="form-field" id="payRepeatField">
+          <label for="payRepeat">Repetir todo mês</label>
+          <select id="payRepeat">
+            <option value="1">Não repetir (lançamento único)</option>
+            <option value="3">Por 3 meses</option>
+            <option value="6">Por 6 meses</option>
+            <option value="12">Por 12 meses</option>
+            <option value="24">Por 24 meses</option>
+          </select>
+          <small style="color:var(--text-muted);">Cria todos os meses de uma vez, no mesmo dia, com a descrição "(1/12)", "(2/12)"... Cada mês é pago e editado separadamente.</small>
+        </div>
         <div class="form-field">
           <label for="payStatus">Status *</label>
           <select id="payStatus" required>
@@ -5100,7 +5122,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261012-232608";
+const APP_VERSION = "20261012-233018";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -7308,6 +7330,7 @@ document.getElementById("btnOpenNewReceivableModal").addEventListener("click", (
   document.getElementById("modalReceivableTitle").textContent = "Adicionar Conta a Receber";
   populateReceivableClientSelect();
   document.getElementById("recDueDate").value = getOffsetDate(10);
+  document.getElementById("recRepeatField").style.display = "";
   document.getElementById("recSplitType").value = "100% Dra. Cacilda";
   document.getElementById("recPaymentMethod").value = "PIX";
   document.getElementById("recCacildaRepassePct").value = "";
@@ -7379,6 +7402,8 @@ document.getElementById("formReceivable").addEventListener("submit", async (e) =
   const submitBtnRec = document.querySelector('#formReceivable button[type="submit"]');
   if (submitBtnRec) submitBtnRec.disabled = true;
   let newObj;
+  let recurringCount = 1;
+  let recurringDueDates = null;
 
   if (id) {
     const { data, error } = await sb.from("receivables").update(payload).eq("id", id).select().single();
@@ -7391,14 +7416,26 @@ document.getElementById("formReceivable").addEventListener("submit", async (e) =
     const idx = AppState.receivables.findIndex(r => r.id === id);
     if (idx !== -1) AppState.receivables[idx] = newObj;
   } else {
-    const { data, error } = await sb.from("receivables").insert(payload).select().single();
+    const repeat = Math.max(1, parseInt(document.getElementById("recRepeat").value, 10) || 1);
+    // Todos os meses de uma vez: mesmo dia, "(i/N)" na descrição. Só o 1º
+    // leva o status escolhido; "Recebido"/"Vencido" não se repetem nos demais.
+    const rows = repeat === 1 ? [payload] : Array.from({ length: repeat }, (_, i) => mapReceivableToDb({
+      ...formData,
+      desc: `${desc} (${i + 1}/${repeat})`,
+      dueDate: addMonthsISO(dueDate, i),
+      status: i === 0 || formData.status === "Aguardando êxito" ? formData.status : "Pendente",
+      paidDate: i === 0 ? formData.paidDate : ""
+    }));
+    const { data, error } = await sb.from("receivables").insert(rows).select();
     if (error) {
       alert("Não foi possível salvar o recebível: " + friendlyDbError(error, { checkMessage: "O valor precisa ser maior que zero." }));
       if (submitBtnRec) submitBtnRec.disabled = false;
       return;
     }
-    newObj = mapReceivableFromDb(data);
-    AppState.receivables.unshift(newObj);
+    const created = data.map(mapReceivableFromDb);
+    created.slice().reverse().forEach(r => AppState.receivables.unshift(r));
+    recurringCount = repeat;
+    recurringDueDates = Array.from({ length: repeat }, (_, i) => addMonthsISO(dueDate, i));
   }
   if (submitBtnRec) submitBtnRec.disabled = false;
 
@@ -7412,10 +7449,10 @@ document.getElementById("formReceivable").addEventListener("submit", async (e) =
       clientName: clientName,
       clientPhone: phone,
       clientDoc: doc,
-      totalValue: value,
-      installments: 1,
+      totalValue: value * recurringCount,
+      installments: recurringCount,
       installmentValue: value,
-      dueDates: dueDate,
+      dueDates: recurringDueDates || dueDate,
       serviceDesc: desc,
       linkedRef: `Recebível ${desc}`
     });
@@ -7443,6 +7480,8 @@ document.getElementById("formReceivable").addEventListener("submit", async (e) =
     showToast("Tarefa 'Gerar boleto' criada no painel de Tarefas!", "☑️");
   } else if (boletoTaskFailed) {
     alert("O recebível foi salvo, mas NÃO foi possível criar a tarefa de gerar boleto. Crie manualmente em Tarefas.");
+  } else if (recurringCount > 1) {
+    showToast(`${recurringCount} cobranças criadas (uma por mês).`);
   } else {
     showToast("Conta a receber salva com sucesso!");
   }
@@ -7799,6 +7838,8 @@ window.editReceivable = function(id) {
   }
   updateSplitValidation();
 
+  document.getElementById("recRepeat").value = "1";
+  document.getElementById("recRepeatField").style.display = "none"; // repetição só na criação
   document.getElementById("modalReceivableTitle").textContent = "Editar Conta a Receber";
   openModal("modalReceivable");
 };
@@ -7823,6 +7864,7 @@ document.getElementById("btnOpenNewPayableModal").addEventListener("click", () =
   document.getElementById("payableId").value = "";
   document.getElementById("modalPayableTitle").textContent = "Adicionar Conta a Pagar";
   document.getElementById("payDueDate").value = getOffsetDate(5);
+  document.getElementById("payRepeatField").style.display = "";
   openModal("modalPayable");
 });
 
@@ -7854,14 +7896,24 @@ document.getElementById("formPayable").addEventListener("submit", async (e) => {
     const idx = AppState.payables.findIndex(p => p.id === id);
     if (idx !== -1) AppState.payables[idx] = newObj;
   } else {
-    const { data, error } = await sb.from("payables").insert(payload).select().single();
+    const repeat = Math.max(1, parseInt(document.getElementById("payRepeat").value, 10) || 1);
+    // Todos os meses de uma vez: mesmo dia, "(i/N)" na descrição; só o 1º
+    // leva o status escolhido, os outros nascem Pendentes.
+    const rows = repeat === 1 ? [payload] : Array.from({ length: repeat }, (_, i) => mapPayableToDb({
+      ...formData,
+      desc: `${formData.desc} (${i + 1}/${repeat})`,
+      dueDate: addMonthsISO(formData.dueDate, i),
+      status: i === 0 ? formData.status : "Pendente"
+    }));
+    const { data, error } = await sb.from("payables").insert(rows).select();
     if (error) {
       alert("Não foi possível salvar: " + friendlyDbError(error, { checkMessage: "O valor precisa ser maior que zero." }));
       if (submitBtnPay) submitBtnPay.disabled = false;
       return;
     }
-    newObj = mapPayableFromDb(data);
-    AppState.payables.unshift(newObj);
+    const created = data.map(mapPayableFromDb);
+    created.slice().reverse().forEach(p => AppState.payables.unshift(p));
+    if (repeat > 1) showToast(`${repeat} contas a pagar criadas (uma por mês).`);
   }
   if (submitBtnPay) submitBtnPay.disabled = false;
 
@@ -7894,6 +7946,8 @@ window.editPayable = function(id) {
   document.getElementById("payValue").value = item.value;
   document.getElementById("payDueDate").value = item.dueDate;
   document.getElementById("payStatus").value = item.status;
+  document.getElementById("payRepeat").value = "1";
+  document.getElementById("payRepeatField").style.display = "none"; // repetição só na criação
   document.getElementById("modalPayableTitle").textContent = "Editar Conta a Pagar";
   openModal("modalPayable");
 };
@@ -10263,6 +10317,48 @@ function showApp() {
   document.getElementById("appLayout").style.display = "flex";
 }
 
+// Atualização automática: quando outra pessoa mexe na Agenda ou nas Tarefas,
+// o banco avisa e a tela recarrega essas listas sozinha (sem F5). Os avisos
+// são juntados (debounce) pra uma importação grande não recarregar 50 vezes.
+// Se a recarga falhar, a lista que já está na tela é mantida.
+let realtimeChannel = null;
+let realtimeTimer = null;
+const realtimePending = new Set();
+
+async function flushRealtime() {
+  const tables = [...realtimePending];
+  realtimePending.clear();
+
+  if (tables.includes("appointments")) {
+    const { data, error } = await sb.from("appointments").select("*").order("date").order("time");
+    if (!error && data) {
+      AppState.appointments = data.map(mapAppointmentFromDb);
+      renderAppointments();
+    }
+  }
+  if (tables.includes("tasks")) {
+    const { data, error } = await sb.from("tasks").select("*").order("due_date");
+    if (!error && data) {
+      AppState.tasks = data.map(mapTaskFromDb);
+      renderTasks();
+    }
+  }
+  renderOverview();
+}
+
+function startRealtime() {
+  if (realtimeChannel) return;
+  const onChange = (table) => () => {
+    realtimePending.add(table);
+    clearTimeout(realtimeTimer);
+    realtimeTimer = setTimeout(flushRealtime, 700);
+  };
+  realtimeChannel = sb.channel("cacilda-agenda-tarefas")
+    .on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, onChange("appointments"))
+    .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, onChange("tasks"))
+    .subscribe();
+}
+
 async function bootApp() {
   await AppState.init();
   setupNavigation();
@@ -10279,6 +10375,7 @@ async function bootApp() {
 
   applyRoleBasedNav();
   refreshAll();
+  try { startRealtime(); } catch (err) { console.error("Tempo real indisponível:", err); }
 }
 
 // Esconde do menu lateral os módulos que o perfil logado não tem acesso
@@ -11495,6 +11592,17 @@ let importCasesNewRows = [];
 
 function impOnlyDigits(s) {
   return (s || "").toString().replace(/\D/g, "");
+}
+
+// Soma meses a uma data AAAA-MM-DD mantendo o "dia do vencimento": 31/01
+// +1 mês = 28/02 (ou 29), e +2 meses volta pra 31/03 — sempre calculado a
+// partir da data inicial, não da anterior.
+function addMonthsISO(iso, months) {
+  const [y, m, d] = iso.split("-").map(Number);
+  const first = new Date(y, m - 1 + months, 1);
+  const lastDay = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+  first.setDate(Math.min(d, lastDay));
+  return `${first.getFullYear()}-${String(first.getMonth() + 1).padStart(2, "0")}-${String(first.getDate()).padStart(2, "0")}`;
 }
 
 // Busca das listas: ignora acentos e maiúsculas, aceita várias palavras em
