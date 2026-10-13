@@ -1953,6 +1953,11 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><polyline points="7,9 12,4 17,9"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/></svg></span> Importar Dados
         </button>
       </li>
+      <li id="navItemUsuarios" style="display:none;">
+        <button class="nav-btn" data-target="usuarios">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/><circle cx="12" cy="15.2" r="1.2"/></svg></span> Usuários &amp; Acessos
+        </button>
+      </li>
     </ul>
 
     <div class="sidebar-footer">
@@ -2010,6 +2015,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         <span class="badge" style="background:var(--brand-primary); color:#ffffff; font-weight:600; padding:0.4rem 0.75rem;" id="currentDateBadge">
           Hoje
         </span>
+        <button class="btn btn-sm btn-secondary" id="btnMyPassword" title="Alterar a minha senha">Minha senha</button>
         <button class="btn btn-sm btn-secondary" id="btnLogout" title="Sair do sistema">Sair</button>
       </div>
     </header>
@@ -3799,8 +3805,136 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         </div>
       </section>
 
+      <!-- USUÁRIOS & ACESSOS (só administrador geral) -->
+      <section id="view-usuarios" class="view-pane">
+        <div class="card-box">
+          <div class="card-box-header">
+            <h2 class="card-box-title">Usuários &amp; Acessos</h2>
+            <button class="btn btn-primary" id="btnOpenNewUserModal">+ Novo Usuário</button>
+          </div>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.5;">
+            Aqui você define quem acessa o sistema, o perfil de cada pessoa e troca senhas. Mudanças de perfil, ativo e importação valem no próximo login da pessoa. Para impedir o acesso de alguém sem apagar o histórico, desmarque <strong>Ativo</strong>.
+          </p>
+          <div class="module-toolbar">
+            <div class="filter-group">
+              <input type="text" class="form-control-inline" id="searchUsers" placeholder="Buscar por nome ou e-mail..." autocomplete="off" style="min-width:240px;">
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" id="tableUsers">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>E-mail (login)</th>
+                  <th>Perfil de acesso</th>
+                  <th style="text-align:center;">Ativo</th>
+                  <th style="text-align:center;">Pode importar</th>
+                  <th>Último acesso</th>
+                  <th style="text-align:right;">Senha</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </div>
   </main>
+</div>
+
+<!-- MODAL: TROCAR SENHA DE UM USUÁRIO (administrador) -->
+<div class="modal-backdrop" id="modalUserPassword">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Trocar senha</h3>
+      <button class="modal-close-btn" data-close="modalUserPassword">&times;</button>
+    </div>
+    <form id="formUserPassword" autocomplete="off">
+      <input type="hidden" id="userPasswordId">
+      <div class="modal-body">
+        <p style="font-size:0.85rem; margin-bottom:0.75rem;">Nova senha para <strong id="userPasswordName"></strong> (<span id="userPasswordEmail"></span>).</p>
+        <div class="form-field">
+          <label for="userPasswordNew">Nova senha * (mínimo 8 caracteres)</label>
+          <input type="password" id="userPasswordNew" required minlength="8" autocomplete="new-password">
+        </div>
+        <label style="font-size:0.8rem; display:flex; align-items:center; gap:0.4rem; margin-top:0.25rem;">
+          <input type="checkbox" id="userPasswordShow"> Mostrar a senha
+        </label>
+        <p id="userPasswordError" style="display:none; color:var(--danger); font-size:0.85rem; margin-top:0.5rem;"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close="modalUserPassword">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="btnSaveUserPassword">Salvar nova senha</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: NOVO USUÁRIO (administrador) -->
+<div class="modal-backdrop" id="modalNewUser">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Novo usuário</h3>
+      <button class="modal-close-btn" data-close="modalNewUser">&times;</button>
+    </div>
+    <form id="formNewUser" autocomplete="off">
+      <div class="modal-body">
+        <div class="form-field">
+          <label for="newUserName">Nome completo *</label>
+          <input type="text" id="newUserName" required autocomplete="off">
+        </div>
+        <div class="form-field">
+          <label for="newUserEmail">E-mail (será o login) *</label>
+          <input type="email" id="newUserEmail" required autocomplete="off" placeholder="ex: nome@cs.com">
+        </div>
+        <div class="form-field">
+          <label for="newUserRole">Perfil de acesso *</label>
+          <select id="newUserRole" required></select>
+        </div>
+        <div class="form-field">
+          <label for="newUserPassword">Senha inicial * (mínimo 8 caracteres)</label>
+          <input type="password" id="newUserPassword" required minlength="8" autocomplete="new-password">
+        </div>
+        <p id="newUserError" style="display:none; color:var(--danger); font-size:0.85rem;"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close="modalNewUser">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="btnSaveNewUser">Criar usuário</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: MINHA SENHA (todos os usuários) -->
+<div class="modal-backdrop" id="modalMyPassword">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Alterar minha senha</h3>
+      <button class="modal-close-btn" data-close="modalMyPassword">&times;</button>
+    </div>
+    <form id="formMyPassword" autocomplete="off">
+      <div class="modal-body">
+        <div class="form-field">
+          <label for="myPasswordCurrent">Senha atual *</label>
+          <input type="password" id="myPasswordCurrent" required autocomplete="current-password">
+        </div>
+        <div class="form-field">
+          <label for="myPasswordNew">Nova senha * (mínimo 8 caracteres)</label>
+          <input type="password" id="myPasswordNew" required minlength="8" autocomplete="new-password">
+        </div>
+        <div class="form-field">
+          <label for="myPasswordConfirm">Repita a nova senha *</label>
+          <input type="password" id="myPasswordConfirm" required minlength="8" autocomplete="new-password">
+        </div>
+        <p id="myPasswordError" style="display:none; color:var(--danger); font-size:0.85rem;"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close="modalMyPassword">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="btnSaveMyPassword">Salvar nova senha</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- MODAL: EVENTO DA AGENDA -->
@@ -4966,7 +5100,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261005-234950";
+const APP_VERSION = "20261012-231730";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -8303,7 +8437,8 @@ function switchTab(targetId) {
     "livro-caixa": "Livro Caixa",
     "relatorios": "Relatórios Financeiros & Controladoria",
     "equipe": "Corpo Jurídico & Advogados",
-    "configuracoes": "Configurações do Escritório"
+    "configuracoes": "Configurações do Escritório",
+    "usuarios": "Usuários & Acessos"
   };
   document.getElementById("pageTitle").textContent = titles[targetId] || "Dashboard";
 
@@ -8321,6 +8456,8 @@ function switchTab(targetId) {
     renderRpvAlvaras();
   } else if (targetId === "inss-administrativo") {
     renderInssProcesses();
+  } else if (targetId === "usuarios") {
+    loadUsersAdmin();
   }
 }
 
@@ -10162,6 +10299,9 @@ function applyRoleBasedNav() {
     const li = btn.closest("li");
     if (li) li.style.display = (allowed && !allowed.includes(target)) ? "none" : "";
   });
+  // Usuários & Acessos: só o administrador geral (nem o atendimento, que vê o resto).
+  const navUsuarios = document.getElementById("navItemUsuarios");
+  if (navUsuarios) navUsuarios.style.display = role === "admin_geral" ? "" : "none";
 
   if (allowed && allowed.length) {
     const activeBtn = document.querySelector("#navList .nav-btn.active");
@@ -10235,6 +10375,263 @@ sb.auth.onAuthStateChange((event) => {
       errEl.textContent = "Sua sessão expirou. Faça login novamente.";
       errEl.style.display = "block";
     }
+  }
+});
+
+// =======================================================
+// USUÁRIOS & ACESSOS (administrador) + "MINHA SENHA" (todos)
+// =======================================================
+const USER_ROLE_LABELS = {
+  admin_geral: "Administrador geral",
+  atendimento: "Atendimento (antigo)",
+  advogada_associada: "Advogada associada",
+  financeiro: "Financeiro",
+  apoio_juridico: "Apoio jurídico",
+  recepcao: "Recepção"
+};
+let adminUsersList = [];
+let adminUsersEmailsOk = true;
+
+// Chama a Edge Function admin-users e devolve a mensagem de erro em português.
+async function callAdminUsers(payload) {
+  const { data, error } = await sb.functions.invoke("admin-users", { body: payload });
+  if (error) {
+    let msg = error.message || "Erro ao falar com o servidor.";
+    try {
+      const j = await error.context.json();
+      if (j && j.error) msg = j.error;
+    } catch (_) { /* mantém a mensagem padrão */ }
+    throw new Error(msg);
+  }
+  if (data && data.error) throw new Error(data.error);
+  return data;
+}
+
+async function loadUsersAdmin() {
+  const tbody = document.querySelector("#tableUsers tbody");
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Carregando usuários...</td></tr>`;
+
+  const { data: profiles, error } = await sb.from("profiles").select("*").order("full_name");
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--danger);">Não foi possível carregar os usuários: ${esc(friendlyDbError(error))}</td></tr>`;
+    return;
+  }
+
+  let authUsers = [];
+  adminUsersEmailsOk = true;
+  try {
+    const res = await callAdminUsers({ action: "list" });
+    authUsers = res.users || [];
+  } catch (err) {
+    adminUsersEmailsOk = false;
+    console.error("admin-users list:", err);
+  }
+  const authById = new Map(authUsers.map(u => [u.id, u]));
+
+  adminUsersList = (profiles || []).map(p => ({
+    id: p.id,
+    fullName: p.full_name || "",
+    role: p.role,
+    active: p.active !== false,
+    canImport: p.can_import === true,
+    email: (authById.get(p.id) || {}).email || "",
+    lastSignIn: (authById.get(p.id) || {}).last_sign_in_at || ""
+  }));
+  renderUsersAdmin();
+}
+
+function renderUsersAdmin() {
+  const tbody = document.querySelector("#tableUsers tbody");
+  const term = document.getElementById("searchUsers").value;
+  const me = currentProfile ? currentProfile.id : null;
+
+  const list = adminUsersList.filter(u =>
+    matchesSearch(term, u.fullName, u.email, USER_ROLE_LABELS[u.role] || u.role));
+
+  const warn = adminUsersEmailsOk ? "" : `<tr><td colspan="7" style="padding:0.75rem; color:var(--warning); font-size:0.85rem;">Os e-mails e a troca de senha dependem da função <strong>admin-users</strong> no Supabase, que ainda não está instalada (ou deu erro). Veja a instrução de instalação.</td></tr>`;
+
+  if (list.length === 0) {
+    tbody.innerHTML = warn + `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Nenhum usuário encontrado.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = warn + list.map(u => {
+    const isMe = u.id === me;
+    const alwaysImport = u.role === "admin_geral" || u.role === "atendimento";
+    const roleOptions = Object.keys(USER_ROLE_LABELS).map(r =>
+      `<option value="${r}" ${r === u.role ? "selected" : ""}>${esc(USER_ROLE_LABELS[r])}</option>`).join("");
+    const last = u.lastSignIn ? new Date(u.lastSignIn).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "-";
+    return `
+      <tr>
+        <td><strong>${esc(u.fullName)}</strong>${isMe ? ' <span class="badge badge-neutral" style="font-size:0.65rem;">você</span>' : ""}</td>
+        <td>${u.email ? esc(u.email) : '<span style="color:var(--text-muted);">indisponível</span>'}</td>
+        <td>
+          <select class="form-control-inline" style="font-size:0.8rem; padding:0.3rem;" ${isMe ? 'disabled title="Você não pode mudar o próprio perfil"' : ""}
+                  onchange="updateUserProfile('${u.id}', { role: this.value })">${roleOptions}</select>
+        </td>
+        <td style="text-align:center;">
+          <input type="checkbox" ${u.active ? "checked" : ""} ${isMe ? 'disabled title="Você não pode se desativar"' : ""}
+                 onchange="updateUserProfile('${u.id}', { active: this.checked })">
+        </td>
+        <td style="text-align:center;">
+          ${alwaysImport
+            ? '<span style="font-size:0.75rem; color:var(--text-muted);">sempre</span>'
+            : `<input type="checkbox" ${u.canImport ? "checked" : ""} onchange="updateUserProfile('${u.id}', { can_import: this.checked })">`}
+        </td>
+        <td style="font-size:0.8rem;">${esc(last)}</td>
+        <td style="text-align:right;">
+          <button class="btn btn-sm btn-secondary" ${u.email ? "" : "disabled"} onclick="openUserPasswordModal('${u.id}')">Trocar senha</button>
+        </td>
+      </tr>`;
+  }).join("");
+}
+
+window.updateUserProfile = async function(userId, patch) {
+  if (patch.role === "admin_geral") {
+    if (!confirm("Dar o perfil de Administrador geral? Essa pessoa passa a ver tudo e a gerenciar usuários.")) {
+      renderUsersAdmin();
+      return;
+    }
+  }
+  if (patch.active === false) {
+    if (!confirm("Desativar este usuário? Ele não consegue mais entrar no sistema.")) {
+      renderUsersAdmin();
+      return;
+    }
+  }
+  const { error } = await sb.from("profiles").update(patch).eq("id", userId);
+  if (error) {
+    alert("Não foi possível salvar: " + friendlyDbError(error));
+    await loadUsersAdmin();
+    return;
+  }
+  const u = adminUsersList.find(x => x.id === userId);
+  if (u) {
+    if ("role" in patch) u.role = patch.role;
+    if ("active" in patch) u.active = patch.active;
+    if ("can_import" in patch) u.canImport = patch.can_import;
+  }
+  renderUsersAdmin();
+  showToast("Alteração salva.");
+};
+
+window.openUserPasswordModal = function(userId) {
+  const u = adminUsersList.find(x => x.id === userId);
+  if (!u) return;
+  document.getElementById("userPasswordId").value = u.id;
+  document.getElementById("userPasswordName").textContent = u.fullName;
+  document.getElementById("userPasswordEmail").textContent = u.email;
+  const input = document.getElementById("userPasswordNew");
+  input.value = "";
+  input.type = "password";
+  document.getElementById("userPasswordShow").checked = false;
+  document.getElementById("userPasswordError").style.display = "none";
+  openModal("modalUserPassword");
+};
+
+document.getElementById("userPasswordShow").addEventListener("change", (e) => {
+  document.getElementById("userPasswordNew").type = e.target.checked ? "text" : "password";
+});
+
+document.getElementById("formUserPassword").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById("userPasswordError");
+  const btn = document.getElementById("btnSaveUserPassword");
+  const password = document.getElementById("userPasswordNew").value;
+  errEl.style.display = "none";
+  if (password.length < 8) {
+    errEl.textContent = "A senha precisa ter pelo menos 8 caracteres.";
+    errEl.style.display = "block";
+    return;
+  }
+  btn.disabled = true;
+  try {
+    await callAdminUsers({ action: "set_password", user_id: document.getElementById("userPasswordId").value, password });
+    document.getElementById("userPasswordNew").value = "";
+    closeModal("modalUserPassword");
+    showToast("Senha trocada. Avise a pessoa pessoalmente.");
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = "block";
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.getElementById("btnOpenNewUserModal").addEventListener("click", () => {
+  document.getElementById("formNewUser").reset();
+  document.getElementById("newUserRole").innerHTML = Object.keys(USER_ROLE_LABELS)
+    .map(r => `<option value="${r}">${esc(USER_ROLE_LABELS[r])}</option>`).join("");
+  document.getElementById("newUserRole").value = "recepcao";
+  document.getElementById("newUserError").style.display = "none";
+  openModal("modalNewUser");
+});
+
+document.getElementById("formNewUser").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById("newUserError");
+  const btn = document.getElementById("btnSaveNewUser");
+  errEl.style.display = "none";
+  btn.disabled = true;
+  try {
+    await callAdminUsers({
+      action: "create_user",
+      full_name: document.getElementById("newUserName").value.trim(),
+      email: document.getElementById("newUserEmail").value.trim(),
+      role: document.getElementById("newUserRole").value,
+      password: document.getElementById("newUserPassword").value
+    });
+    closeModal("modalNewUser");
+    showToast("Usuário criado.");
+    await loadUsersAdmin();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = "block";
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.getElementById("searchUsers").addEventListener("input", renderUsersAdmin);
+
+// Minha senha: qualquer usuário troca a própria, confirmando a senha atual.
+document.getElementById("btnMyPassword").addEventListener("click", () => {
+  document.getElementById("formMyPassword").reset();
+  document.getElementById("myPasswordError").style.display = "none";
+  openModal("modalMyPassword");
+});
+
+document.getElementById("formMyPassword").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById("myPasswordError");
+  const btn = document.getElementById("btnSaveMyPassword");
+  const current = document.getElementById("myPasswordCurrent").value;
+  const next = document.getElementById("myPasswordNew").value;
+  const confirmPw = document.getElementById("myPasswordConfirm").value;
+  const fail = (msg) => { errEl.textContent = msg; errEl.style.display = "block"; };
+  errEl.style.display = "none";
+
+  if (next.length < 8) return fail("A nova senha precisa ter pelo menos 8 caracteres.");
+  if (next !== confirmPw) return fail("As duas senhas novas não são iguais.");
+  if (next === current) return fail("A nova senha precisa ser diferente da atual.");
+
+  btn.disabled = true;
+  try {
+    const { data: userData } = await sb.auth.getUser();
+    const email = userData && userData.user && userData.user.email;
+    if (!email) return fail("Sessão expirada. Entre de novo no sistema.");
+
+    const { error: checkError } = await sb.auth.signInWithPassword({ email, password: current });
+    if (checkError) return fail("A senha atual está incorreta.");
+
+    const { error: updateError } = await sb.auth.updateUser({ password: next });
+    if (updateError) return fail("Não foi possível trocar a senha: " + updateError.message);
+
+    document.getElementById("formMyPassword").reset();
+    closeModal("modalMyPassword");
+    showToast("Sua senha foi alterada.");
+  } finally {
+    btn.disabled = false;
   }
 });
 
