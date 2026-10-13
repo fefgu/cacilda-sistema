@@ -1710,6 +1710,114 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
     /* Contraste: opções de caixas de seleção (fundo claro do navegador) */
     select option, select optgroup { background: #17141f; color: #ededed; }
 
+    /* Celular: nada pode ficar cortado nem por baixo do topo */
+    @media (max-width: 760px) {
+      .dashboard-kpi-grid { grid-template-columns: 1fr !important; }
+      .dashboard-kpi-grid .kpi-card:first-child { grid-column: auto !important; }
+      .kpi-card-value { overflow-wrap: anywhere; }
+      .top-bar { height: auto !important; align-items: flex-start !important; padding: 0.55rem 0.85rem !important; }
+      .top-actions { width: 100%; justify-content: flex-start !important; }
+      .filter-group { flex-wrap: wrap; width: 100%; }
+      .filter-group > *, .module-toolbar select, .module-toolbar input[type="text"], .module-toolbar input[type="search"] { max-width: 100%; }
+      .module-toolbar { flex-wrap: wrap; gap: 0.6rem; }
+      .ap-period-bar, .ap-period-nav { flex-wrap: wrap; }
+      .ap-date-filter input[type="date"] { flex: 1 1 130px; min-width: 0; }
+      .ap-period-label { min-width: 0; }
+      .btn { max-width: 100%; }
+      .card-box-header { flex-wrap: wrap; gap: 0.5rem; }
+      .card-box { min-width: 0; max-width: 100%; }
+      #view-relatorios [style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+      #view-relatorios .card-box-header .filter-group { width: 100%; }
+      /* recibo na tela do celular */
+      .receipt-title-box { flex-wrap: wrap; gap: 0.5rem; }
+      .receipt-official-title { font-size: 1.15rem; }
+      .receipt-badge-num { font-size: 0.85rem; padding: 0.35rem 0.6rem; white-space: nowrap; }
+      .receipt-data-table { display: block; overflow-x: auto; }
+      .receipt-total-highlight { flex-wrap: wrap; gap: 0.5rem; }
+      #modalReceiptViewer .modal-body { padding: 0.6rem !important; }
+    }
+
+    /* Menu lateral organizado em grupos */
+    .nav-list .nav-group-title {
+      list-style: none;
+      padding: 0.9rem 1rem 0.3rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: rgba(189, 163, 94, 0.75);
+      pointer-events: none;
+    }
+
+    /* Busca global */
+    .global-search-bar { padding: 0.6rem 1.5rem 0; position: relative; z-index: 30; }
+    .global-search-box { position: relative; max-width: 760px; }
+    .global-search-box input { width: 100%; padding: 0.6rem 0.9rem; border-radius: 12px; font-size: 0.9rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(189, 163, 94, 0.28); color: #ededed; }
+    .global-search-box input:focus { outline: none; border-color: #bda35e; box-shadow: 0 0 0 3px rgba(189, 163, 94, 0.18); }
+    .global-search-results { position: absolute; left: 0; right: 0; top: calc(100% + 6px); max-height: 70vh; overflow-y: auto; background: rgba(23, 20, 31, 0.98); border: 1px solid rgba(189, 163, 94, 0.3); border-radius: 12px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6); padding: 0.35rem; }
+    .gs-group { padding: 0.35rem 0.6rem 0.2rem; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-text); font-weight: 700; }
+    .gs-item { display: flex; flex-direction: column; width: 100%; text-align: left; background: transparent; border: none; border-radius: 8px; padding: 0.45rem 0.6rem; cursor: pointer; color: #ededed; }
+    .gs-item:hover, .gs-item.gs-active { background: rgba(189, 163, 94, 0.16); }
+    .gs-item-title { font-size: 0.88rem; font-weight: 600; }
+    .gs-item-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .gs-empty { padding: 0.9rem; color: var(--text-muted); font-size: 0.85rem; text-align: center; }
+    @media (max-width: 760px) { .global-search-bar { padding: 0.5rem 1rem 0; } }
+
+    /* Alternador Lista/Quadro/Semana (Tarefas e Agenda) */
+    .view-toggle { display: inline-flex; border: 1px solid rgba(189, 163, 94, 0.35); border-radius: 10px; overflow: hidden; }
+    .vt-btn { background: transparent; border: none; color: var(--text-muted); padding: 0.4rem 0.85rem; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+    .vt-btn.active { background: var(--accent); color: #17141f; }
+
+    /* Agenda em grade semanal (opção ao lado da lista) */
+    .agenda-grid-mode .ap-period-btn:not([data-ap-period="hoje"]) { display: none; }
+    .agenda-grid-mode .ap-date-filter { display: none; }
+    .agenda-grid-wrap { overflow-x: auto; padding-bottom: 0.5rem; }
+    .ag-grid { display: grid; grid-template-columns: 78px repeat(7, minmax(120px, 1fr)); min-width: 920px; border: 1px solid rgba(189, 163, 94, 0.18); border-radius: 12px; overflow: hidden; background: rgba(0, 0, 0, 0.18); }
+    .ag-corner, .ag-dayhead { background: rgba(189, 163, 94, 0.1); padding: 0.55rem 0.4rem; text-align: center; border-bottom: 1px solid rgba(189, 163, 94, 0.25); }
+    .ag-dayhead { display: flex; flex-direction: column; font-size: 0.78rem; color: var(--text-muted); border-left: 1px solid rgba(237, 237, 237, 0.06); }
+    .ag-dayhead strong { color: #ededed; font-size: 0.9rem; }
+    .ag-dayhead.ag-today { background: rgba(189, 163, 94, 0.28); }
+    .ag-dayhead.ag-today strong { color: var(--accent-text); }
+    .ag-hour { padding: 0.5rem 0.4rem; font-size: 0.75rem; color: var(--text-muted); text-align: right; border-top: 1px solid rgba(237, 237, 237, 0.06); }
+    .ag-cell { min-height: 46px; padding: 3px; border-top: 1px solid rgba(237, 237, 237, 0.06); border-left: 1px solid rgba(237, 237, 237, 0.06); cursor: pointer; display: flex; flex-direction: column; gap: 3px; }
+    .ag-cell:hover { background: rgba(189, 163, 94, 0.06); }
+    .ag-today-col { background: rgba(189, 163, 94, 0.05); }
+    .ag-evt { display: flex; flex-direction: column; text-align: left; gap: 1px; width: 100%; border: 1px solid transparent; border-left-width: 4px; border-radius: 7px; padding: 3px 6px; font-size: 0.75rem; line-height: 1.25; cursor: pointer; color: #ededed; background: rgba(237, 237, 237, 0.1); }
+    .ag-evt-time { font-weight: 700; font-size: 0.7rem; opacity: 0.85; }
+    .ag-evt-title { font-weight: 600; word-break: break-word; }
+    .ag-evt-who { font-size: 0.7rem; opacity: 0.8; }
+    .ag-type-aud { background: rgba(62, 193, 122, 0.18); border-left-color: #3ec17a; }
+    .ag-type-con { background: rgba(148, 113, 255, 0.2); border-left-color: #9471ff; }
+    .ag-type-man { background: rgba(239, 176, 64, 0.18); border-left-color: #efb040; }
+    .ag-type-pra { background: rgba(239, 105, 97, 0.2); border-left-color: #ef6961; }
+    .ag-type-per { background: rgba(96, 165, 250, 0.2); border-left-color: #60a5fa; }
+    .ag-type-reu { background: rgba(237, 237, 237, 0.12); border-left-color: #c9c4da; }
+    .ag-type-out { background: rgba(237, 237, 237, 0.1); border-left-color: #8d89a0; }
+    .ag-evt.ag-done { opacity: 0.6; }
+    .ag-evt.ag-done .ag-evt-title { text-decoration: line-through; }
+    .ag-evt.ag-bad { opacity: 0.5; }
+
+    /* Quadro (Kanban) de tarefas */
+    .kanban-board { display: grid; grid-template-columns: repeat(3, minmax(240px, 1fr)); gap: 1rem; align-items: start; }
+    .kanban-col { background: rgba(237, 237, 237, 0.04); border: 1px solid rgba(189, 163, 94, 0.18); border-radius: 14px; padding: 0.75rem; min-height: 180px; transition: box-shadow 0.15s ease; }
+    .kanban-col.drag-over { box-shadow: 0 0 0 2px var(--accent); }
+    .kanban-col-title { font-weight: 700; color: var(--accent-text); margin-bottom: 0.6rem; font-size: 0.92rem; }
+    .kanban-count { color: var(--text-muted); font-weight: 600; font-size: 0.8rem; }
+    .kanban-cards { display: flex; flex-direction: column; gap: 0.6rem; }
+    .kanban-card { background: rgba(0, 0, 0, 0.28); border: 1px solid rgba(237, 237, 237, 0.1); border-left: 4px solid rgba(237, 237, 237, 0.25); border-radius: 10px; padding: 0.65rem 0.75rem; cursor: grab; }
+    .kanban-card.dragging { opacity: 0.45; }
+    .kanban-card.kanban-due-late { border-left-color: #ef6961; }
+    .kanban-card.kanban-due-soon { border-left-color: #efb040; }
+    .kanban-card-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.4rem; color: #ededed; word-break: break-word; }
+    .kanban-card-meta { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--text-muted); }
+    .kanban-card-due { font-size: 0.78rem; margin-top: 0.35rem; color: var(--text-muted); }
+    .kanban-due-late .kanban-card-due { color: #f5a9a3; font-weight: 700; }
+    .kanban-due-soon .kanban-card-due { color: #f5ce8e; font-weight: 600; }
+    .kanban-card-actions { display: flex; gap: 0.35rem; margin-top: 0.5rem; }
+    .kanban-card-actions .btn-icon { flex: 1; font-size: 0.78rem; padding: 0.25rem 0.4rem; }
+    .kanban-empty { color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 1rem 0; }
+    @media (max-width: 760px) { .kanban-board { grid-template-columns: 1fr; } }
+
     /* Seção "Contrato de honorários — área e detalhes" do gerador de contratos */
     .doc-fees-title {
       font-size: 0.78rem;
@@ -1944,6 +2052,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span> Visão Geral
         </button>
       </li>
+      <li class="nav-group-title" data-group="Atendimento" aria-hidden="true">Atendimento</li>
       <li>
         <button class="nav-btn" data-target="agenda">
           <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg></span> Agenda
@@ -1959,6 +2068,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><line x1="8.5" y1="13" x2="15.5" y2="13"/><line x1="8.5" y1="17" x2="15.5" y2="17"/></svg></span> Documentos
         </button>
       </li>
+      <li class="nav-group-title" data-group="Jurídico" aria-hidden="true">Jurídico</li>
       <li>
         <button class="nav-btn" data-target="processos">
           <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4l2 2.5H19.5A1.5 1.5 0 0 1 21 9v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z"/></svg></span> Processos
@@ -1970,18 +2080,19 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         </button>
       </li>
       <li>
+        <button class="nav-btn" data-target="rpv-alvaras">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5h4a2 2 0 1 1 0 4H9.5a2 2 0 1 0 0 4H15"/></svg></span> RPV / Alvarás
+        </button>
+      </li>
+      <li>
         <button class="nav-btn" data-target="tarefas">
           <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M8 12.5l2.6 2.6L16.5 9"/></svg></span> Tarefas
         </button>
       </li>
+      <li class="nav-group-title" data-group="Financeiro" aria-hidden="true">Financeiro</li>
       <li>
         <button class="nav-btn" data-target="financeiro">
           <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6H18a2 2 0 0 1 2 2v.5"/><rect x="2.5" y="6" width="17.5" height="14" rx="2"/><path d="M15.5 13.2a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6z"/></svg></span> Financeiro
-        </button>
-      </li>
-      <li>
-        <button class="nav-btn" data-target="rpv-alvaras">
-          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5h4a2 2 0 1 1 0 4H9.5a2 2 0 1 0 0 4H15"/></svg></span> RPV / Alvarás
         </button>
       </li>
       <li>
@@ -1990,15 +2101,11 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         </button>
       </li>
       <li>
-        <button class="nav-btn" data-target="livro-caixa">
-          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5c-1.8-1.4-4.3-2-7-1.8v13c2.7-.2 5.2.4 7 1.8"/><path d="M12 6.5c1.8-1.4 4.3-2 7-1.8v13c-2.7-.2-5.2.4-7 1.8"/><line x1="12" y1="6.5" x2="12" y2="19.5"/></svg></span> Livro Caixa
-        </button>
-      </li>
-      <li>
         <button class="nav-btn" data-target="relatorios">
           <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="5"/><line x1="19" y1="20" x2="19" y2="15"/></svg></span> Relatórios Financeiros
         </button>
       </li>
+      <li class="nav-group-title" data-group="Administração" aria-hidden="true">Administração</li>
       <li>
         <button class="nav-btn" data-target="equipe">
           <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="11.5" rx="2"/><path d="M8.5 8V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2"/><line x1="3" y1="13.5" x2="21" y2="13.5"/></svg></span> Advogados &amp; Equipe
@@ -2080,6 +2187,14 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         <button class="btn btn-sm btn-secondary" id="btnLogout" title="Sair do sistema">Sair</button>
       </div>
     </header>
+
+    <!-- Busca global: acha cliente, processo, evento, tarefa, cobrança... -->
+    <div class="global-search-bar">
+      <div class="global-search-box">
+        <input type="search" id="globalSearch" placeholder="Buscar em todo o sistema: cliente, CPF, nº do processo, evento, tarefa, cobrança...  (atalho: tecla /)" autocomplete="off" aria-label="Busca global">
+        <div id="globalSearchResults" class="global-search-results" style="display:none;"></div>
+      </div>
+    </div>
 
     <!-- Content Pages -->
     <div class="content-area">
@@ -2233,6 +2348,10 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         </div>
 
         <div class="ap-period-bar">
+          <div class="view-toggle" id="agendaViewToggle" role="group" aria-label="Modo de exibição da agenda">
+            <button type="button" class="vt-btn active" data-agenda-view="lista">Lista</button>
+            <button type="button" class="vt-btn" data-agenda-view="grade">Semana</button>
+          </div>
           <div class="ap-period-group">
             <button type="button" class="ap-period-btn" data-ap-period="hoje">Hoje</button>
             <button type="button" class="ap-period-btn" data-ap-period="semana">Esta semana</button>
@@ -2244,7 +2363,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <span class="ap-period-label" id="apPeriodLabel"></span>
             <button type="button" class="ap-arrow" id="apNext" aria-label="Próximo">&#8250;</button>
           </div>
-          <div class="ap-period-nav" style="gap:0.4rem;">
+          <div class="ap-period-nav ap-date-filter" style="gap:0.4rem;">
             <label for="apDateFrom" style="font-size:0.8rem; color:var(--text-muted);">Data</label>
             <input type="date" class="form-control-inline" id="apDateFrom" aria-label="Data inicial (ou data única)">
             <label for="apDateTo" style="font-size:0.8rem; color:var(--text-muted);">até</label>
@@ -2253,7 +2372,9 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           </div>
         </div>
 
-        <div class="table-responsive">
+        <div id="agendaGrid" class="agenda-grid-wrap" style="display:none;"></div>
+
+        <div class="table-responsive" id="agendaListWrap">
           <table class="data-table" id="tableAppointments">
             <thead>
               <tr>
@@ -2382,6 +2503,21 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
               <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #dcd7e3; padding-top:0.85rem; margin-top:0.5rem;">
                 <span class="badge badge-warn" style="font-size:0.75rem;">Gratuidade de Justiça</span>
                 <span style="color:var(--brand-gold-dark); font-weight:700; font-size:0.85rem;">Emitir Declaração &rarr;</span>
+              </div>
+            </div>
+
+            <!-- 4. Termo de Consentimento LGPD -->
+            <div class="doc-model-card" onclick="startDocGeneration('lgpd')">
+              <div>
+                <div class="doc-model-icon">🔒</div>
+                <h3 class="doc-model-title">Termo de Consentimento (LGPD)</h3>
+                <p class="doc-model-desc">
+                  Autorização do cliente para o tratamento dos dados pessoais, conforme a Lei nº 13.709/2018: dados tratados, finalidades, compartilhamento, guarda, direitos do titular e contato do escritório.
+                </p>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #dcd7e3; padding-top:0.85rem; margin-top:0.5rem;">
+                <span class="badge badge-neutral" style="font-size:0.75rem;">Proteção de Dados</span>
+                <span style="color:var(--brand-gold-dark); font-weight:700; font-size:0.85rem;">Emitir Termo &rarr;</span>
               </div>
             </div>
           </div>
@@ -2785,6 +2921,21 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
                     ⚖ <strong>Modelo Padrão da Banca:</strong> O documento utilizará a redação formal padrão de declaração de hipossuficiência econômica fundada no <strong>art. 99, § 3º do CPC</strong> e <strong>art. 5º, LXXIV da CF/88</strong>. Não são necessários dados adicionais além da qualificação do declarante.
                   </div>
                 </div>
+
+                <!-- 3.D CAMPOS ESPECÍFICOS: TERMO DE CONSENTIMENTO LGPD -->
+                <div id="docFieldsLgpd" style="display:none;">
+                  <div class="form-field" style="margin-bottom:0.9rem;">
+                    <label for="docLgpdPurposes">Finalidades do tratamento dos dados</label>
+                    <textarea id="docLgpdPurposes" rows="4"></textarea>
+                    <small class="doc-fees-hint" style="margin:0.25rem 0 0;">Já vem com o texto padrão do escritório. Ajuste se este cliente tiver uma situação especial.</small>
+                  </div>
+                  <div class="form-field">
+                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-weight:600;">
+                      <input type="checkbox" id="docLgpdComms" style="width:auto;" checked>
+                      Autoriza o contato por telefone, e-mail ou mensagem para informar andamentos, prazos e cobranças
+                    </label>
+                  </div>
+                </div>
               </div>
 
               <!-- BOTÕES DO FORMULÁRIO -->
@@ -3041,14 +3192,12 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
               <option value="Baixa">Baixa</option>
             </select>
 
-            <div style="display:inline-flex; align-items:center; gap:0.4rem; margin-left:0.5rem; background:var(--surface); border:1px solid var(--border); padding:0.25rem 0.6rem; border-radius:6px;">
-              <span style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">👤 Ver como:</span>
-              <select class="form-control-inline" id="selectUserPerspective" style="border:none; padding:0.25rem; font-size:0.825rem;">
-                <option value="Secretaria">Secretaria</option>
-              </select>
-              <button class="btn btn-sm btn-secondary" id="btnFilterMyTasks" style="font-size:0.75rem; padding:0.3rem 0.65rem;">
-                🎯 Minhas Tarefas
-              </button>
+            <button class="btn btn-sm btn-secondary" id="btnFilterMyTasks" title="Mostra só as tarefas em que você é o responsável">
+              Minhas tarefas
+            </button>
+            <div class="view-toggle" id="taskViewToggle" role="group" aria-label="Modo de exibição das tarefas">
+              <button type="button" class="vt-btn active" data-task-view="lista">Lista</button>
+              <button type="button" class="vt-btn" data-task-view="quadro">Quadro</button>
             </div>
           </div>
 
@@ -3057,7 +3206,22 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           </button>
         </div>
 
-        <div class="table-responsive">
+        <div id="taskBoard" class="kanban-board" style="display:none;">
+          <div class="kanban-col" data-status="Pendente">
+            <div class="kanban-col-title">Pendente <span class="kanban-count"></span></div>
+            <div class="kanban-cards"></div>
+          </div>
+          <div class="kanban-col" data-status="Em andamento">
+            <div class="kanban-col-title">Em andamento <span class="kanban-count"></span></div>
+            <div class="kanban-cards"></div>
+          </div>
+          <div class="kanban-col" data-status="Concluída">
+            <div class="kanban-col-title">Concluída <span class="kanban-count"></span></div>
+            <div class="kanban-cards"></div>
+          </div>
+        </div>
+
+        <div class="table-responsive" id="taskListWrap">
           <table class="data-table" id="tableTasks">
             <thead>
               <tr>
@@ -3159,9 +3323,74 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             </table>
           </div>
         </div>
+
+        <!-- CAIXA: tudo que entrou e saiu, num extrato só -->
+        <div class="card-box" id="cashCard" style="margin-top:1.5rem;">
+          <div class="card-box-header">
+            <h2 class="card-box-title">Caixa — entradas e saídas</h2>
+            <button class="btn btn-sm btn-primary" id="btnOpenNewCashbookModal">+ Lançamento avulso</button>
+          </div>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin:-0.25rem 0 0.9rem; line-height:1.5;">
+            Extrato único do escritório: os honorários <strong>recebidos</strong> (pela baixa), as despesas <strong>pagas</strong> e os
+            <strong>lançamentos avulsos</strong> (retirada de sócio, caixinha...). Só os avulsos podem ser editados aqui; os demais
+            vêm de Contas a Receber e Contas a Pagar.
+          </p>
+          <div class="dashboard-kpi-grid" style="margin-bottom:1rem;">
+            <div class="kpi-card">
+              <div class="kpi-card-header">Entradas no período</div>
+              <div class="kpi-card-value" id="kpiCashbookIn" style="color:var(--success);">R$ 0,00</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-header">Saídas no período</div>
+              <div class="kpi-card-value" id="kpiCashbookOut" style="color:var(--danger);">R$ 0,00</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-header">Saldo do período</div>
+              <div class="kpi-card-value" id="kpiCashbookBalance">R$ 0,00</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-header">Saldo total em caixa</div>
+              <div class="kpi-card-value" id="kpiCashbookTotal">R$ 0,00</div>
+              <div class="kpi-card-sub">Tudo que entrou menos tudo que saiu</div>
+            </div>
+          </div>
+          <div class="module-toolbar">
+            <div class="filter-group">
+              <input type="text" class="form-control-inline" id="searchCashbook" placeholder="Buscar por descrição, cliente ou categoria..." autocomplete="off" style="min-width:260px;">
+              <select class="form-control-inline" id="cashPeriod" aria-label="Período do caixa">
+                <option value="mes">Este mês</option>
+                <option value="mes-anterior">Mês passado</option>
+                <option value="90">Últimos 90 dias</option>
+                <option value="ano">Este ano</option>
+                <option value="tudo">Tudo</option>
+              </select>
+              <select class="form-control-inline" id="cashKind" aria-label="Tipo de movimento">
+                <option value="">Entradas e saídas</option>
+                <option value="entrada">Só entradas</option>
+                <option value="saida">Só saídas</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" id="tableCashbook">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Origem</th>
+                  <th>Descrição</th>
+                  <th>Entrada</th>
+                  <th>Saída</th>
+                  <th>Saldo</th>
+                  <th style="text-align:right;">Ações</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
-      <!-- RPV / ALVARÁS -->
+      <!-- RPV / ALVARÁS (o Caixa integrado fica no fim da tela de Financeiro) -->
       <section id="view-rpv-alvaras" class="view-pane">
         <div class="dashboard-kpi-grid">
           <div class="kpi-card">
@@ -3289,56 +3518,6 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         </div>
       </section>
 
-      <!-- NOVO: LIVRO CAIXA (lançamentos manuais avulsos) -->
-      <section id="view-livro-caixa" class="view-pane">
-        <div class="dashboard-kpi-grid" style="margin-bottom:1.5rem;">
-          <div class="kpi-card">
-            <div class="kpi-card-header">Total de Entradas</div>
-            <div class="kpi-card-value" id="kpiCashbookIn" style="color:var(--success);">R$ 0,00</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-card-header">Total de Saídas</div>
-            <div class="kpi-card-value" id="kpiCashbookOut" style="color:var(--danger);">R$ 0,00</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-card-header">Saldo</div>
-            <div class="kpi-card-value" id="kpiCashbookBalance">R$ 0,00</div>
-          </div>
-        </div>
-
-        <div class="card-box">
-          <div class="card-box-header">
-            <h2 class="card-box-title">📒 Livro Caixa — Lançamentos Avulsos</h2>
-            <button class="btn btn-primary" id="btnOpenNewCashbookModal">+ Novo Lançamento</button>
-          </div>
-          <div style="font-size:0.8rem; color:var(--text-muted); margin:-0.5rem 0 0.75rem;">
-            Use aqui só o que NÃO vem de um Recebível nem de um Pagável — ex: retirada de sócio, despesa avulsa de caixinha.
-          </div>
-
-          <div class="module-toolbar">
-            <div class="filter-group">
-              <input type="text" class="form-control-inline" id="searchCashbook" placeholder="Buscar por descrição ou categoria..." autocomplete="off" style="min-width:260px;">
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table class="data-table" id="tableCashbook">
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Tipo</th>
-                  <th>Descrição</th>
-                  <th>Categoria</th>
-                  <th>Valor</th>
-                  <th>Saldo Acumulado</th>
-                  <th style="text-align:right;">Ações</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
       <!-- 8. RELATÓRIOS FINANCEIROS EXPANDIDOS -->
       <section id="view-relatorios" class="view-pane">
         <!-- Toolbar & Filter Row -->
@@ -3380,6 +3559,38 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
               Exibindo dados consolidados
             </div>
           </div>
+        </div>
+
+        <!-- DESEMPENHO POR ADVOGADO + META MENSAL -->
+        <div class="card-box" style="margin-bottom:1.5rem;" id="lawyerGoalsCard">
+          <div class="card-box-header" style="flex-wrap:wrap; gap:0.5rem;">
+            <div>
+              <h2 class="card-box-title">Desempenho por advogado e meta do mês</h2>
+              <p style="font-size:0.8rem; color:var(--text-muted); margin:0.25rem 0 0;" id="lawyerGoalsSubtitle"></p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" id="tableLawyerGoals">
+              <thead>
+                <tr>
+                  <th>Advogado</th>
+                  <th>Processos ativos</th>
+                  <th>Ganhos / Perdidos</th>
+                  <th>Eventos no mês</th>
+                  <th>Recebido no mês</th>
+                  <th>A receber (aberto)</th>
+                  <th style="min-width:150px;">Meta do mês (R$)</th>
+                  <th style="min-width:180px;">Atingimento</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot></tfoot>
+            </table>
+          </div>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.6rem; line-height:1.5;">
+            A meta vale para o mês do filtro acima e continua nos meses seguintes até você mudá-la. Digite o valor e saia do campo para salvar; deixe em branco para remover.
+            "Recebido no mês" conta os honorários baixados no mês, pelo advogado responsável da cobrança.
+          </p>
         </div>
 
         <!-- CONTRATOS FECHADOS (histórico de serviços, com filtros) -->
@@ -3794,6 +4005,18 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
               </span>
             </div>
 
+            <div class="form-field" style="margin-bottom:1.5rem;">
+              <label for="cfgCollectionTemplate">Modelo da mensagem de cobrança</label>
+              <textarea id="cfgCollectionTemplate" rows="7"></textarea>
+              <span style="font-size:0.75rem; color:var(--text-muted); margin-top:2px; line-height:1.5;">
+                Texto usado no botão <strong>Cobrar</strong> das Contas a Receber (você copia e envia pelo meio que preferir).
+                Campos que o sistema preenche sozinho:
+                <code>{cliente}</code> <code>{descricao}</code> <code>{valor}</code> <code>{vencimento}</code>
+                <code>{situacao}</code> <code>{escritorio}</code> <code>{telefone}</code>.
+              </span>
+              <button type="button" class="btn btn-sm btn-secondary" id="btnRestoreCollectionTemplate" style="align-self:flex-start; margin-top:0.5rem;">Restaurar modelo padrão</button>
+            </div>
+
             <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #dcd7e3; padding-top:1rem;">
               <span id="cfgSaveNotice" style="font-size:0.85rem; color:var(--success); display:none; font-weight:700;">
                 ✔ Configurações oficiais salvas com sucesso!
@@ -3959,6 +4182,30 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
 
     </div>
   </main>
+</div>
+
+<!-- MODAL: MENSAGEM DE COBRANÇA (copiar) -->
+<div class="modal-backdrop" id="modalCollection">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Mensagem de cobrança</h3>
+      <button class="modal-close-btn" data-close="modalCollection">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="collectionInfo" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.75rem; line-height:1.4;"></p>
+      <div class="form-field">
+        <label for="collectionText">Texto (pode ajustar antes de copiar)</label>
+        <textarea id="collectionText" rows="11"></textarea>
+      </div>
+      <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">
+        O modelo pode ser alterado em <strong>Configurações → Modelo da mensagem de cobrança</strong>.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-close="modalCollection">Fechar</button>
+      <button type="button" class="btn btn-primary" id="btnCopyCollection">Copiar mensagem</button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL: TROCAR SENHA DE UM USUÁRIO (administrador) -->
@@ -4731,6 +4978,11 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           </div>
         </div>
 
+        <div id="recReceivedNote" style="display:none; font-size:0.8rem; color:var(--warning); margin-bottom:0.75rem; line-height:1.4;"></div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin:-0.25rem 0 0.75rem;">
+          Para registrar um recebimento use o botão <strong>Baixar</strong> na lista: ele grava a data e emite o recibo.
+        </div>
+
         <!-- RATEIO DE HONORÁRIOS: DRA. CACILDA OU PARCERIA -->
         <div style="background:#f8fafc; border:1px solid var(--border); border-radius:6px; padding:0.9rem;">
           <div class="form-field" style="margin-bottom:0.6rem;">
@@ -4872,7 +5124,6 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         <span>🧾</span> Recibo de Honorários Advocatícios
       </h3>
       <div style="display:flex; align-items:center; gap:0.5rem;">
-        <button class="btn btn-sm btn-gold" onclick="printReceiptFromModal()">🖨 Imprimir Recibo</button>
         <button class="modal-close-btn" data-close="modalReceiptViewer">&times;</button>
       </div>
     </div>
@@ -5009,6 +5260,10 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <option value="Pago">Pago</option>
             <option value="Vencido">Vencido</option>
           </select>
+        </div>
+        <div class="form-field" id="payPaidDateField" style="display:none;">
+          <label for="payPaidDate">Data do pagamento *</label>
+          <input type="date" id="payPaidDate">
         </div>
       </div>
       <div class="modal-footer">
@@ -5174,7 +5429,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
 <div class="modal-backdrop" id="modalCashbook">
   <div class="modal-card">
     <div class="modal-header">
-      <h3 id="modalCashbookTitle">Novo Lançamento no Livro Caixa</h3>
+      <h3 id="modalCashbookTitle">Novo lançamento avulso no Caixa</h3>
       <button class="modal-close-btn" data-close="modalCashbook">&times;</button>
     </div>
     <form id="formCashbook">
@@ -5244,7 +5499,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261013-000630";
+const APP_VERSION = "20261013-005728";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -5324,6 +5579,18 @@ function getOffsetDate(daysOffset) {
   return `${year}-${month}-${day}`;
 }
 
+// Mensagem de cobrança padrão (editável em Configurações). Os campos entre
+// chaves são preenchidos pelo sistema ao clicar em "Cobrar".
+const DEFAULT_COLLECTION_TEMPLATE =
+`Olá, {cliente}! Tudo bem?
+
+Aqui é do escritório {escritorio}. Passamos para lembrar do pagamento referente a "{descricao}", no valor de {valor}, com vencimento em {vencimento}{situacao}.
+
+Caso já tenha efetuado o pagamento, por favor desconsidere esta mensagem e nos envie o comprovante. Qualquer dúvida, estamos à disposição pelo telefone {telefone}.
+
+Atenciosamente,
+{escritorio}`;
+
 const DEFAULT_OFFICE_SETTINGS = {
   name: "Cacilda Souza Advocacia Especializada",
   oab: "OAB/MG 159.859",
@@ -5368,8 +5635,34 @@ const AppState = {
     this.cashbookEntries = await fetchCashbookEntries();
     this.rpvAlvaras = await fetchRpvAlvaras();
     this.inssProcesses = await fetchInssProcesses();
+    this.team = await fetchTeamMembers();
+    this.monthlyGoals = await fetchMonthlyGoals();
   }
 };
+
+// Equipe com login (para escolher o responsável de uma tarefa). Vem da função
+// list_team_members() do banco; se ela ainda não existe, volta lista vazia e
+// a tela usa a equipe cadastrada.
+async function fetchTeamMembers() {
+  try {
+    const { data, error } = await sb.rpc("list_team_members");
+    if (error || !Array.isArray(data)) return [];
+    return data.map(m => ({ id: m.id, fullName: m.full_name, role: m.role }));
+  } catch (e) {
+    return [];
+  }
+}
+
+// Metas mensais (por advogado e do escritório). Vazio se a tabela não existe.
+async function fetchMonthlyGoals() {
+  try {
+    const { data, error } = await sb.from("monthly_goals").select("*");
+    if (error || !Array.isArray(data)) return [];
+    return data.map(g => ({ id: g.id, lawyerId: g.lawyer_id || null, month: g.month, amount: Number(g.amount || 0) }));
+  } catch (e) {
+    return [];
+  }
+}
 
 // --- UTILITIES ---
 function formatBRL(val) {
@@ -5534,7 +5827,8 @@ function renderOverview() {
   const closedTotal = wonCases + lostCases;
   const winRate = closedTotal > 0 ? Math.round((wonCases / closedTotal) * 100) : 0;
   document.getElementById("kpiSuccessRate").textContent = `${winRate}%`;
-  document.getElementById("kpiSuccessRateSub").textContent = `${wonCases} ganhos / ${closedTotal} finalizados`;
+  document.getElementById("kpiSuccessRateSub").textContent =
+    `${wonCases} ${wonCases === 1 ? "ganho" : "ganhos"} / ${closedTotal} ${closedTotal === 1 ? "finalizado" : "finalizados"}`;
 
   // NOVOS KPIS: Tarefas pendentes & Recebíveis gerados este mês
   const pendingTasksList = AppState.tasks.filter(t => t.status !== "Concluída");
@@ -5824,6 +6118,7 @@ function apShift(dir) {
 document.querySelectorAll("[data-ap-period]").forEach(b => {
   b.addEventListener("click", () => {
     apPeriod = b.dataset.apPeriod;
+    if (getAgendaView() === "grade") apPeriod = "semana"; // a grade é sempre uma semana
     apAnchor = new Date();
     document.getElementById("apDateFrom").value = "";
     document.getElementById("apDateTo").value = "";
@@ -5846,11 +6141,127 @@ document.getElementById("apDateClear").addEventListener("click", () => {
 document.getElementById("apPrev").addEventListener("click", () => apShift(-1));
 document.getElementById("apNext").addEventListener("click", () => apShift(1));
 
+// --- AGENDA: lista (padrão) ou semana em grade ---------------------------
+function getAgendaView() {
+  try { return localStorage.getItem("agendaView") === "grade" ? "grade" : "lista"; } catch (e) { return "lista"; }
+}
+function setAgendaView(v) {
+  try { localStorage.setItem("agendaView", v); } catch (e) { /* vale só nesta sessão */ }
+  if (v === "grade") {
+    // a grade mostra sempre a semana do dia escolhido
+    apPeriod = "semana";
+    document.getElementById("apDateFrom").value = "";
+    document.getElementById("apDateTo").value = "";
+  }
+  renderAppointments();
+}
+document.querySelectorAll("#agendaViewToggle .vt-btn").forEach(b => {
+  b.addEventListener("click", () => setAgendaView(b.dataset.agendaView));
+});
+
+const AGENDA_GRID_FIRST_HOUR = 7;
+const AGENDA_GRID_LAST_HOUR = 19;
+
+function agendaTypeClass(type) {
+  const map = { "Audiência": "aud", "Consulta": "con", "Manifestação": "man", "Prazo a cumprir": "pra", "Perícia": "per", "Reunião": "reu" };
+  return "ag-type-" + (map[type] || "out");
+}
+
+window.agendaNewAt = function(date, hour) {
+  document.getElementById("btnOpenNewAppointmentModal").click();
+  document.getElementById("appDate").value = date;
+  if (hour) document.getElementById("appTime").value = hour;
+};
+
+function renderAgendaGrid() {
+  const wrap = document.getElementById("agendaGrid");
+  if (apPeriod !== "semana") { apPeriod = "semana"; apUpdatePeriodBar(); }
+  const range = apPeriodRange(); // semana (domingo a sábado)
+  const start = new Date(range.from + "T00:00:00");
+  const days = Array.from({ length: 7 }, (_, i) => { const d = new Date(start); d.setDate(start.getDate() + i); return d; });
+  const dayKeys = days.map(apDateKeyLocal);
+  const todayKey = apDateKeyLocal(new Date());
+
+  const filterType = document.getElementById("filterEventType")?.value || "";
+  const filterLawyer = document.getElementById("filterAppointmentLawyer")?.value || "";
+  const filterStatus = document.getElementById("filterAppointmentStatus")?.value || "";
+  const searchTerm = document.getElementById("searchAppointments")?.value || "";
+
+  const events = AppState.appointments.filter(a => {
+    const itemType = a.eventType || a.type || "Consulta";
+    if (filterType && itemType !== filterType) return false;
+    if (filterLawyer && String(a.lawyerId) !== filterLawyer) return false;
+    if (filterStatus && a.status !== filterStatus) return false;
+    if (!matchesSearch(searchTerm, a.client, a.clientName, a.title, a.linkedCase, a.notes, a.location, a.court)) return false;
+    return dayKeys.includes(a.date);
+  });
+
+  const bucketOf = (a) => {
+    const h = parseInt((a.time || "00:00").slice(0, 2), 10);
+    if (isNaN(h) || h < AGENDA_GRID_FIRST_HOUR) return "early";
+    if (h > AGENDA_GRID_LAST_HOUR) return "late";
+    return h;
+  };
+  const buckets = ["early"];
+  for (let h = AGENDA_GRID_FIRST_HOUR; h <= AGENDA_GRID_LAST_HOUR; h++) buckets.push(h);
+  buckets.push("late");
+  const labelOf = (b) => b === "early" ? `Antes das ${AGENDA_GRID_FIRST_HOUR}h` : b === "late" ? `Depois das ${AGENDA_GRID_LAST_HOUR}h` : `${String(b).padStart(2, "0")}:00`;
+
+  const dowNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  let html = `<div class="ag-grid"><div class="ag-corner"></div>`;
+  days.forEach((d, i) => {
+    const isToday = dayKeys[i] === todayKey;
+    html += `<div class="ag-dayhead ${isToday ? "ag-today" : ""}"><span>${dowNames[i]}</span><strong>${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}</strong></div>`;
+  });
+
+  buckets.forEach(b => {
+    const rowEvents = events.filter(a => bucketOf(a) === b);
+    // as linhas "antes/depois" só aparecem se tiverem evento
+    if ((b === "early" || b === "late") && rowEvents.length === 0) return;
+    html += `<div class="ag-hour">${labelOf(b)}</div>`;
+    dayKeys.forEach((key, i) => {
+      const cellEvents = rowEvents.filter(a => a.date === key).sort((x, y) => (x.time || "").localeCompare(y.time || ""));
+      const hourStr = typeof b === "number" ? `${String(b).padStart(2, "0")}:00` : "";
+      html += `<div class="ag-cell ${key === todayKey ? "ag-today-col" : ""}" onclick="agendaNewAt('${key}', '${hourStr}')" title="Clique para criar um evento neste horário">`;
+      cellEvents.forEach(a => {
+        const type = a.eventType || a.type || "Consulta";
+        const done = ["Realizado", "Realizada", "Cumprido"].includes(a.status);
+        const bad = ["Cancelado", "Cancelada", "Não compareceu"].includes(a.status);
+        const who = a.client || a.clientName || "";
+        html += `<button type="button" class="ag-evt ${agendaTypeClass(type)} ${done ? "ag-done" : ""} ${bad ? "ag-bad" : ""}"
+                   onclick="event.stopPropagation(); editAppointment('${a.id}')"
+                   title="${esc(type)} — ${esc(a.title || "")}${who ? " — " + esc(who) : ""} (${esc(a.status || "")})">
+                   <span class="ag-evt-time">${esc((a.time || "").slice(0, 5))}</span>
+                   <span class="ag-evt-title">${esc(a.title || type)}</span>
+                   ${who ? `<span class="ag-evt-who">${esc(who)}</span>` : ""}
+                 </button>`;
+      });
+      html += `</div>`;
+    });
+  });
+  html += `</div>`;
+  if (events.length === 0) {
+    html += `<div class="kanban-empty" style="margin-top:0.75rem;">Nenhum evento nesta semana com estes filtros. Clique em um horário para criar.</div>`;
+  }
+  wrap.innerHTML = html;
+}
+
 function renderAppointments() {
   const tbody = document.querySelector("#tableAppointments tbody");
   if (!tbody) return;
   tbody.innerHTML = "";
   apUpdatePeriodBar();
+
+  // Modo "Semana" (grade): usa os mesmos filtros e a mesma busca da lista.
+  const gridMode = getAgendaView() === "grade";
+  document.getElementById("agendaGrid").style.display = gridMode ? "" : "none";
+  document.getElementById("agendaListWrap").style.display = gridMode ? "none" : "";
+  document.querySelector("#view-agenda .ap-period-bar").classList.toggle("agenda-grid-mode", gridMode);
+  document.querySelectorAll("#agendaViewToggle .vt-btn").forEach(b => b.classList.toggle("active", b.dataset.agendaView === (gridMode ? "grade" : "lista")));
+  if (gridMode) {
+    renderAgendaGrid();
+    return;
+  }
 
   const filterType = document.getElementById("filterEventType")?.value || "";
   const filterLawyer = document.getElementById("filterAppointmentLawyer")?.value || "";
@@ -6338,8 +6749,9 @@ function renderFinancial() {
       <td><span class="badge-status ${badge}">${r.status}</span></td>
       <td style="text-align:right;">
         <div class="actions-cell" style="justify-content:flex-end;">
-          ${r.status !== 'Recebido' 
-            ? `<button class="btn-icon" style="background:#15803d; color:#fff; border-color:#15803d; font-weight:600;" title="Baixar com Forma de Pagamento" onclick="openBaixaModal('${r.id}')">✔ Baixar</button>`
+          ${r.status !== 'Recebido'
+            ? `<button class="btn-icon" style="background:#15803d; color:#fff; border-color:#15803d; font-weight:600;" title="Baixar com Forma de Pagamento" onclick="openBaixaModal('${r.id}')">✔ Baixar</button>
+               <button class="btn-icon" title="Gerar a mensagem de cobrança para copiar" onclick="openCollectionMessage('${r.id}')">Cobrar</button>`
             : `<button class="btn-icon" title="Visualizar Recibo" onclick="viewReceiptByReceivableId('${r.id}')">🧾 Recibo</button>`}
           <button class="btn-icon" title="Editar" onclick="editReceivable('${r.id}')">✏</button>
           <button class="btn-icon" title="Excluir" onclick="deleteReceivable('${r.id}')">🗑</button>
@@ -6380,6 +6792,10 @@ function renderFinancial() {
     `;
     tbodyPay.appendChild(tr);
   });
+
+  // o Caixa (extrato) é montado a partir das cobranças recebidas, despesas
+  // pagas e lançamentos avulsos: atualiza junto
+  if (typeof renderCashbook === "function") renderCashbook();
 }
 
 function renderLawyers() {
@@ -6545,38 +6961,41 @@ function populateLawyerSelects() {
     if (currentVal) sel.value = currentVal;
   });
 
-  // Task assignee selects (lawyers + Secretaria)
-  const taskSelects = [
-    document.getElementById("filterTaskAssignee"),
-    document.getElementById("taskAssignee"),
-    document.getElementById("selectUserPerspective")
-  ];
+  // Responsáveis de tarefa: TODOS os usuários do sistema (equipe com login)
+  // + nomes que já aparecem em tarefas antigas (ex.: "Secretaria") para nada
+  // ficar sem responsável na tela. A lista vem de list_team_members().
+  populateTaskAssigneeSelects();
+}
 
-  taskSelects.forEach(sel => {
+function getTaskAssigneeNames(extra) {
+  const names = [];
+  const add = (n) => { if (n && !names.includes(n)) names.push(n); };
+  (AppState.team || []).forEach(m => add(m.fullName));
+  if (names.length === 0) {
+    // migração 0030 ainda não rodada: usa a equipe cadastrada (advogados etc.)
+    AppState.lawyers.forEach(l => add(l.name));
+    add("Secretaria");
+  }
+  add(AppState.officeSettings && AppState.officeSettings.boletoAssignee);
+  AppState.tasks.forEach(t => add(t.assignee));
+  (extra || []).forEach(add);
+  return names;
+}
+
+function populateTaskAssigneeSelects() {
+  const filterSel = document.getElementById("filterTaskAssignee");
+  const formSel = document.getElementById("taskAssignee");
+  const names = getTaskAssigneeNames();
+  [filterSel, formSel].forEach(sel => {
     if (!sel) return;
     const isFilter = sel.id === "filterTaskAssignee";
     const currentVal = sel.value;
-    sel.innerHTML = isFilter ? '<option value="">Todos os Responsáveis</option>' : '';
-    
-    // Add Secretaria e Responsável por Boletos
-    const optSec = document.createElement("option");
-    optSec.value = "Secretaria";
-    optSec.textContent = "Secretaria Geral / Apoio";
-    sel.appendChild(optSec);
-
-    const boletoAssigneeName = (AppState.officeSettings && AppState.officeSettings.boletoAssignee) || "José Guilherme Neto";
-    const optBoleto = document.createElement("option");
-    optBoleto.value = boletoAssigneeName;
-    optBoleto.textContent = `${boletoAssigneeName} (Financeiro / Boletos)`;
-    sel.appendChild(optBoleto);
-
-    AppState.lawyers.forEach(l => {
-      if (l.name !== boletoAssigneeName) {
-        const opt = document.createElement("option");
-        opt.value = l.name;
-        opt.textContent = `${l.name} (${l.oab})`;
-        sel.appendChild(opt);
-      }
+    sel.innerHTML = isFilter ? '<option value="">Todos os Responsáveis</option>' : "";
+    names.forEach(n => {
+      const opt = document.createElement("option");
+      opt.value = n;
+      opt.textContent = n;
+      sel.appendChild(opt);
     });
     if (currentVal) sel.value = currentVal;
   });
@@ -6644,6 +7063,26 @@ document.getElementById("formAppointment").addEventListener("submit", async (e) 
     status: document.getElementById("appStatus").value,
     notes: document.getElementById("appNotes").value.trim()
   };
+
+  // Avisos (não bloqueiam): data que já passou e choque de horário.
+  // (só ao criar ou ao mudar data/hora/advogado: editar uma observação de um
+  // prazo antigo não deve ficar pedindo confirmação)
+  const prevApp = id ? AppState.appointments.find(a => a.id === id) : null;
+  const slotChanged = !prevApp || prevApp.date !== formData.date ||
+    (prevApp.time || "").slice(0, 5) !== (formData.time || "").slice(0, 5) ||
+    String(prevApp.lawyerId || "") !== String(formData.lawyerId || "");
+  const closedStatuses = ["Realizado", "Cumprido", "Cancelado", "Não compareceu"];
+  if (slotChanged && formData.date && formData.date < getOffsetDate(0) && !closedStatuses.includes(formData.status)) {
+    if (!confirm(`A data ${formatDateBR(formData.date)} já passou e o evento está como "${formData.status}".\n\nSalvar mesmo assim?`)) return;
+  }
+  if (slotChanged && formData.date && formData.time) {
+    const clash = AppState.appointments.find(a =>
+      a.id !== id && a.date === formData.date &&
+      (a.time || "").slice(0, 5) === formData.time.slice(0, 5) &&
+      String(a.lawyerId || "") === String(formData.lawyerId || "") &&
+      a.status !== "Cancelado");
+    if (clash && !confirm(`Já existe "${clash.title || clash.eventType}" às ${formData.time.slice(0, 5)} para este advogado em ${formatDateBR(formData.date)}.\n\nSalvar mesmo assim?`)) return;
+  }
 
   const payload = mapAppointmentToDb(formData);
   if (submitBtnApp) submitBtnApp.disabled = true;
@@ -6842,6 +7281,19 @@ document.getElementById("formClient").addEventListener("submit", async (e) => {
     ...pjData,
     ...menorData
   };
+
+  // Aviso de possível duplicidade: mesmo nome (ignora acento, maiúsculas e
+  // espaços) já cadastrado. Não bloqueia (podem ser homônimos), mas pergunta.
+  const nameKey = (s) => searchNorm(s).replace(/[^a-z0-9]+/g, " ").trim();
+  const sameName = AppState.clients.find(c => c.id !== id && nameKey(c.name) === nameKey(clientName));
+  if (sameName) {
+    const goOn = confirm(
+      `Já existe um cliente com este nome: "${sameName.name}"` +
+      `${sameName.doc ? " (CPF/CNPJ " + sameName.doc + ")" : ""}.\n\n` +
+      "Cadastrar outro mesmo assim? (Cancele se for a mesma pessoa e use o cadastro existente.)"
+    );
+    if (!goOn) return;
+  }
 
   const clientPayload = mapClientToDb(clientFormData);
   let newObj;
@@ -7154,6 +7606,10 @@ window.viewClientDetail = function(id) {
       <div style="display:flex; align-items:center; gap:0.6rem;">
         <span class="badge ${badgeColor}" style="font-size:0.85rem; font-weight:700;">${typeTitle}</span>
         <span class="badge badge-neutral" style="font-size:0.8rem;">Cadastro em: ${formatDateBR(c.created)}</span>
+        ${c.lgpdConsentAt
+          ? `<span class="badge badge-success" style="font-size:0.8rem;" title="Termo de consentimento LGPD assinado">LGPD: termo em ${formatDateBR(c.lgpdConsentAt)}</span>`
+          : `<button type="button" class="badge badge-warn" style="font-size:0.8rem; cursor:pointer; border:none;" title="Gerar o Termo de Consentimento para este cliente"
+               onclick="closeModal('modalClientDetail'); switchTab('documentos'); startDocGeneration('lgpd'); setTimeout(() => { document.getElementById('docClientSelect').value='${c.id}'; document.getElementById('docClientSelect').dispatchEvent(new Event('change')); }, 120);">LGPD: termo pendente</button>`}
       </div>
       <button class="btn btn-sm btn-gold" onclick="closeModal('modalClientDetail'); switchTab('documentos'); startDocGeneration('procuracao'); setTimeout(() => { document.getElementById('docClientSelect').value='${c.id}'; document.getElementById('docClientSelect').dispatchEvent(new Event('change')); }, 120);">
         📄 Gerar Procuração / Contrato
@@ -7267,6 +7723,16 @@ document.getElementById("formCase").addEventListener("submit", async (e) => {
     sentenceOutcome: document.getElementById("caseSentenceOutcome").value || null,
     sentenceText: document.getElementById("caseSentenceText").value.trim() || null
   };
+
+  // Número de processo repetido: bloqueia (é o identificador do processo).
+  const numKey = (s) => String(s || "").replace(/\D/g, "") || String(s || "").trim().toLowerCase();
+  const sameNumber = AppState.cases.find(c => c.id !== id && numKey(c.number) === numKey(formData.number));
+  if (sameNumber) {
+    alert(`Já existe um processo com este número: ${sameNumber.number}` +
+      `${sameNumber.client || sameNumber.clientName ? " (" + (sameNumber.client || sameNumber.clientName) + ")" : ""}.\n\n` +
+      "Use o cadastro existente (busque pelo número na lista de Processos).");
+    return;
+  }
 
   const payload = mapCaseToDb(formData);
   // Status não faz parte deste formulário: em processo novo nasce "Em
@@ -7453,6 +7919,7 @@ document.getElementById("btnOpenNewReceivableModal").addEventListener("click", (
   populateReceivableClientSelect();
   document.getElementById("recDueDate").value = getOffsetDate(10);
   document.getElementById("recRepeatField").style.display = "";
+  setReceivableLock(null);
   window.refreshInstallUi("rec");
   document.getElementById("recSplitType").value = "100% Dra. Cacilda";
   document.getElementById("recPaymentMethod").value = "PIX";
@@ -7905,7 +8372,13 @@ function renderOfficeSettings() {
   if (document.getElementById("cfgBoletoAssignee")) {
     document.getElementById("cfgBoletoAssignee").value = cfg.boletoAssignee || "Secretaria";
   }
+  const tplEl = document.getElementById("cfgCollectionTemplate");
+  if (tplEl) tplEl.value = cfg.collectionTemplate || DEFAULT_COLLECTION_TEMPLATE;
 }
+
+document.getElementById("btnRestoreCollectionTemplate").addEventListener("click", () => {
+  document.getElementById("cfgCollectionTemplate").value = DEFAULT_COLLECTION_TEMPLATE;
+});
 
 document.getElementById("formOfficeSettings").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -7918,7 +8391,8 @@ document.getElementById("formOfficeSettings").addEventListener("submit", async (
     whatsapp: (document.getElementById("cfgOfficeWhatsapp")?.value || "(34) 99974-3510").trim(),
     site: (document.getElementById("cfgOfficeSite")?.value || "www.cacildasouza.adv.br").trim(),
     email: document.getElementById("cfgOfficeEmail").value.trim() || "contato@cacildasouza.adv.br",
-    boletoAssignee: document.getElementById("cfgBoletoAssignee").value.trim() || "Secretaria"
+    boletoAssignee: document.getElementById("cfgBoletoAssignee").value.trim() || "Secretaria",
+    collectionTemplate: document.getElementById("cfgCollectionTemplate").value.trim()
   };
 
   const payload = mapOfficeSettingsToDb(formData);
@@ -7973,9 +8447,27 @@ window.editReceivable = function(id) {
 
   document.getElementById("recMode").value = "unico";
   document.getElementById("recRepeatField").style.display = "none"; // parcelamento só na criação
+  setReceivableLock(item);
   document.getElementById("modalReceivableTitle").textContent = "Editar Conta a Receber";
   openModal("modalReceivable");
 };
+
+// "Recebido" só nasce pelo botão Baixar (data + recibo). Uma cobrança já
+// recebida fica com valor/vencimento/forma/situação travados, senão o recibo
+// emitido passa a divergir da cobrança.
+function setReceivableLock(item) {
+  const received = !!item && item.status === "Recebido";
+  ["recValue", "recDueDate", "recStatus", "recPaymentMethod"].forEach(id => {
+    document.getElementById(id).disabled = received;
+  });
+  const optReceived = document.querySelector('#recStatus option[value="Recebido"]');
+  if (optReceived) optReceived.disabled = !received;
+  const note = document.getElementById("recReceivedNote");
+  note.style.display = received ? "" : "none";
+  note.textContent = received
+    ? `Cobrança já recebida${item.receiptNumber ? " (recibo nº " + item.receiptNumber + ")" : ""}: valor, vencimento, forma de pagamento e situação ficam travados para o recibo emitido não divergir da cobrança. Para corrigir, peça ao administrador.`
+    : "";
+}
 
 window.deleteReceivable = async function(id) {
   if (confirm("Deseja realmente remover esta cobrança?")) {
@@ -7998,6 +8490,8 @@ document.getElementById("btnOpenNewPayableModal").addEventListener("click", () =
   document.getElementById("modalPayableTitle").textContent = "Adicionar Conta a Pagar";
   document.getElementById("payDueDate").value = getOffsetDate(5);
   document.getElementById("payRepeatField").style.display = "";
+  document.getElementById("payPaidDate").value = "";
+  syncPayPaidDateField();
   window.refreshInstallUi("pay");
   openModal("modalPayable");
 });
@@ -8013,6 +8507,13 @@ document.getElementById("formPayable").addEventListener("submit", async (e) => {
     dueDate: document.getElementById("payDueDate").value,
     status: document.getElementById("payStatus").value
   };
+  // data do pagamento: só vale com status "Pago" (entra no Caixa nessa data)
+  if (formData.status === "Pago") {
+    formData.paidDate = document.getElementById("payPaidDate").value || getOffsetDate(0);
+  } else if (id) {
+    const prevPay = AppState.payables.find(p => p.id === id);
+    if (prevPay && prevPay.paidDate) formData.clearPaidDate = true;
+  }
 
   const payload = mapPayableToDb(formData);
   const submitBtnPay = document.querySelector('#formPayable button[type="submit"]');
@@ -8041,7 +8542,8 @@ document.getElementById("formPayable").addEventListener("submit", async (e) => {
       desc: `${formData.desc} (${p.n}/${repeat})`,
       value: p.value,
       dueDate: p.dueDate,
-      status: i === 0 ? formData.status : "Pendente"
+      status: i === 0 ? formData.status : "Pendente",
+      paidDate: i === 0 ? formData.paidDate : undefined
     }));
     const { data, error } = await sb.from("payables").insert(rows).select();
     if (error) {
@@ -8064,15 +8566,74 @@ document.getElementById("formPayable").addEventListener("submit", async (e) => {
 window.markPayablePaid = async function(id) {
   const item = AppState.payables.find(p => p.id === id);
   if (!item) return;
-  const { error } = await sb.from("payables").update({ status: "Pago" }).eq("id", id);
+  const today = getOffsetDate(0);
+  let { error } = await sb.from("payables").update({ status: "Pago", paid_date: today }).eq("id", id);
+  if (error && /paid_date/i.test(error.message || "")) {
+    // migração 0030 ainda não rodada: marca como pago sem a data
+    ({ error } = await sb.from("payables").update({ status: "Pago" }).eq("id", id));
+  }
   if (error) {
     alert("Não foi possível atualizar: " + friendlyDbError(error));
     return;
   }
   item.status = "Pago";
+  item.paidDate = today;
   renderFinancial();
   renderOverview();
+  showToast("Despesa marcada como paga e lançada no Caixa.");
 };
+
+// --- MENSAGEM DE COBRANÇA (só copiar; o escritório não usa WhatsApp) ---
+function buildCollectionMessage(r) {
+  const cfg = AppState.officeSettings || {};
+  const template = (cfg.collectionTemplate && cfg.collectionTemplate.trim()) || DEFAULT_COLLECTION_TEMPLATE;
+  const diff = getDaysDiff(r.dueDate);
+  let situacao = "";
+  if (diff < 0) situacao = `, ou seja, está em atraso há ${Math.abs(diff)} dia${Math.abs(diff) === 1 ? "" : "s"}`;
+  else if (diff === 0) situacao = " (vence hoje)";
+  else if (diff <= 3) situacao = ` (vence em ${diff} dia${diff === 1 ? "" : "s"})`;
+  const firstName = (r.client || r.clientName || "cliente").trim();
+  const values = {
+    cliente: firstName,
+    descricao: r.desc || "honorários advocatícios",
+    valor: formatBRL(r.value),
+    vencimento: formatDateBR(r.dueDate),
+    situacao,
+    escritorio: cfg.name || DEFAULT_OFFICE_SETTINGS.name,
+    telefone: cfg.phone || DEFAULT_OFFICE_SETTINGS.phone
+  };
+  return template.replace(/\{(\w+)\}/g, (m, k) => (k in values ? values[k] : m));
+}
+
+window.openCollectionMessage = function(id) {
+  const r = AppState.receivables.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById("collectionInfo").textContent =
+    `${r.client || r.clientName || "Cliente"} — ${r.desc || ""} — ${formatBRL(r.value)} — vencimento ${formatDateBR(r.dueDate)}`;
+  document.getElementById("collectionText").value = buildCollectionMessage(r);
+  openModal("modalCollection");
+};
+
+document.getElementById("btnCopyCollection").addEventListener("click", async () => {
+  const area = document.getElementById("collectionText");
+  try {
+    await navigator.clipboard.writeText(area.value);
+  } catch (e) {
+    area.select();
+    document.execCommand("copy");
+  }
+  showToast("Mensagem copiada! É só colar onde for enviar.");
+});
+
+// mostra a "Data do pagamento" só quando o status é Pago
+function syncPayPaidDateField() {
+  const isPaid = document.getElementById("payStatus").value === "Pago";
+  document.getElementById("payPaidDateField").style.display = isPaid ? "" : "none";
+  if (isPaid && !document.getElementById("payPaidDate").value) {
+    document.getElementById("payPaidDate").value = getOffsetDate(0);
+  }
+}
+document.getElementById("payStatus").addEventListener("change", syncPayPaidDateField);
 
 window.editPayable = function(id) {
   const item = AppState.payables.find(p => p.id === id);
@@ -8084,6 +8645,8 @@ window.editPayable = function(id) {
   document.getElementById("payValue").value = item.value;
   document.getElementById("payDueDate").value = item.dueDate;
   document.getElementById("payStatus").value = item.status;
+  document.getElementById("payPaidDate").value = item.paidDate || "";
+  syncPayPaidDateField();
   document.getElementById("payMode").value = "unico";
   document.getElementById("payRepeatField").style.display = "none"; // parcelamento só na criação
   document.getElementById("modalPayableTitle").textContent = "Editar Conta a Pagar";
@@ -8410,68 +8973,101 @@ function renderInssProcesses() {
 
 document.getElementById("filterInssStatus").addEventListener("change", renderInssProcesses);
 
-// --- LIVRO CAIXA (lançamentos manuais avulsos) ---
+// --- CAIXA (integrado ao Financeiro) ---
+// Extrato único: honorários recebidos (baixa) + despesas pagas + lançamentos
+// avulsos. O saldo é calculado em ordem cronológica sobre TUDO; o período e
+// a busca só escolhem quais linhas aparecem.
+function getCashMovements() {
+  const moves = [];
+  AppState.receivables.forEach(r => {
+    if (r.status !== "Recebido") return;
+    moves.push({
+      key: "r-" + r.id, date: r.paidDate || r.dueDate || "", kind: "entrada", value: Number(r.value || 0),
+      origin: "Honorário recebido", desc: r.desc || "", extra: r.client || r.clientName || "", editable: false
+    });
+  });
+  AppState.payables.forEach(p => {
+    if (p.status !== "Pago") return;
+    moves.push({
+      key: "p-" + p.id, date: p.paidDate || p.dueDate || "", kind: "saida", value: Number(p.value || 0),
+      origin: "Despesa paga", desc: p.desc || "", extra: p.supplier || "", editable: false
+    });
+  });
+  AppState.cashbookEntries.forEach(c => {
+    moves.push({
+      key: "c-" + c.id, id: c.id, date: c.date || "", kind: c.type === "entrada" ? "entrada" : "saida", value: Number(c.value || 0),
+      origin: "Lançamento avulso", desc: c.desc || "", extra: c.category || "", editable: true
+    });
+  });
+  return moves.sort((a, b) => (a.date || "").localeCompare(b.date || "") || a.key.localeCompare(b.key));
+}
+
+function cashPeriodRange(kind) {
+  const now = new Date();
+  const iso = (d) => apDateKeyLocal(d);
+  if (kind === "mes") return { from: iso(new Date(now.getFullYear(), now.getMonth(), 1)), to: iso(new Date(now.getFullYear(), now.getMonth() + 1, 0)) };
+  if (kind === "mes-anterior") return { from: iso(new Date(now.getFullYear(), now.getMonth() - 1, 1)), to: iso(new Date(now.getFullYear(), now.getMonth(), 0)) };
+  if (kind === "90") { const f = new Date(now); f.setDate(f.getDate() - 90); return { from: iso(f), to: iso(now) }; }
+  if (kind === "ano") return { from: `${now.getFullYear()}-01-01`, to: `${now.getFullYear()}-12-31` };
+  return { from: "", to: "" };
+}
+
 function renderCashbook() {
   const tbody = document.querySelector("#tableCashbook tbody");
   if (!tbody) return;
-  tbody.innerHTML = "";
 
-  const sorted = [...AppState.cashbookEntries].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+  const all = getCashMovements();
+  let running = 0;
+  all.forEach(m => { running += m.kind === "entrada" ? m.value : -m.value; m.balance = running; });
+  document.getElementById("kpiCashbookTotal").textContent = formatBRL(running);
 
-  let totalIn = 0;
-  let totalOut = 0;
-  sorted.forEach(entry => {
-    if (entry.type === "entrada") totalIn += Number(entry.value || 0);
-    else totalOut += Number(entry.value || 0);
-  });
-  document.getElementById("kpiCashbookIn").textContent = formatBRL(totalIn);
-  document.getElementById("kpiCashbookOut").textContent = formatBRL(totalOut);
-  document.getElementById("kpiCashbookBalance").textContent = formatBRL(totalIn - totalOut);
+  const range = cashPeriodRange(document.getElementById("cashPeriod").value);
+  const kindFilter = document.getElementById("cashKind").value;
+  const search = document.getElementById("searchCashbook").value || "";
 
-  if (sorted.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Nenhum lançamento no livro caixa.</td></tr>`;
+  const inPeriod = all.filter(m => !range.from || (m.date >= range.from && m.date <= range.to));
+  let inSum = 0, outSum = 0;
+  inPeriod.forEach(m => { if (m.kind === "entrada") inSum += m.value; else outSum += m.value; });
+  document.getElementById("kpiCashbookIn").textContent = formatBRL(inSum);
+  document.getElementById("kpiCashbookOut").textContent = formatBRL(outSum);
+  document.getElementById("kpiCashbookBalance").textContent = formatBRL(inSum - outSum);
+  document.getElementById("kpiCashbookBalance").style.color = inSum - outSum < 0 ? "var(--danger)" : "var(--success)";
+
+  const rows = inPeriod
+    .filter(m => !kindFilter || m.kind === kindFilter)
+    .filter(m => matchesSearch(search, m.desc, m.extra, m.origin, m.kind === "entrada" ? "entrada" : "saida saída"))
+    .reverse(); // mais recente primeiro (o saldo já foi calculado em ordem cronológica)
+
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--text-muted);">${all.length ? "Nenhuma movimentação neste período/busca." : "Ainda não há movimentações no caixa."}</td></tr>`;
     return;
   }
 
-  let runningBalance = 0;
-  const searchCash = document.getElementById("searchCashbook")?.value || "";
-  const rowsHtml = sorted.map(entry => {
-    const val = Number(entry.value || 0);
-    runningBalance += entry.type === "entrada" ? val : -val;
-    // o saldo acumulado conta todos os lançamentos; a busca só esconde linhas
-    if (!matchesSearch(searchCash, entry.desc, entry.category, entry.type === "entrada" ? "entrada" : "saida saída")) return "";
-    const typeBadge = entry.type === "entrada"
-      ? `<span class="badge badge-success">Entrada</span>`
-      : `<span class="badge badge-danger">Saída</span>`;
-    return `
-      <tr>
-        <td>${formatDateBR(entry.date)}</td>
-        <td>${typeBadge}</td>
-        <td>${esc(entry.desc)}</td>
-        <td>${esc(entry.category || '-')}</td>
-        <td style="font-weight:700; color:${entry.type === 'entrada' ? 'var(--success)' : 'var(--danger)'};">${entry.type === 'entrada' ? '+' : '-'} ${formatBRL(val)}</td>
-        <td style="font-weight:700;">${formatBRL(runningBalance)}</td>
-        <td style="text-align:right;">
+  tbody.innerHTML = rows.map(m => `
+    <tr>
+      <td>${formatDateBR(m.date)}</td>
+      <td><span class="badge ${m.editable ? "badge-neutral" : m.kind === "entrada" ? "badge-success" : "badge-danger"}">${esc(m.origin)}</span></td>
+      <td><strong>${esc(m.desc)}</strong>${m.extra ? `<div style="font-size:0.75rem; color:var(--text-muted);">${esc(m.extra)}</div>` : ""}</td>
+      <td style="font-weight:700; color:var(--success);">${m.kind === "entrada" ? formatBRL(m.value) : ""}</td>
+      <td style="font-weight:700; color:var(--danger);">${m.kind === "saida" ? formatBRL(m.value) : ""}</td>
+      <td style="font-weight:700;">${formatBRL(m.balance)}</td>
+      <td style="text-align:right;">
+        ${m.editable ? `
           <div class="actions-cell" style="justify-content:flex-end;">
-            <button class="btn-icon" title="Editar" onclick="editCashbookEntry('${entry.id}')">✏</button>
-            <button class="btn-icon" title="Excluir" onclick="deleteCashbookEntry('${entry.id}')">🗑</button>
-          </div>
-        </td>
-      </tr>
-    `;
-  });
-  // mostra o lançamento mais recente primeiro, mantendo o saldo acumulado calculado em ordem cronológica
-  const visibleRows = rowsHtml.filter(Boolean);
-  tbody.innerHTML = visibleRows.length
-    ? visibleRows.reverse().join("")
-    : `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Nenhum lançamento encontrado com esta busca.</td></tr>`;
+            <button class="btn-icon" title="Editar" onclick="editCashbookEntry('${m.id}')">✏</button>
+            <button class="btn-icon" title="Excluir" onclick="deleteCashbookEntry('${m.id}')">🗑</button>
+          </div>` : `<span style="font-size:0.72rem; color:var(--text-muted);">vem do Financeiro</span>`}
+      </td>
+    </tr>`).join("");
 }
 
+document.getElementById("cashPeriod").addEventListener("change", renderCashbook);
+document.getElementById("cashKind").addEventListener("change", renderCashbook);
 document.getElementById("btnOpenNewCashbookModal").addEventListener("click", () => {
   document.getElementById("formCashbook").reset();
   document.getElementById("cashbookId").value = "";
   document.getElementById("cashbookDate").value = getOffsetDate(0);
-  document.getElementById("modalCashbookTitle").textContent = "Novo Lançamento no Livro Caixa";
+  document.getElementById("modalCashbookTitle").textContent = "Novo lançamento avulso no Caixa";
   openModal("modalCashbook");
 });
 
@@ -8533,7 +9129,7 @@ window.editCashbookEntry = function(id) {
 };
 
 window.deleteCashbookEntry = async function(id) {
-  if (confirm("Deseja realmente remover este lançamento do livro caixa?")) {
+  if (confirm("Deseja realmente remover este lançamento avulso do caixa?")) {
     const { error } = await sb.from("cashbook_entries").delete().eq("id", id);
     if (error) {
       alert("Não foi possível excluir: " + friendlyDbError(error));
@@ -8594,10 +9190,20 @@ function setupNavigation() {
   document.getElementById("filterTaskStatus").addEventListener("change", renderTasks);
   document.getElementById("filterTaskPriority").addEventListener("change", renderTasks);
   document.getElementById("btnFilterMyTasks").addEventListener("click", () => {
-    const user = document.getElementById("selectUserPerspective").value;
-    document.getElementById("filterTaskAssignee").value = user;
+    // sempre o usuário logado (não precisa escolher o nome)
+    const user = currentProfile && currentProfile.full_name;
+    if (!user) return;
+    const sel = document.getElementById("filterTaskAssignee");
+    if (![...sel.options].some(o => o.value === user)) {
+      const opt = document.createElement("option");
+      opt.value = user;
+      opt.textContent = user;
+      sel.appendChild(opt);
+    }
+    // segundo clique desfaz o filtro
+    sel.value = sel.value === user ? "" : user;
     renderTasks();
-    showToast(`Filtrando tarefas de: ${user}`);
+    showToast(sel.value ? `Mostrando as tarefas de: ${user}` : "Mostrando as tarefas de todos.");
   });
 
   // Financial Reports filters
@@ -8626,7 +9232,6 @@ function switchTab(targetId) {
     "rpv-alvaras": "RPV / Alvarás Judiciais",
     "inss-administrativo": "Processos Administrativos INSS",
     "recibos": "Recibos de Honorários & Comprovantes",
-    "livro-caixa": "Livro Caixa",
     "relatorios": "Relatórios Financeiros & Controladoria",
     "equipe": "Corpo Jurídico & Advogados",
     "configuracoes": "Configurações do Escritório",
@@ -8687,6 +9292,16 @@ function renderTasks() {
     if (!matchesSearch(searchTerm, t.title, t.assignee, t.desc, t.status, t.priority)) return false;
     return true;
   }).sort((a,b) => (a.dueDate || "").localeCompare(b.dueDate || ""));
+
+  // Lista ou quadro (Kanban): mesmos filtros e a mesma busca nos dois.
+  const view = getTaskView();
+  document.getElementById("taskBoard").style.display = view === "quadro" ? "" : "none";
+  document.getElementById("taskListWrap").style.display = view === "quadro" ? "none" : "";
+  document.querySelectorAll("#taskViewToggle .vt-btn").forEach(b => b.classList.toggle("active", b.dataset.taskView === view));
+  if (view === "quadro") {
+    renderTaskBoard(filtered);
+    return;
+  }
 
   if (filtered.length === 0) {
     tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:1.5rem; color:var(--text-muted);">Nenhuma tarefa encontrada com estes filtros.</td></tr>`;
@@ -8812,8 +9427,217 @@ document.getElementById("btnOpenNewTaskModal").addEventListener("click", () => {
   document.getElementById("taskDueDate").value = getOffsetDate(3);
   document.getElementById("taskPriority").value = "Média";
   document.getElementById("taskStatus").value = "Pendente";
+  // por padrão, a tarefa nova é de quem está criando
+  const me = currentProfile && currentProfile.full_name;
+  const assigneeSel = document.getElementById("taskAssignee");
+  if (me && [...assigneeSel.options].some(o => o.value === me)) assigneeSel.value = me;
   openModal("modalTask");
 });
+
+// --- BUSCA GLOBAL --------------------------------------------------------
+// Procura em tudo que a pessoa pode ver (as listas já vêm filtradas pelas
+// permissões do perfil) e leva direto ao registro na tela certa.
+function runGlobalSearch(term) {
+  const groups = [];
+  const add = (label, tab, items) => { if (items.length) groups.push({ label, tab, items: items.slice(0, 6), total: items.length }); };
+  const hit = (...f) => matchesSearch(term, ...f);
+  const brl = (v) => formatBRL(v);
+
+  add("Clientes", "clientes", AppState.clients.filter(c => hit(c.name, c.doc, c.cpf, c.cnpj, c.phone, c.whatsapp, c.email))
+    .map(c => ({ title: c.name, sub: [c.doc || "sem CPF/CNPJ", c.phone || c.whatsapp].filter(Boolean).join(" · "), run: () => { setSearchBox("searchClients", c.name); renderClients(); } })));
+  add("Processos", "processos", AppState.cases.filter(c => hit(c.number, c.client, c.clientName, c.opposingParty, c.court))
+    .map(c => ({ title: c.number, sub: [c.client || c.clientName, c.status].filter(Boolean).join(" · "), run: () => { setSearchBox("searchCases", c.number); renderCases(); } })));
+  add("Agenda", "agenda", AppState.appointments.filter(a => hit(a.title, a.client, a.clientName, a.linkedCase, a.notes, a.location))
+    .sort((x, y) => (y.date || "").localeCompare(x.date || ""))
+    .map(a => ({ title: `${a.title || a.eventType} (${a.eventType || a.type})`, sub: `${formatDateBR(a.date)} ${(a.time || "").slice(0, 5)} · ${a.client || a.clientName || "sem cliente"}`,
+      run: () => {
+        try { localStorage.setItem("agendaView", "lista"); } catch (e) { /* ok */ }
+        apPeriod = "tudo";
+        document.getElementById("apDateFrom").value = "";
+        document.getElementById("apDateTo").value = "";
+        setSearchBox("searchAppointments", a.title || a.client || "");
+        renderAppointments();
+      } })));
+  add("Tarefas", "tarefas", AppState.tasks.filter(t => hit(t.title, t.assignee, t.desc))
+    .map(t => ({ title: t.title, sub: `${t.assignee || "sem responsável"} · ${t.status} · prazo ${formatDateBR(t.dueDate)}`, run: () => { setSearchBox("searchTasks", t.title); renderTasks(); } })));
+  add("A receber", "financeiro", AppState.receivables.filter(r => hit(r.desc, r.client, r.clientName, r.notes))
+    .map(r => ({ title: r.desc, sub: `${r.client || r.clientName || ""} · ${brl(r.value)} · ${r.status} · venc. ${formatDateBR(r.dueDate)}`, run: () => { setSearchBox("searchReceivables", r.desc); renderFinancial(); } })));
+  add("A pagar", "financeiro", AppState.payables.filter(p => hit(p.desc, p.supplier))
+    .map(p => ({ title: p.desc, sub: `${p.supplier || ""} · ${brl(p.value)} · ${p.status}`, run: () => { setSearchBox("searchPayables", p.desc); renderFinancial(); } })));
+  add("Documentos", "documentos", AppState.documents.filter(d => hit(d.typeName, d.clientName, d.linkedCase))
+    .map(d => ({ title: `${d.typeName} — ${d.clientName}`, sub: formatDateBR(d.date), run: () => { showDocSubView("history"); setSearchBox("searchDocHistory", d.clientName); renderDocHistory(); } })));
+  add("RPV / Alvarás", "rpv-alvaras", AppState.rpvAlvaras.filter(r => hit(r.client, r.clientName, r.caseNumber, r.type))
+    .map(r => ({ title: `${r.type} — ${r.client || r.clientName || ""}`, sub: `${brl(r.value)} · ${r.status}`, run: () => { setSearchBox("searchRpv", r.client || r.clientName || r.caseNumber || ""); renderRpvAlvaras(); } })));
+  add("Administrativo INSS", "inss-administrativo", AppState.inssProcesses.filter(p => hit(p.client, p.type, p.protocolNumber))
+    .map(p => ({ title: `${p.type} — ${p.client || ""}`, sub: `${p.status}${p.protocolNumber ? " · " + p.protocolNumber : ""}`, run: () => { setSearchBox("searchInss", p.client || p.protocolNumber || ""); renderInssProcesses(); } })));
+  add("Equipe", "equipe", AppState.lawyers.filter(l => hit(l.name, l.oab, l.email))
+    .map(l => ({ title: l.name, sub: [l.position, l.oab].filter(Boolean).join(" · "), run: () => { setSearchBox("searchLawyers", l.name); renderLawyers(); } })));
+
+  // só mostra o que está no menu da pessoa (perfil sem a aba não vê o resultado)
+  return groups.filter(g => {
+    const li = document.querySelector(`#navList .nav-btn[data-target="${g.tab}"]`);
+    return li && li.closest("li").style.display !== "none";
+  });
+}
+
+function setSearchBox(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.value = value;
+}
+
+(function setupGlobalSearch() {
+  const input = document.getElementById("globalSearch");
+  const box = document.getElementById("globalSearchResults");
+  if (!input || !box) return;
+  let current = [];
+
+  const close = () => { box.style.display = "none"; };
+  const render = () => {
+    const term = input.value.trim();
+    if (term.length < 2) { close(); return; }
+    const groups = runGlobalSearch(term);
+    current = [];
+    if (groups.length === 0) {
+      box.innerHTML = `<div class="gs-empty">Nada encontrado para "${esc(term)}".</div>`;
+    } else {
+      box.innerHTML = groups.map(g => `
+        <div class="gs-group">${esc(g.label)}${g.total > g.items.length ? ` (${g.items.length} de ${g.total})` : ""}</div>
+        ${g.items.map(it => { const idx = current.push({ tab: g.tab, run: it.run }) - 1;
+          return `<button type="button" class="gs-item" data-gs="${idx}"><span class="gs-item-title">${esc(it.title)}</span><span class="gs-item-sub">${esc(it.sub)}</span></button>`; }).join("")}
+      `).join("");
+    }
+    box.style.display = "";
+  };
+  const open = (idx) => {
+    const target = current[idx];
+    if (!target) return;
+    close();
+    input.blur();
+    switchTab(target.tab);
+    target.run();
+  };
+
+  input.addEventListener("input", render);
+  input.addEventListener("focus", render);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { close(); input.blur(); }
+    if (e.key === "Enter") { e.preventDefault(); const first = box.querySelector(".gs-item"); if (first) open(Number(first.dataset.gs)); }
+  });
+  box.addEventListener("mousedown", (e) => {
+    const btn = e.target.closest(".gs-item");
+    if (btn) { e.preventDefault(); open(Number(btn.dataset.gs)); }
+  });
+  document.addEventListener("click", (e) => { if (!e.target.closest(".global-search-box")) close(); });
+  // atalho: tecla "/" (fora de campos de texto) ou Ctrl+K
+  document.addEventListener("keydown", (e) => {
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || "") || (document.activeElement && document.activeElement.isContentEditable);
+    if ((e.key === "/" && !typing) || (e.key.toLowerCase() === "k" && (e.ctrlKey || e.metaKey))) {
+      e.preventDefault();
+      input.focus();
+      input.select();
+    }
+  });
+})();
+
+// --- QUADRO (KANBAN) DE TAREFAS ---------------------------------------
+function getTaskView() {
+  try { return localStorage.getItem("taskView") === "quadro" ? "quadro" : "lista"; } catch (e) { return "lista"; }
+}
+function setTaskView(v) {
+  try { localStorage.setItem("taskView", v); } catch (e) { /* sem armazenamento: vale só nesta sessão */ }
+  renderTasks();
+}
+document.querySelectorAll("#taskViewToggle .vt-btn").forEach(b => {
+  b.addEventListener("click", () => setTaskView(b.dataset.taskView));
+});
+
+const TASK_COLUMNS = ["Pendente", "Em andamento", "Concluída"];
+
+// Move a tarefa para outra coluna (arrastar ou setas). Concluir pelo quadro
+// segue o mesmo caminho do botão "Concluir" (abre o cadastro do INSS se for o caso).
+window.setTaskStatus = async function(id, newStatus) {
+  const task = AppState.tasks.find(t => t.id === id);
+  if (!task || !TASK_COLUMNS.includes(newStatus) || task.status === newStatus) return;
+  if (newStatus === "Concluída") { await toggleTaskDone(id, true); return; }
+  await withInFlightLock("task-status-" + id, async () => {
+    const { error } = await sb.from("tasks").update({ status: newStatus }).eq("id", id);
+    if (error) {
+      alert("Não foi possível mover a tarefa: " + friendlyDbError(error));
+      return;
+    }
+    task.status = newStatus;
+    renderTasks();
+    renderOverview();
+  });
+};
+
+function renderTaskBoard(tasks) {
+  const board = document.getElementById("taskBoard");
+  const sortByDue = (a, b) => (a.dueDate || "9999").localeCompare(b.dueDate || "9999");
+  board.querySelectorAll(".kanban-col").forEach(col => {
+    const status = col.dataset.status;
+    let list = tasks.filter(t => (t.status || "Pendente") === status).sort(sortByDue);
+    // concluídas: só as 15 mais recentes para a coluna não crescer sem fim
+    const total = list.length;
+    if (status === "Concluída") list = list.sort((a, b) => (b.dueDate || "").localeCompare(a.dueDate || "")).slice(0, 15);
+    col.querySelector(".kanban-count").textContent = status === "Concluída" && total > list.length ? `(${list.length} de ${total})` : `(${total})`;
+    const idx = TASK_COLUMNS.indexOf(status);
+    col.querySelector(".kanban-cards").innerHTML = list.length ? list.map(t => {
+      const diff = getDaysDiff(t.dueDate);
+      const done = status === "Concluída";
+      const dueClass = done ? "" : diff < 0 ? "kanban-due-late" : diff <= 2 ? "kanban-due-soon" : "";
+      const dueText = !t.dueDate ? "Sem prazo" : done ? formatDateBR(t.dueDate)
+        : diff < 0 ? `Vencida há ${Math.abs(diff)} dia(s)` : diff === 0 ? "Vence hoje" : `${formatDateBR(t.dueDate)} (${diff} d)`;
+      const prio = t.priority === "Alta" ? "priority-alta" : t.priority === "Média" ? "priority-media" : "priority-baixa";
+      return `
+        <div class="kanban-card ${dueClass}" draggable="true" data-id="${esc(t.id)}">
+          <div class="kanban-card-title ${done ? "task-completed" : ""}">${esc(t.title)}</div>
+          <div class="kanban-card-meta">
+            <span>${esc(t.assignee || "Sem responsável")}</span>
+            <span class="badge ${prio}">${esc(t.priority || "")}</span>
+          </div>
+          <div class="kanban-card-due">${esc(dueText)}</div>
+          <div class="kanban-card-actions">
+            <button type="button" class="btn-icon" ${idx === 0 ? "disabled" : ""} onclick="setTaskStatus('${t.id}', '${TASK_COLUMNS[Math.max(idx - 1, 0)]}')" title="Mover para a coluna anterior">‹</button>
+            <button type="button" class="btn-icon" onclick="editTask('${t.id}')" title="Abrir / editar">Abrir</button>
+            <button type="button" class="btn-icon" ${idx === TASK_COLUMNS.length - 1 ? "disabled" : ""} onclick="setTaskStatus('${t.id}', '${TASK_COLUMNS[Math.min(idx + 1, TASK_COLUMNS.length - 1)]}')" title="Mover para a próxima coluna">›</button>
+          </div>
+        </div>`;
+    }).join("") : `<div class="kanban-empty">Nenhuma tarefa</div>`;
+  });
+}
+
+// arrastar e soltar (computador)
+(function setupTaskBoardDnd() {
+  const board = document.getElementById("taskBoard");
+  if (!board) return;
+  board.addEventListener("dragstart", (e) => {
+    const card = e.target.closest && e.target.closest(".kanban-card");
+    if (!card) return;
+    e.dataTransfer.setData("text/plain", card.dataset.id);
+    e.dataTransfer.effectAllowed = "move";
+    card.classList.add("dragging");
+  });
+  board.addEventListener("dragend", (e) => {
+    const card = e.target.closest && e.target.closest(".kanban-card");
+    if (card) card.classList.remove("dragging");
+    board.querySelectorAll(".kanban-col").forEach(c => c.classList.remove("drag-over"));
+  });
+  board.addEventListener("dragover", (e) => {
+    const col = e.target.closest && e.target.closest(".kanban-col");
+    if (!col) return;
+    e.preventDefault();
+    board.querySelectorAll(".kanban-col").forEach(c => c.classList.toggle("drag-over", c === col));
+  });
+  board.addEventListener("drop", (e) => {
+    const col = e.target.closest && e.target.closest(".kanban-col");
+    if (!col) return;
+    e.preventDefault();
+    const id = e.dataTransfer.getData("text/plain");
+    board.querySelectorAll(".kanban-col").forEach(c => c.classList.remove("drag-over"));
+    if (id) window.setTaskStatus(id, col.dataset.status);
+  });
+})();
 
 document.getElementById("formTask").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -8967,9 +9791,132 @@ function renderClosedContractsReport() {
   `).join("");
 }
 
+// --- DESEMPENHO POR ADVOGADO + METAS MENSAIS ---------------------------
+// Meta do mês: a do próprio mês, ou a mais recente de um mês anterior
+// ("herdada"), por advogado; lawyerId = null é a meta do escritório.
+function findGoal(lawyerId, month) {
+  const list = (AppState.monthlyGoals || []).filter(g => (g.lawyerId || null) === (lawyerId || null) && g.month <= month)
+    .sort((a, b) => b.month.localeCompare(a.month));
+  if (!list.length) return null;
+  return { amount: list[0].amount, month: list[0].month, id: list[0].id, inherited: list[0].month !== month };
+}
+
+function renderLawyerGoalsReport() {
+  const tbody = document.querySelector("#tableLawyerGoals tbody");
+  const tfoot = document.querySelector("#tableLawyerGoals tfoot");
+  if (!tbody) return;
+
+  const periodVal = document.getElementById("repPeriodSelect").value;
+  const now = new Date();
+  const month = (periodVal && periodVal !== "all")
+    ? periodVal
+    : `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const [my, mm] = month.split("-");
+  document.getElementById("lawyerGoalsSubtitle").textContent = `Mês de referência: ${mm}/${my}`;
+
+  const inMonth = (dateStr) => !!dateStr && dateStr.slice(0, 7) === month;
+  const lawyers = getLawyersOnly();
+  const rows = lawyers.map(l => {
+    const cases = AppState.cases.filter(c => c.lawyerId === l.id);
+    const active = cases.filter(c => c.status === "Em andamento" || (c.status || "").startsWith("Aguardando")).length;
+    const won = cases.filter(c => c.status === "Ganho").length;
+    const lost = cases.filter(c => c.status === "Perdido").length;
+    const events = AppState.appointments.filter(a => a.lawyerId === l.id && inMonth(a.date)).length;
+    const mine = AppState.receivables.filter(r => getReceivableLawyerId(r) === l.id);
+    const received = mine.filter(r => r.status === "Recebido" && inMonth(r.paidDate || r.dueDate))
+      .reduce((s, r) => s + Number(r.value || 0), 0);
+    const open = mine.filter(r => r.status !== "Recebido")
+      .reduce((s, r) => s + Number(r.value || 0), 0);
+    return { l, active, won, lost, events, received, open, goal: findGoal(l.id, month) };
+  });
+
+  const goalCell = (lawyerId, goal, received) => {
+    const amount = goal ? goal.amount : 0;
+    const pct = amount > 0 ? Math.min(100, Math.round((received / amount) * 100)) : 0;
+    const realPct = amount > 0 ? Math.round((received / amount) * 100) : 0;
+    const color = realPct >= 100 ? "var(--success)" : realPct >= 60 ? "var(--accent)" : "var(--warning)";
+    return {
+      input: `<input type="number" min="0" step="100" class="form-control-inline goal-input" style="width:130px;"
+                data-lawyer="${lawyerId || ""}" data-month="${month}" value="${amount || ""}" placeholder="sem meta"
+                aria-label="Meta do mês">${goal && goal.inherited ? `<div style="font-size:0.7rem; color:var(--text-muted);">herdada de ${goal.month.slice(5)}/${goal.month.slice(0, 4)}</div>` : ""}`,
+      bar: amount > 0
+        ? `<div style="display:flex; align-items:center; gap:0.5rem;"><div style="flex:1; height:8px; background:rgba(237,237,237,0.12); border-radius:6px; overflow:hidden;"><div style="width:${pct}%; height:100%; background:${color};"></div></div><strong style="font-size:0.8rem;">${realPct}%</strong></div>`
+        : `<span style="color:var(--text-muted); font-size:0.8rem;">defina uma meta</span>`
+    };
+  };
+
+  tbody.innerHTML = rows.length ? rows.map(r => {
+    const g = goalCell(r.l.id, r.goal, r.received);
+    return `<tr>
+      <td><strong>${esc(r.l.name)}</strong><div style="font-size:0.72rem; color:var(--text-muted);">${esc(r.l.oab || "")}</div></td>
+      <td>${r.active}</td>
+      <td>${r.won} / ${r.lost}</td>
+      <td>${r.events}</td>
+      <td><strong style="color:var(--success);">${formatBRL(r.received)}</strong></td>
+      <td>${formatBRL(r.open)}</td>
+      <td>${g.input}</td>
+      <td>${g.bar}</td>
+    </tr>`;
+  }).join("") : `<tr><td colspan="8" style="text-align:center; padding:1.25rem; color:var(--text-muted);">Nenhum advogado cadastrado em Advogados &amp; Equipe.</td></tr>`;
+
+  const sum = (f) => rows.reduce((s, r) => s + f(r), 0);
+  const totalReceived = AppState.receivables.filter(r => r.status === "Recebido" && inMonth(r.paidDate || r.dueDate))
+    .reduce((s, r) => s + Number(r.value || 0), 0);
+  const officeGoal = findGoal(null, month);
+  const og = goalCell(null, officeGoal, totalReceived);
+  tfoot.innerHTML = `<tr style="background:rgba(189,163,94,0.08);">
+      <td><strong>Escritório (todos)</strong></td>
+      <td><strong>${sum(r => r.active)}</strong></td>
+      <td><strong>${sum(r => r.won)} / ${sum(r => r.lost)}</strong></td>
+      <td><strong>${sum(r => r.events)}</strong></td>
+      <td><strong style="color:var(--success);">${formatBRL(totalReceived)}</strong></td>
+      <td><strong>${formatBRL(AppState.receivables.filter(r => r.status !== "Recebido").reduce((s, r) => s + Number(r.value || 0), 0))}</strong></td>
+      <td>${og.input}</td>
+      <td>${og.bar}</td>
+    </tr>`;
+}
+
+// salvar meta ao sair do campo
+document.getElementById("tableLawyerGoals").addEventListener("change", async (e) => {
+  const input = e.target.closest(".goal-input");
+  if (!input) return;
+  const lawyerId = input.dataset.lawyer || null;
+  const month = input.dataset.month;
+  const raw = input.value.trim();
+  const amount = raw === "" ? null : Number(raw);
+  if (amount !== null && (isNaN(amount) || amount < 0)) {
+    alert("Informe um valor de meta válido (zero ou maior).");
+    return;
+  }
+  // só mexe no registro do PRÓPRIO mês (metas herdadas viram uma meta do mês)
+  const existing = (AppState.monthlyGoals || []).find(g => (g.lawyerId || null) === lawyerId && g.month === month);
+  try {
+    if (amount === null || amount === 0) {
+      if (existing) {
+        const { error } = await sb.from("monthly_goals").delete().eq("id", existing.id);
+        if (error) throw error;
+        AppState.monthlyGoals = AppState.monthlyGoals.filter(g => g.id !== existing.id);
+      }
+    } else if (existing) {
+      const { error } = await sb.from("monthly_goals").update({ amount }).eq("id", existing.id);
+      if (error) throw error;
+      existing.amount = amount;
+    } else {
+      const { data, error } = await sb.from("monthly_goals").insert({ lawyer_id: lawyerId, month, amount }).select().single();
+      if (error) throw error;
+      AppState.monthlyGoals.push({ id: data.id, lawyerId: data.lawyer_id || null, month: data.month, amount: Number(data.amount) });
+    }
+    showToast("Meta salva.");
+  } catch (err) {
+    alert("Não foi possível salvar a meta: " + friendlyDbError(err) + "\n(Se a mensagem falar de tabela inexistente, rode a migração 0030 no Supabase.)");
+  }
+  renderLawyerGoalsReport();
+});
+
 function renderFinancialReports() {
   populateClosedContractsClientFilter();
   renderClosedContractsReport();
+  renderLawyerGoalsReport();
 
   const periodVal = document.getElementById("repPeriodSelect").value;
   const areaFilter = document.getElementById("repFilterArea").value;
@@ -9778,7 +10725,8 @@ function mapClientFromDb(row) {
     repRg: row.rep_rg,
     minorName: row.minor_name,
     minorCpf: row.minor_cpf,
-    repQuality: row.rep_quality
+    repQuality: row.rep_quality,
+    lgpdConsentAt: row.lgpd_consent_at || ""
   };
 }
 
@@ -10144,12 +11092,13 @@ function mapPayableFromDb(row) {
     category: row.category,
     value: row.value,
     dueDate: row.due_date,
-    status: row.status
+    status: row.status,
+    paidDate: row.paid_date || ""
   };
 }
 
 function mapPayableToDb(obj) {
-  return {
+  const payload = {
     description: obj.desc || null,
     supplier: obj.supplier || null,
     category: obj.category || null,
@@ -10157,6 +11106,11 @@ function mapPayableToDb(obj) {
     due_date: obj.dueDate || null,
     status: obj.status || null
   };
+  // paid_date só entra quando há data (ou quando precisa ser limpa): assim o
+  // sistema continua salvando normalmente mesmo antes da migração 0030.
+  if (obj.paidDate) payload.paid_date = obj.paidDate;
+  else if (obj.clearPaidDate) payload.paid_date = null;
+  return payload;
 }
 
 async function fetchPayables() {
@@ -10279,12 +11233,13 @@ function mapOfficeSettingsFromDb(row) {
     whatsapp: row.whatsapp,
     site: row.site,
     email: row.email,
-    boletoAssignee: row.boleto_assignee
+    boletoAssignee: row.boleto_assignee,
+    collectionTemplate: row.collection_template || ""
   };
 }
 
 function mapOfficeSettingsToDb(obj) {
-  return {
+  const payload = {
     name: obj.name || null,
     oab: obj.oab || null,
     cnpj: obj.cnpj || null,
@@ -10295,6 +11250,11 @@ function mapOfficeSettingsToDb(obj) {
     email: obj.email || null,
     boleto_assignee: obj.boletoAssignee || null
   };
+  // só envia o modelo de cobrança quando ele foi alterado (coluna da migração 0030)
+  if (obj.collectionTemplate !== undefined && obj.collectionTemplate !== null && obj.collectionTemplate !== "") {
+    payload.collection_template = obj.collectionTemplate;
+  }
+  return payload;
 }
 
 async function fetchOfficeSettings() {
@@ -10334,7 +11294,7 @@ async function fetchCashbookEntries() {
   const { data, error } = await sb.from("cashbook_entries").select("*").order("date");
   if (error) {
     console.error("Erro ao carregar livro caixa do Supabase:", error);
-    showToast("Não foi possível carregar o Livro Caixa do banco de dados.", "⚠");
+    showToast("Não foi possível carregar os lançamentos do Caixa do banco de dados.", "⚠");
     return [];
   }
   return data.map(mapCashbookFromDb);
@@ -10528,7 +11488,7 @@ async function bootApp() {
 // fácil de auditar que lista de proibidos, com tantos perfis diferentes).
 const ROLE_ALLOWED_TABS = {
   advogada_associada: ["visao-geral", "agenda", "clientes", "documentos", "processos", "tarefas", "equipe"],
-  financeiro: ["agenda", "clientes", "documentos", "processos", "tarefas", "financeiro", "recibos", "livro-caixa"],
+  financeiro: ["agenda", "clientes", "documentos", "processos", "tarefas", "financeiro", "recibos"],
   apoio_juridico: ["agenda", "processos", "inss-administrativo", "documentos", "tarefas", "clientes"],
   recepcao: ["agenda", "tarefas"]
 };
@@ -10550,6 +11510,17 @@ function applyRoleBasedNav() {
   // Usuários & Acessos: só o administrador geral (nem o atendimento, que vê o resto).
   const navUsuarios = document.getElementById("navItemUsuarios");
   if (navUsuarios) navUsuarios.style.display = role === "admin_geral" ? "" : "none";
+
+  // Títulos dos grupos do menu: só aparecem se o grupo tem algum item visível
+  const navItems = [...document.querySelectorAll("#navList > li")];
+  navItems.forEach((li, i) => {
+    if (!li.classList.contains("nav-group-title")) return;
+    let hasVisible = false;
+    for (let j = i + 1; j < navItems.length && !navItems[j].classList.contains("nav-group-title"); j++) {
+      if (navItems[j].style.display !== "none") { hasVisible = true; break; }
+    }
+    li.style.display = hasVisible ? "" : "none";
+  });
 
   if (allowed && allowed.length) {
     const activeBtn = document.querySelector("#navList .nav-btn.active");
@@ -11158,6 +12129,13 @@ function setDocConstituentTab(tabKey) {
 }
 
 function startDocGeneration(docType) {
+  // Começa SEMPRE em branco: antes, o CPF, endereço, objeto e valor do
+  // documento anterior ficavam nos campos e iam parar no documento novo.
+  document.getElementById("formDocGeneration").reset();
+  document.getElementById("docPowersText").value = DEFAULT_PROCURACAO_POWERS;
+  document.getElementById("docLgpdPurposes").value = DEFAULT_LGPD_PURPOSES;
+  const inssTypeBox = document.getElementById("fieldInssType");
+  if (inssTypeBox) inssTypeBox.style.display = "none";
   document.getElementById("docTypeField").value = docType;
   const sectionTitle = document.getElementById("docFormSectionTitle");
   const specificBox = document.getElementById("docSpecificBox");
@@ -11166,10 +12144,14 @@ function startDocGeneration(docType) {
   const fieldsProc = document.getElementById("docFieldsProcuracao");
   const fieldsCont = document.getElementById("docFieldsContrato");
   const fieldsHipo = document.getElementById("docFieldsHipossuficiencia");
+  const fieldsLgpd = document.getElementById("docFieldsLgpd");
 
   fieldsProc.style.display = "none";
   fieldsCont.style.display = "none";
   fieldsHipo.style.display = "none";
+  fieldsLgpd.style.display = "none";
+  document.getElementById("docLgpdPurposes").value = DEFAULT_LGPD_PURPOSES;
+  document.getElementById("docLgpdComms").checked = true;
 
   // Data default de hoje
   const today = getOffsetDate(0);
@@ -11189,6 +12171,10 @@ function startDocGeneration(docType) {
     sectionTitle.textContent = "🏛️ Emitir Declaração de Hipossuficiência (Justiça Gratuita)";
     stepLabel.textContent = "Modelo Legal Fundamentado (Art. 99, § 3º, CPC)";
     fieldsHipo.style.display = "block";
+  } else if (docType === "lgpd") {
+    sectionTitle.textContent = "🔒 Emitir Termo de Consentimento (LGPD)";
+    stepLabel.textContent = "Finalidades e Autorizações (Lei nº 13.709/2018)";
+    fieldsLgpd.style.display = "block";
   }
 
   showDocSubView("form");
@@ -11201,6 +12187,8 @@ function resetDocForm() {
   document.getElementById("docPjDate").value = today;
   document.getElementById("docMenorDate").value = today;
   document.getElementById("docPowersText").value = DEFAULT_PROCURACAO_POWERS;
+  document.getElementById("docLgpdPurposes").value = DEFAULT_LGPD_PURPOSES;
+  document.getElementById("docLgpdComms").checked = true;
   showToast("Campos do formulário limpos.");
 }
 
@@ -11218,8 +12206,15 @@ function backToDocForm() {
 const DOC_TYPE_NAMES = {
   procuracao: "Procuração Ad Judicia et Extra",
   contrato: "Contrato de Prestação de Serviços Advocatícios",
-  hipossuficiencia: "Declaração de Hipossuficiência"
+  hipossuficiencia: "Declaração de Hipossuficiência",
+  lgpd: "Termo de Consentimento (LGPD)"
 };
+
+// Finalidades padrão do Termo de Consentimento (editável no formulário).
+const DEFAULT_LGPD_PURPOSES =
+  "Prestação dos serviços advocatícios contratados, incluindo a elaboração de contratos, procurações e peças, " +
+  "o ajuizamento e o acompanhamento de processos judiciais e procedimentos administrativos, o cumprimento de prazos, " +
+  "a emissão de recibos, a cobrança de honorários e o cumprimento de obrigações legais e regulatórias do escritório.";
 
 const DEFAULT_PROCURACAO_POWERS = "para o foro em geral, com cláusula ad judicia, em qualquer Juízo, Instância ou Tribunal, bem como em procedimentos administrativos, perante quaisquer repartições públicas, para transigir, desistir, firmar compromissos e acordos, podendo ainda representar os outorgantes junto à Instituições Financeiras, receber e dar quitação, assinando pessoalmente requerimentos e todos os demais atos necessários ao fim colimado, substabelecer com ou sem reserva de iguais poderes, postular os benefícios da Justiça Gratuita, intentar medidas cautelares preparatórias ou incidentais, louvar-se em peritos ou impugná-los, podendo propor contra quem de direito as ações competentes e defendê-la nas contrárias, seguindo umas e outras, até decisão final, usando os recursos legais e acompanhando-os, dando tudo por bom e valioso.";
 
@@ -11405,6 +12400,55 @@ function buildHipossuficienciaDoc({ qualificationText, constituentName, dateStr 
   return { title, body };
 }
 
+// Termo de Consentimento para tratamento de dados pessoais (LGPD, Lei nº
+// 13.709/2018, arts. 7º, I e 11, I). Modelo do escritório: finalidades,
+// dados tratados, compartilhamento, prazo de guarda, direitos do titular e
+// contato do encarregado.
+function buildLgpdDoc({ qualificationText, constituentName, dateStr, purposes, comms, office }) {
+  const formattedDateBR = formatDateBR(dateStr);
+  const title = "TERMO DE CONSENTIMENTO PARA TRATAMENTO DE DADOS PESSOAIS";
+  const officeName = esc((office && office.name) || DEFAULT_OFFICE_SETTINGS.name);
+  const officeContact = [office && office.email, office && office.phone].filter(Boolean).map(esc).join(" · ");
+  const commsLine = comms
+    ? "AUTORIZO o contato por telefone, e-mail ou mensagem para informar andamentos processuais, prazos, agendamentos e questões financeiras relacionadas aos serviços contratados."
+    : "NÃO AUTORIZO contatos por telefone, e-mail ou mensagem além dos estritamente necessários à prestação dos serviços.";
+  const body = `
+      <p>${qualificationText}</p>
+
+      <p>Pelo presente <strong>Termo de Consentimento</strong>, em conformidade com a Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018 – LGPD), o(a) <strong>TITULAR</strong> acima qualificado(a) <strong>AUTORIZA</strong> <strong>${officeName}</strong>, na qualidade de <strong>CONTROLADOR</strong>, a realizar o tratamento de seus dados pessoais, nos termos a seguir.</p>
+
+      <p><strong>1. Dados tratados.</strong> Nome, estado civil, profissão, documentos (RG, CPF/CNPJ), filiação, data de nascimento, endereço, telefone, e-mail, informações do caso e documentos fornecidos para a prestação dos serviços, bem como, quando indispensável ao caso, dados pessoais sensíveis (por exemplo, dados de saúde em ações previdenciárias).</p>
+
+      <p><strong>2. Finalidades.</strong> ${esc(purposes || DEFAULT_LGPD_PURPOSES)}</p>
+
+      <p><strong>3. Compartilhamento.</strong> Os dados poderão ser compartilhados, somente no estritamente necessário, com órgãos do Poder Judiciário, INSS e demais órgãos públicos, peritos, correspondentes jurídicos, cartórios, instituições financeiras e prestadores de serviço do escritório vinculados ao dever de confidencialidade. Os dados não serão vendidos nem usados para fins estranhos aos descritos neste termo.</p>
+
+      <p><strong>4. Armazenamento e segurança.</strong> Os dados são guardados em ambiente com controle de acesso e permanecem arquivados durante a prestação dos serviços e pelo prazo necessário ao cumprimento de obrigações legais, regulatórias e do exercício regular de direitos.</p>
+
+      <p><strong>5. Direitos do titular.</strong> O(a) TITULAR poderá, a qualquer tempo e mediante solicitação, confirmar a existência de tratamento, acessar, corrigir ou atualizar seus dados, solicitar a anonimização ou eliminação de dados desnecessários, obter informações sobre compartilhamentos e <strong>revogar este consentimento</strong>, ciente de que a revogação não afeta os tratamentos já realizados nem os que decorram de obrigação legal ou do exercício de direitos em processos.</p>
+
+      <p><strong>6. Comunicações.</strong> ${commsLine}</p>
+
+      <p><strong>7. Contato do controlador.</strong> ${officeName}${officeContact ? " — " + officeContact : ""}.</p>
+
+      <p style="text-align: right; margin-top: 2.5rem;">Frutal, ${formattedDateBR}.</p>
+
+      <div class="doc-signature-row">
+        <div class="doc-sig-box">
+          <div class="doc-sig-line"></div>
+          <strong>${esc((constituentName || "").toUpperCase())}</strong><br>
+          <span style="font-size:9.5pt; color:#4a455a;">Titular dos dados</span>
+        </div>
+        <div class="doc-sig-box">
+          <div class="doc-sig-line"></div>
+          <strong>${officeName.toUpperCase()}</strong><br>
+          <span style="font-size:9.5pt; color:#4a455a;">Controlador</span>
+        </div>
+      </div>
+    `;
+  return { title, body };
+}
+
 // Gera os 3 documentos (Procuração, Contrato de Honorários e Declaração de
 // Hipossuficiência) de uma só vez, a partir dos dados preenchidos no
 // cadastro de cliente (newObj), e salva todos no Histórico de Documentos.
@@ -11499,6 +12543,17 @@ document.getElementById("formDocGeneration").addEventListener("submit", async (e
     const conditions = document.getElementById("docContractConditions").value.trim();
     contractInstallments = Math.min(60, Math.max(1, parseInt(document.getElementById("docContractInstallments").value, 10) || 1));
     contractFirstDue = document.getElementById("docContractFirstDue").value || getOffsetDate(0);
+    if (fixedFee > 0 && !selectedClientId) {
+      const goOn = confirm(
+        "Nenhum cliente cadastrado foi selecionado.\n\n" +
+        "O contrato será gerado, mas os honorários NÃO serão lançados no Financeiro " +
+        "(o lançamento precisa de um cliente cadastrado).\n\nGerar o contrato assim mesmo?"
+      );
+      if (!goOn) {
+        if (submitBtnDoc) submitBtnDoc.disabled = false;
+        return;
+      }
+    }
     contractFixedFee = fixedFee;
     contractPaymentMethod = method;
     contractArea = area;
@@ -11539,6 +12594,15 @@ document.getElementById("formDocGeneration").addEventListener("submit", async (e
     const doc = buildContratoDoc({ qualificationText, constituentName, dateStr: docDateStr, objeto: objetoTexto, valorForma, exitoTexto, parcelasTexto });
     generatedTitle = doc.title;
     generatedBody = doc.body;
+  } else if (docType === "lgpd") {
+    const doc = buildLgpdDoc({
+      qualificationText, constituentName, dateStr: docDateStr,
+      purposes: document.getElementById("docLgpdPurposes").value.trim(),
+      comms: document.getElementById("docLgpdComms").checked,
+      office: AppState.officeSettings
+    });
+    generatedTitle = doc.title;
+    generatedBody = doc.body;
   } else {
     const doc = buildHipossuficienciaDoc({ qualificationText, constituentName, dateStr: docDateStr });
     generatedTitle = doc.title;
@@ -11573,6 +12637,17 @@ document.getElementById("formDocGeneration").addEventListener("submit", async (e
 
   AppState.documents.unshift(newDocRecord);
   currentActiveDoc = newDocRecord;
+
+  // Termo LGPD: registra no cadastro do cliente a data do consentimento
+  let lgpdMsg = "";
+  if (docType === "lgpd" && selectedClientId) {
+    const { error: lgpdError } = await sb.from("clients").update({ lgpd_consent_at: docDateStr }).eq("id", selectedClientId);
+    if (!lgpdError) {
+      const cl = AppState.clients.find(c => c.id === selectedClientId);
+      if (cl) cl.lgpdConsentAt = docDateStr;
+      lgpdMsg = " Termo LGPD registrado na ficha do cliente.";
+    }
+  }
 
   // Contrato com honorários fixos: lança automaticamente no Financeiro
   let financeMsg = "";
@@ -11657,7 +12732,7 @@ document.getElementById("formDocGeneration").addEventListener("submit", async (e
 
   renderDocHistory();
   showDocSubView("preview");
-  showToast("Documento gerado com sucesso!" + financeMsg + inssMsg, "✨");
+  showToast("Documento gerado com sucesso!" + financeMsg + inssMsg + lgpdMsg, "✨");
   if (submitBtnDoc) submitBtnDoc.disabled = false;
 });
 
@@ -11782,7 +12857,6 @@ function renderDocHistory() {
       <td style="text-align:right;">
         <div class="actions-cell" style="justify-content:flex-end;">
           <button class="btn-icon" title="Ver Documento" onclick="viewHistoryDoc('${doc.id}')">👁 Ver</button>
-          <button class="btn-icon" title="Editar Documento" onclick="editHistoryDoc('${doc.id}')">✏️ Editar</button>
           <button class="btn-icon" title="Imprimir Diretamente" onclick="printHistoryDoc('${doc.id}')">🖨 Imprimir</button>
           <button class="btn-icon" title="Excluir do Histórico" onclick="deleteHistoryDoc('${doc.id}')">🗑 Excluir</button>
         </div>
