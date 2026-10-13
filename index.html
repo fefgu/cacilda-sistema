@@ -3855,8 +3855,8 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       <div class="modal-body">
         <p style="font-size:0.85rem; margin-bottom:0.75rem;">Nova senha para <strong id="userPasswordName"></strong> (<span id="userPasswordEmail"></span>).</p>
         <div class="form-field">
-          <label for="userPasswordNew">Nova senha * (mínimo 8 caracteres)</label>
-          <input type="password" id="userPasswordNew" required minlength="8" autocomplete="new-password">
+          <label for="userPasswordNew">Nova senha * (mínimo 6 caracteres)</label>
+          <input type="password" id="userPasswordNew" required minlength="6" autocomplete="new-password">
         </div>
         <label style="font-size:0.8rem; display:flex; align-items:center; gap:0.4rem; margin-top:0.25rem;">
           <input type="checkbox" id="userPasswordShow"> Mostrar a senha
@@ -3893,8 +3893,8 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           <select id="newUserRole" required></select>
         </div>
         <div class="form-field">
-          <label for="newUserPassword">Senha inicial * (mínimo 8 caracteres)</label>
-          <input type="password" id="newUserPassword" required minlength="8" autocomplete="new-password">
+          <label for="newUserPassword">Senha inicial * (mínimo 6 caracteres)</label>
+          <input type="password" id="newUserPassword" required minlength="6" autocomplete="new-password">
         </div>
         <p id="newUserError" style="display:none; color:var(--danger); font-size:0.85rem;"></p>
       </div>
@@ -3920,12 +3920,12 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           <input type="password" id="myPasswordCurrent" required autocomplete="current-password">
         </div>
         <div class="form-field">
-          <label for="myPasswordNew">Nova senha * (mínimo 8 caracteres)</label>
-          <input type="password" id="myPasswordNew" required minlength="8" autocomplete="new-password">
+          <label for="myPasswordNew">Nova senha * (mínimo 6 caracteres)</label>
+          <input type="password" id="myPasswordNew" required minlength="6" autocomplete="new-password">
         </div>
         <div class="form-field">
           <label for="myPasswordConfirm">Repita a nova senha *</label>
-          <input type="password" id="myPasswordConfirm" required minlength="8" autocomplete="new-password">
+          <input type="password" id="myPasswordConfirm" required minlength="6" autocomplete="new-password">
         </div>
         <p id="myPasswordError" style="display:none; color:var(--danger); font-size:0.85rem;"></p>
       </div>
@@ -5100,7 +5100,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261012-231730";
+const APP_VERSION = "20261012-232115";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -10539,8 +10539,8 @@ document.getElementById("formUserPassword").addEventListener("submit", async (e)
   const btn = document.getElementById("btnSaveUserPassword");
   const password = document.getElementById("userPasswordNew").value;
   errEl.style.display = "none";
-  if (password.length < 8) {
-    errEl.textContent = "A senha precisa ter pelo menos 8 caracteres.";
+  if (password.length < 6) {
+    errEl.textContent = "A senha precisa ter pelo menos 6 caracteres.";
     errEl.style.display = "block";
     return;
   }
@@ -10611,7 +10611,7 @@ document.getElementById("formMyPassword").addEventListener("submit", async (e) =
   const fail = (msg) => { errEl.textContent = msg; errEl.style.display = "block"; };
   errEl.style.display = "none";
 
-  if (next.length < 8) return fail("A nova senha precisa ter pelo menos 8 caracteres.");
+  if (next.length < 6) return fail("A nova senha precisa ter pelo menos 6 caracteres.");
   if (next !== confirmPw) return fail("As duas senhas novas não são iguais.");
   if (next === current) return fail("A nova senha precisa ser diferente da atual.");
 
