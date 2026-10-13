@@ -2655,6 +2655,20 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
                     </div>
                   </div>
 
+                  <div class="form-row" style="margin-bottom:0.75rem;">
+                    <div class="form-field">
+                      <label for="docContractInstallments">Parcelas do Valor Fixo</label>
+                      <input type="number" min="1" max="60" id="docContractInstallments" value="1">
+                    </div>
+                    <div class="form-field">
+                      <label for="docContractFirstDue">Vencimento da 1ª Parcela</label>
+                      <input type="date" id="docContractFirstDue">
+                    </div>
+                  </div>
+                  <div id="docContractInstallPreview" style="font-size:0.8rem; color:var(--text-muted); margin:-0.25rem 0 0.75rem; line-height:1.4;">
+                    Com valor fixo preenchido, o contrato já lança as parcelas em Contas a Receber (uma por mês, no mesmo dia) e descreve o parcelamento no texto.
+                  </div>
+
                   <div class="form-field">
                     <label for="docContractConditions">Honorários de Êxito / Outras Condições (Texto Livre)</label>
                     <textarea id="docContractConditions" rows="3" placeholder="Ex: 20% incidente sobre o proveito econômico obtido em caso de procedência ou acordo judicial homologado..."></textarea>
@@ -4577,15 +4591,17 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           </div>
         </div>
         <div class="form-field" id="recRepeatField">
-          <label for="recRepeat">Repetir todo mês</label>
-          <select id="recRepeat">
-            <option value="1">Não repetir (lançamento único)</option>
-            <option value="3">Por 3 meses</option>
-            <option value="6">Por 6 meses</option>
-            <option value="12">Por 12 meses</option>
-            <option value="24">Por 24 meses</option>
+          <label for="recMode">Parcelamento</label>
+          <select id="recMode">
+            <option value="unico">Lançamento único (à vista)</option>
+            <option value="parcelas">Parcelado: dividir o valor total em parcelas mensais</option>
+            <option value="fixo">Mensal fixo: repetir o mesmo valor todo mês</option>
           </select>
-          <small style="color:var(--text-muted);">Para honorários mensais fixos. Cria todos os meses de uma vez, no mesmo dia, com a descrição "(1/12)", "(2/12)"... Cada mês é baixado e editado separadamente.</small>
+          <div id="recCountWrap" style="display:none; margin-top:0.5rem;">
+            <label for="recCount" style="font-size:0.8rem;">Quantidade de parcelas/meses</label>
+            <input type="number" id="recCount" min="2" max="60" value="12">
+            <div id="recInstallPreview" style="font-size:0.8rem; color:var(--text-muted); margin-top:0.35rem; line-height:1.4;"></div>
+          </div>
         </div>
         <div class="form-row">
           <div class="form-field">
@@ -4870,15 +4886,17 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           <input type="date" id="payDueDate" required>
         </div>
         <div class="form-field" id="payRepeatField">
-          <label for="payRepeat">Repetir todo mês</label>
-          <select id="payRepeat">
-            <option value="1">Não repetir (lançamento único)</option>
-            <option value="3">Por 3 meses</option>
-            <option value="6">Por 6 meses</option>
-            <option value="12">Por 12 meses</option>
-            <option value="24">Por 24 meses</option>
+          <label for="payMode">Parcelamento</label>
+          <select id="payMode">
+            <option value="unico">Lançamento único</option>
+            <option value="parcelas">Parcelado: dividir o valor em parcelas mensais</option>
+            <option value="fixo">Mensal fixo: repetir o mesmo valor todo mês</option>
           </select>
-          <small style="color:var(--text-muted);">Cria todos os meses de uma vez, no mesmo dia, com a descrição "(1/12)", "(2/12)"... Cada mês é pago e editado separadamente.</small>
+          <div id="payCountWrap" style="display:none; margin-top:0.5rem;">
+            <label for="payCount" style="font-size:0.8rem;">Quantidade de meses/parcelas</label>
+            <input type="number" id="payCount" min="2" max="60" value="12">
+            <div id="payInstallPreview" style="font-size:0.8rem; color:var(--text-muted); margin-top:0.35rem; line-height:1.4;"></div>
+          </div>
         </div>
         <div class="form-field">
           <label for="payStatus">Status *</label>
@@ -5122,7 +5140,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261012-233018";
+const APP_VERSION = "20261012-233433";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -7331,6 +7349,7 @@ document.getElementById("btnOpenNewReceivableModal").addEventListener("click", (
   populateReceivableClientSelect();
   document.getElementById("recDueDate").value = getOffsetDate(10);
   document.getElementById("recRepeatField").style.display = "";
+  window.refreshInstallUi("rec");
   document.getElementById("recSplitType").value = "100% Dra. Cacilda";
   document.getElementById("recPaymentMethod").value = "PIX";
   document.getElementById("recCacildaRepassePct").value = "";
@@ -7404,6 +7423,7 @@ document.getElementById("formReceivable").addEventListener("submit", async (e) =
   let newObj;
   let recurringCount = 1;
   let recurringDueDates = null;
+  let recurringTotal = value;
 
   if (id) {
     const { data, error } = await sb.from("receivables").update(payload).eq("id", id).select().single();
@@ -7416,13 +7436,21 @@ document.getElementById("formReceivable").addEventListener("submit", async (e) =
     const idx = AppState.receivables.findIndex(r => r.id === id);
     if (idx !== -1) AppState.receivables[idx] = newObj;
   } else {
-    const repeat = Math.max(1, parseInt(document.getElementById("recRepeat").value, 10) || 1);
-    // Todos os meses de uma vez: mesmo dia, "(i/N)" na descrição. Só o 1º
-    // leva o status escolhido; "Recebido"/"Vencido" não se repetem nos demais.
-    const rows = repeat === 1 ? [payload] : Array.from({ length: repeat }, (_, i) => mapReceivableToDb({
+    const mode = document.getElementById("recMode").value;
+    const plan = buildMonthlyPlan(mode, value, parseInt(document.getElementById("recCount").value, 10), dueDate);
+    const repeat = plan.length;
+    if (repeat > 1 && !(value > 0)) {
+      alert("Para parcelar, informe um valor maior que zero.");
+      if (submitBtnRec) submitBtnRec.disabled = false;
+      return;
+    }
+    // Todos os meses de uma vez: "(i/N)" na descrição. Só a 1ª leva o status
+    // escolhido; "Recebido"/"Vencido" não se repetem nas demais.
+    const rows = repeat === 1 ? [payload] : plan.map((p, i) => mapReceivableToDb({
       ...formData,
-      desc: `${desc} (${i + 1}/${repeat})`,
-      dueDate: addMonthsISO(dueDate, i),
+      desc: `${desc} (${p.n}/${repeat})`,
+      value: p.value,
+      dueDate: p.dueDate,
       status: i === 0 || formData.status === "Aguardando êxito" ? formData.status : "Pendente",
       paidDate: i === 0 ? formData.paidDate : ""
     }));
@@ -7435,7 +7463,8 @@ document.getElementById("formReceivable").addEventListener("submit", async (e) =
     const created = data.map(mapReceivableFromDb);
     created.slice().reverse().forEach(r => AppState.receivables.unshift(r));
     recurringCount = repeat;
-    recurringDueDates = Array.from({ length: repeat }, (_, i) => addMonthsISO(dueDate, i));
+    recurringDueDates = plan.map(p => p.dueDate);
+    recurringTotal = plan.reduce((sum, p) => sum + p.value, 0);
   }
   if (submitBtnRec) submitBtnRec.disabled = false;
 
@@ -7449,9 +7478,9 @@ document.getElementById("formReceivable").addEventListener("submit", async (e) =
       clientName: clientName,
       clientPhone: phone,
       clientDoc: doc,
-      totalValue: value * recurringCount,
+      totalValue: recurringTotal,
       installments: recurringCount,
-      installmentValue: value,
+      installmentValue: recurringCount > 1 ? recurringTotal / recurringCount : value,
       dueDates: recurringDueDates || dueDate,
       serviceDesc: desc,
       linkedRef: `Recebível ${desc}`
@@ -7481,7 +7510,7 @@ document.getElementById("formReceivable").addEventListener("submit", async (e) =
   } else if (boletoTaskFailed) {
     alert("O recebível foi salvo, mas NÃO foi possível criar a tarefa de gerar boleto. Crie manualmente em Tarefas.");
   } else if (recurringCount > 1) {
-    showToast(`${recurringCount} cobranças criadas (uma por mês).`);
+    showToast(`${recurringCount} parcelas lançadas em Contas a Receber.`);
   } else {
     showToast("Conta a receber salva com sucesso!");
   }
@@ -7838,8 +7867,8 @@ window.editReceivable = function(id) {
   }
   updateSplitValidation();
 
-  document.getElementById("recRepeat").value = "1";
-  document.getElementById("recRepeatField").style.display = "none"; // repetição só na criação
+  document.getElementById("recMode").value = "unico";
+  document.getElementById("recRepeatField").style.display = "none"; // parcelamento só na criação
   document.getElementById("modalReceivableTitle").textContent = "Editar Conta a Receber";
   openModal("modalReceivable");
 };
@@ -7865,6 +7894,7 @@ document.getElementById("btnOpenNewPayableModal").addEventListener("click", () =
   document.getElementById("modalPayableTitle").textContent = "Adicionar Conta a Pagar";
   document.getElementById("payDueDate").value = getOffsetDate(5);
   document.getElementById("payRepeatField").style.display = "";
+  window.refreshInstallUi("pay");
   openModal("modalPayable");
 });
 
@@ -7896,13 +7926,17 @@ document.getElementById("formPayable").addEventListener("submit", async (e) => {
     const idx = AppState.payables.findIndex(p => p.id === id);
     if (idx !== -1) AppState.payables[idx] = newObj;
   } else {
-    const repeat = Math.max(1, parseInt(document.getElementById("payRepeat").value, 10) || 1);
-    // Todos os meses de uma vez: mesmo dia, "(i/N)" na descrição; só o 1º
-    // leva o status escolhido, os outros nascem Pendentes.
-    const rows = repeat === 1 ? [payload] : Array.from({ length: repeat }, (_, i) => mapPayableToDb({
+    const plan = buildMonthlyPlan(
+      document.getElementById("payMode").value, formData.value,
+      parseInt(document.getElementById("payCount").value, 10), formData.dueDate);
+    const repeat = plan.length;
+    // Todos os meses de uma vez: "(i/N)" na descrição; só a 1ª leva o status
+    // escolhido, as outras nascem Pendentes.
+    const rows = repeat === 1 ? [payload] : plan.map((p, i) => mapPayableToDb({
       ...formData,
-      desc: `${formData.desc} (${i + 1}/${repeat})`,
-      dueDate: addMonthsISO(formData.dueDate, i),
+      desc: `${formData.desc} (${p.n}/${repeat})`,
+      value: p.value,
+      dueDate: p.dueDate,
       status: i === 0 ? formData.status : "Pendente"
     }));
     const { data, error } = await sb.from("payables").insert(rows).select();
@@ -7913,7 +7947,7 @@ document.getElementById("formPayable").addEventListener("submit", async (e) => {
     }
     const created = data.map(mapPayableFromDb);
     created.slice().reverse().forEach(p => AppState.payables.unshift(p));
-    if (repeat > 1) showToast(`${repeat} contas a pagar criadas (uma por mês).`);
+    if (repeat > 1) showToast(`${repeat} parcelas lançadas em Contas a Pagar.`);
   }
   if (submitBtnPay) submitBtnPay.disabled = false;
 
@@ -7946,8 +7980,8 @@ window.editPayable = function(id) {
   document.getElementById("payValue").value = item.value;
   document.getElementById("payDueDate").value = item.dueDate;
   document.getElementById("payStatus").value = item.status;
-  document.getElementById("payRepeat").value = "1";
-  document.getElementById("payRepeatField").style.display = "none"; // repetição só na criação
+  document.getElementById("payMode").value = "unico";
+  document.getElementById("payRepeatField").style.display = "none"; // parcelamento só na criação
   document.getElementById("modalPayableTitle").textContent = "Editar Conta a Pagar";
   openModal("modalPayable");
 };
@@ -11259,6 +11293,8 @@ document.getElementById("formDocGeneration").addEventListener("submit", async (e
   let contractPaymentMethod = "";
   let contractArea = "";
   let contractObj = "";
+  let contractInstallments = 1;
+  let contractFirstDue = "";
 
   if (docType === "procuracao") {
     const powers = document.getElementById("docPowersText").value.trim();
@@ -11275,19 +11311,29 @@ document.getElementById("formDocGeneration").addEventListener("submit", async (e
     const method = document.getElementById("docContractPaymentMethod").value;
     const successPct = Number(document.getElementById("docContractSuccessPct").value || 0);
     const conditions = document.getElementById("docContractConditions").value.trim();
+    contractInstallments = Math.min(60, Math.max(1, parseInt(document.getElementById("docContractInstallments").value, 10) || 1));
+    contractFirstDue = document.getElementById("docContractFirstDue").value || getOffsetDate(0);
     contractFixedFee = fixedFee;
     contractPaymentMethod = method;
     contractArea = area;
     contractObj = obj;
 
     const objetoTexto = `${area} — ${obj}`;
+    const contractPlan = buildMonthlyPlan(contractInstallments > 1 ? "parcelas" : "unico", fixedFee, contractInstallments, contractFirstDue);
+    const planFirst = contractPlan[0];
+    const planLast = contractPlan[contractPlan.length - 1];
+    const installmentsClause = contractInstallments > 1 && fixedFee > 0
+      ? `, em ${contractInstallments} parcelas mensais e sucessivas de ${formatBRL(planFirst.value)}${planLast.value !== planFirst.value ? ` (a última de ${formatBRL(planLast.value)})` : ""}, vencendo-se a primeira em ${formatDateBR(contractFirstDue)} e as demais no mesmo dia dos meses seguintes`
+      : "";
     const valorForma = fixedFee > 0
-      ? `Honorários fixos no valor de ${formatBRL(fixedFee)}, a serem pagos via ${method}`
+      ? `Honorários fixos no valor de ${formatBRL(fixedFee)}, a serem pagos via ${method}${installmentsClause}`
       : "A combinar conforme condições específicas do caso";
     const exitoTexto = successPct > 0
       ? `Honorários de êxito correspondentes a ${successPct.toFixed(1)}% (por cento) incidentes sobre o proveito econômico obtido em caso de acordo, sentença favorável ou transação judicial/extrajudicial`
       : "Não aplicável ao presente contrato";
-    const parcelasTexto = conditions || "Pagamento em parcela única, conforme cláusula 1ª";
+    const parcelasTexto = conditions || (contractInstallments > 1 && fixedFee > 0
+      ? `Pagamento parcelado em ${contractInstallments} parcelas mensais, conforme cláusula 1ª`
+      : "Pagamento em parcela única, conforme cláusula 1ª");
 
     const doc = buildContratoDoc({ qualificationText, constituentName, dateStr: docDateStr, objeto: objetoTexto, valorForma, exitoTexto, parcelasTexto });
     generatedTitle = doc.title;
@@ -11337,10 +11383,11 @@ document.getElementById("formDocGeneration").addEventListener("submit", async (e
       // Trava contra lançamento duplicado: se já existe um recebível
       // pendente idêntico pra esse cliente (ex: reemitiu o contrato por
       // engano, ou clicou duas vezes), avisa antes de criar outro.
+      // (parcelados têm "(1/N)" no fim, por isso compara pelo começo)
       const { data: existingRec } = await sb.from("receivables")
         .select("id")
         .eq("client_id", selectedClientId)
-        .eq("description", contractDesc)
+        .ilike("description", contractDesc.replace(/[\\%_]/g, "\\$&") + "%")
         .eq("status", "Pendente")
         .limit(1);
       const alreadyExists = existingRec && existingRec.length > 0;
@@ -11351,24 +11398,28 @@ document.getElementById("formDocGeneration").addEventListener("submit", async (e
       if (!proceed) {
         financeMsg = " Documento gerado; nenhum novo lançamento foi feito no Financeiro (já existia um pendente igual).";
       } else {
-        const receivablePayload = mapReceivableToDb({
-          desc: contractDesc,
+        const installPlan = buildMonthlyPlan(contractInstallments > 1 ? "parcelas" : "unico", contractFixedFee, contractInstallments, contractFirstDue);
+        const lawyerForFee = (currentProfile && currentProfile.lawyer_id) || (AppState.lawyers.find(l => l.position === "Advogado(a)") || {}).id || null;
+        const receivableRows = installPlan.map(p => mapReceivableToDb({
+          desc: installPlan.length > 1 ? `${contractDesc} (${p.n}/${installPlan.length})` : contractDesc,
           clientId: selectedClientId,
           area: contractArea,
-          lawyerId: (currentProfile && currentProfile.lawyer_id) || (AppState.lawyers.find(l => l.position === "Advogado(a)") || {}).id || null,
-          value: contractFixedFee,
-          dueDate: getOffsetDate(0),
+          lawyerId: lawyerForFee,
+          value: p.value,
+          dueDate: p.dueDate,
           status: "Pendente",
           paymentMethod: contractPaymentMethod,
           splitType: "100% Dra. Cacilda"
-        });
-        const { data: recData, error: recError } = await sb.from("receivables").insert(receivablePayload).select().single();
+        }));
+        const { data: recData, error: recError } = await sb.from("receivables").insert(receivableRows).select();
         if (recError) {
           financeMsg = " Não foi possível lançar automaticamente no Financeiro (" + recError.message + ") — lance manualmente em Recebíveis.";
           alert("Atenção: o documento foi gerado, mas o honorário NÃO foi lançado no Financeiro (" + recError.message + "). Lance manualmente em Recebíveis.");
         } else {
-          AppState.receivables.unshift(mapReceivableFromDb(recData));
-          financeMsg = " Honorários lançados no Financeiro!";
+          recData.map(mapReceivableFromDb).reverse().forEach(r => AppState.receivables.unshift(r));
+          financeMsg = installPlan.length > 1
+            ? ` ${installPlan.length} parcelas lançadas no Financeiro!`
+            : " Honorários lançados no Financeiro!";
         }
       }
     }
@@ -11604,6 +11655,65 @@ function addMonthsISO(iso, months) {
   first.setDate(Math.min(d, lastDay));
   return `${first.getFullYear()}-${String(first.getMonth() + 1).padStart(2, "0")}-${String(first.getDate()).padStart(2, "0")}`;
 }
+
+// Plano de lançamentos mensais de uma cobrança/despesa:
+//   unico    → 1 lançamento
+//   parcelas → divide o valor TOTAL em N parcelas (centavos exatos; a
+//              diferença de arredondamento fica na última)
+//   fixo     → repete o MESMO valor N meses
+function buildMonthlyPlan(mode, value, count, firstDue) {
+  if (mode === "unico" || !(count >= 2)) return [{ n: 1, value, dueDate: firstDue }];
+  if (mode === "fixo") {
+    return Array.from({ length: count }, (_, i) => ({ n: i + 1, value, dueDate: addMonthsISO(firstDue, i) }));
+  }
+  const cents = Math.round(value * 100);
+  const base = Math.floor(cents / count);
+  const rest = cents - base * count;
+  return Array.from({ length: count }, (_, i) => ({
+    n: i + 1,
+    value: (base + (i === count - 1 ? rest : 0)) / 100,
+    dueDate: addMonthsISO(firstDue, i)
+  }));
+}
+
+// Controles de parcelamento do formulário (prefixo "rec" ou "pay"):
+// mostra/esconde a quantidade e escreve a prévia das parcelas.
+window.refreshInstallUi = function(prefix) {
+  const mode = document.getElementById(prefix + "Mode").value;
+  const wrap = document.getElementById(prefix + "CountWrap");
+  const preview = document.getElementById(prefix + "InstallPreview");
+  wrap.style.display = mode === "unico" ? "none" : "";
+  if (mode === "unico") { preview.textContent = ""; return; }
+
+  const count = parseInt(document.getElementById(prefix + "Count").value, 10);
+  const value = Number(document.getElementById(prefix + "Value").value || 0);
+  const due = document.getElementById(prefix + "DueDate").value;
+  if (!(count >= 2) || !(value > 0) || !due) {
+    preview.textContent = mode === "parcelas"
+      ? "Informe o valor TOTAL, o vencimento da 1ª parcela e a quantidade."
+      : "Informe o valor mensal, o primeiro vencimento e a quantidade.";
+    return;
+  }
+  const plan = buildMonthlyPlan(mode, value, count, due);
+  const first = plan[0], last = plan[plan.length - 1];
+  const br = (k) => k.split("-").reverse().join("/");
+  if (mode === "parcelas") {
+    const lastNote = last.value !== first.value ? ` (a última sai ${formatBRL(last.value)})` : "";
+    preview.textContent = `${count} parcelas de ${formatBRL(first.value)}${lastNote}. Vencimentos de ${br(first.dueDate)} a ${br(last.dueDate)}. Total: ${formatBRL(value)}.`;
+  } else {
+    preview.textContent = `${count} lançamentos de ${formatBRL(value)}, de ${br(first.dueDate)} a ${br(last.dueDate)}. Total: ${formatBRL(value * count)}.`;
+  }
+};
+
+["rec", "pay"].forEach(prefix => {
+  [prefix + "Mode", prefix + "Count", prefix + "Value", prefix + "DueDate"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("input", () => window.refreshInstallUi(prefix));
+      el.addEventListener("change", () => window.refreshInstallUi(prefix));
+    }
+  });
+});
 
 // Busca das listas: ignora acentos e maiúsculas, aceita várias palavras em
 // qualquer ordem e acha número de processo/CPF digitado com ou sem pontuação.
