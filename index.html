@@ -2861,9 +2861,6 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
                 <button class="btn btn-secondary" onclick="showDocSubView('models')">
                   + Novo Documento
                 </button>
-                <button class="btn btn-secondary" style="color:var(--danger); border-color:#fca5a5;" onclick="clearAllDocumentsHistory()">
-                  🗑 Apagar Todo o Histórico
-                </button>
               </div>
             </div>
 
@@ -3928,6 +3925,30 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
                   <th style="text-align:center;">Pode importar</th>
                   <th>Último acesso</th>
                   <th style="text-align:right;">Senha</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card-box" style="margin-top:1.5rem;">
+          <div class="card-box-header">
+            <h2 class="card-box-title">Registros apagados (lixeira)</h2>
+            <button class="btn btn-sm btn-secondary" id="btnReloadTrash">Atualizar</button>
+          </div>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.5;">
+            Tudo que alguém apaga no sistema fica guardado aqui, com quem apagou e quando. Clique em <strong>Restaurar</strong> para o registro voltar ao lugar de origem. Para restaurar um registro ligado a outro (por exemplo, um recebível de um cliente apagado), restaure primeiro o cliente.
+          </p>
+          <div class="table-responsive">
+            <table class="data-table" id="tableTrash">
+              <thead>
+                <tr>
+                  <th>Apagado em</th>
+                  <th>Tipo</th>
+                  <th>Registro</th>
+                  <th>Apagado por</th>
+                  <th style="text-align:right;">Ação</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -5223,7 +5244,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261012-234215";
+const APP_VERSION = "20261013-000630";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -10580,6 +10601,16 @@ async function handleLoginSubmit(e) {
     return;
   }
 
+  if (currentProfile.role === "backup") {
+    errEl.textContent = "Este usuário é só para o backup automático e não abre o sistema.";
+    errEl.style.display = "block";
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Entrar";
+    currentProfile = null;
+    await sb.auth.signOut();
+    return;
+  }
+
   showApp();
   await bootApp();
 }
@@ -10614,7 +10645,8 @@ const USER_ROLE_LABELS = {
   advogada_associada: "Advogada associada",
   financeiro: "Financeiro",
   apoio_juridico: "Apoio jurídico",
-  recepcao: "Recepção"
+  recepcao: "Recepção",
+  backup: "Backup (somente leitura)"
 };
 let adminUsersList = [];
 let adminUsersEmailsOk = true;
@@ -10626,7 +10658,7 @@ async function callAdminUsers(payload) {
     let msg = error.message || "Erro ao falar com o servidor.";
     try {
       const j = await error.context.json();
-      if (j && j.error) msg = j.error;
+      if (j && j.error) msg = j.error + (j.detail ? " Motivo: " + j.detail : "");
     } catch (_) { /* mantém a mensagem padrão */ }
     throw new Error(msg);
   }
@@ -10665,7 +10697,75 @@ async function loadUsersAdmin() {
     lastSignIn: (authById.get(p.id) || {}).last_sign_in_at || ""
   }));
   renderUsersAdmin();
+  loadTrash();
 }
+
+// --- LIXEIRA (registros apagados): tabela deleted_records, preenchida por
+// gatilho no banco a cada exclusão. Só o administrador geral enxerga/restaura.
+const TRASH_TABLE_LABELS = {
+  clients: "Cliente",
+  cases: "Processo",
+  appointments: "Evento da agenda",
+  tasks: "Tarefa",
+  receivables: "Recebível",
+  payables: "Conta a pagar",
+  receipts: "Recibo",
+  documents: "Documento",
+  cashbook_entries: "Lançamento do caixa",
+  rpv_alvaras: "RPV / Alvará",
+  inss_processes: "Processo INSS",
+  lawyers: "Membro da equipe"
+};
+
+function trashSummary(row) {
+  const d = row || {};
+  const keys = ["name", "title", "description", "number", "client_name", "full_name", "type_name", "receipt_number", "protocol_number"];
+  const parts = [];
+  for (const k of keys) {
+    if (typeof d[k] === "string" && d[k].trim() && !parts.includes(d[k].trim())) parts.push(d[k].trim());
+    if (parts.length >= 2) break;
+  }
+  return parts.join(" — ") || "(sem descrição)";
+}
+
+async function loadTrash() {
+  const tbody = document.querySelector("#tableTrash tbody");
+  if (!tbody) return;
+  const { data, error } = await sb.from("deleted_records").select("*").order("deleted_at", { ascending: false }).limit(200);
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:1.25rem; color:var(--text-muted);">Lixeira indisponível (rode a migração 0028 no Supabase). ${esc(friendlyDbError(error))}</td></tr>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:1.25rem; color:var(--text-muted);">Nenhum registro apagado.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td style="font-size:0.8rem;">${esc(new Date(r.deleted_at).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }))}</td>
+      <td>${esc(TRASH_TABLE_LABELS[r.table_name] || r.table_name)}</td>
+      <td>${esc(trashSummary(r.row_data))}</td>
+      <td style="font-size:0.85rem;">${esc(r.deleted_by_name || "—")}</td>
+      <td style="text-align:right;"><button class="btn btn-sm btn-secondary" onclick="restoreTrashRecord('${r.id}')">Restaurar</button></td>
+    </tr>`).join("");
+}
+
+window.restoreTrashRecord = async function(id) {
+  if (!confirm("Restaurar este registro? Ele volta para a lista de origem.")) return;
+  const { error } = await sb.rpc("restore_deleted_record", { p_id: id });
+  if (error) {
+    alert("Não foi possível restaurar: " + friendlyDbError(error, {
+      fkMessage: "Este registro depende de outro que também foi apagado (ex.: o cliente). Restaure primeiro o registro de origem."
+    }));
+    return;
+  }
+  showToast("Registro restaurado.");
+  await AppState.init();
+  refreshAll();
+  loadTrash();
+};
+
+document.getElementById("btnReloadTrash").addEventListener("click", loadTrash);
 
 function renderUsersAdmin() {
   const tbody = document.querySelector("#tableUsers tbody");
@@ -10870,7 +10970,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     currentProfile = await loadCurrentProfile(session.user.id);
-    if (currentProfile && currentProfile.active !== false) {
+    if (currentProfile && currentProfile.role === "backup") {
+      await sb.auth.signOut();
+      currentProfile = null;
+    } else if (currentProfile && currentProfile.active !== false) {
       showApp();
       await bootApp();
       return;
@@ -11725,22 +11828,6 @@ window.deleteHistoryDoc = async function(docId) {
     AppState.documents = AppState.documents.filter(d => d.id !== docId);
     renderDocHistory();
     showToast("Documento removido do histórico!");
-  }
-};
-
-window.clearAllDocumentsHistory = async function() {
-  if (confirm("ATENÇÃO: Deseja apagar TODOS os documentos do histórico? Esta ação não pode ser desfeita.")) {
-    const ids = AppState.documents.map(d => d.id);
-    if (ids.length > 0) {
-      const { error } = await sb.from("documents").delete().in("id", ids);
-      if (error) {
-        alert("Não foi possível apagar o histórico: " + friendlyDbError(error));
-        return;
-      }
-    }
-    AppState.documents = [];
-    renderDocHistory();
-    showToast("Todo o histórico de documentos foi apagado.", "🗑");
   }
 };
 
