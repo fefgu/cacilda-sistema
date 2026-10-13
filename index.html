@@ -5100,7 +5100,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261012-232115";
+const APP_VERSION = "20261012-232608";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -9465,6 +9465,15 @@ function renderAgingAnalysis(pendingList, totalPending) {
   });
 }
 
+// Célula de CSV segura: o Excel executa como fórmula qualquer texto que
+// comece com = + - @ (ex: um cliente cadastrado como "=HYPERLINK(...)").
+// O apóstrofo na frente faz o Excel tratar como texto comum.
+function csvCell(value) {
+  let s = String(value ?? "");
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return `"${s.replace(/"/g, '""')}"`;
+}
+
 // k) Exportação de Relatório para CSV
 function exportFinancialReportCsv() {
   const periodVal = document.getElementById("repPeriodSelect").value;
@@ -9487,7 +9496,11 @@ function exportFinancialReportCsv() {
   filtered.forEach(r => {
     const lawyer = getLawyerName(getReceivableLawyerId(r));
     const area = getReceivableArea(r);
-    csv += `"${r.id}";"${(r.desc || '').replace(/"/g, '""')}";"${(r.client || '').replace(/"/g, '""')}";"${area}";"${lawyer}";"${Number(r.value || 0).toFixed(2)}";"${r.dueDate || ''}";"${r.status || ''}";"${r.paymentMethod || ''}";"${r.paidDate || ''}";"${r.receiptNumber || ''}"\n`;
+    csv += [
+      csvCell(r.id), csvCell(r.desc), csvCell(r.client), csvCell(area), csvCell(lawyer),
+      `"${Number(r.value || 0).toFixed(2)}"`,
+      csvCell(r.dueDate), csvCell(r.status), csvCell(r.paymentMethod), csvCell(r.paidDate), csvCell(r.receiptNumber)
+    ].join(";") + "\n";
   });
 
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
