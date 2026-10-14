@@ -1417,11 +1417,69 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       border-top: 1.5px solid #222222;
     }
 
+    /* Formulário do gerador (mesmos campos do gerador antigo do escritório) */
+    .gd-toggles { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .gd-toggle-row {
+      flex: 1; min-width: 220px; display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.65rem 0.85rem; border: 1px solid rgba(189, 163, 94, 0.28); border-radius: 6px;
+      background: rgba(237, 237, 237, 0.04); cursor: pointer; font-weight: 600; font-size: 0.9rem;
+    }
+    .gd-toggle-row input { width: auto; margin: 0; }
+    .gd-toggle-row small { font-weight: 400; color: var(--text-muted); }
+    .gd-bloco {
+      border: 1px solid rgba(189, 163, 94, 0.2); border-radius: 8px; padding: 0.9rem 1rem;
+      margin-bottom: 1rem; background: rgba(237, 237, 237, 0.03);
+    }
+    .gd-bloco-title {
+      font-size: 0.8rem; font-weight: 700; color: var(--accent-text);
+      text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.75rem;
+      border-left: 3px solid var(--brand-gold, #B5993A); padding-left: 0.5rem;
+    }
+    .gd-financeiro-box {
+      margin-top: 0.9rem; padding: 0.85rem 1rem; border: 1px dashed rgba(189, 163, 94, 0.4);
+      border-radius: 8px; background: rgba(189, 163, 94, 0.06);
+    }
+
+    /* Folha no modelo do gerador antigo do escritório (documentos gerados a
+       partir desta versão). Documentos antigos do histórico continuam com o
+       visual anterior. */
+    .doc-a4-sheet.doc-modelo-classico {
+      display: block;
+      padding: 2.5cm 2.5cm 1.5cm;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11pt;
+      line-height: 1.9;
+      color: #111;
+    }
+    .doc-modelo-classico .doc-titulo {
+      text-align: center; font-size: 11pt; font-weight: bold; text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 28px; color: #2E2E5A;
+    }
+    .doc-modelo-classico p { text-align: justify; margin: 0 0 12px; text-indent: 0; }
+    .doc-modelo-classico strong { font-weight: bold; }
+    .doc-modelo-classico .clausula-title { font-weight: bold; }
+    .doc-modelo-classico .local-data { margin-top: 32px; text-align: center; }
+    .doc-modelo-classico .assinaturas { margin-top: 60px; break-inside: avoid; page-break-inside: avoid; }
+    .doc-modelo-classico .ass-grid { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; }
+    .doc-modelo-classico .ass-bloco { text-align: center; min-width: 280px; }
+    .doc-modelo-classico .ass-linha { border-top: 1px solid #333; margin-bottom: 6px; width: 100%; min-width: 280px; margin-top: 60px; }
+    .doc-modelo-classico .ass-nome { font-weight: bold; font-size: 11pt; }
+    .doc-modelo-classico .ass-qual,
+    .doc-modelo-classico .ass-oab { font-size: 11pt; }
+    .doc-modelo-classico .testemunhas-titulo { font-size: 11pt; font-weight: bold; margin-top: 40px; margin-bottom: 20px; text-align: center; }
+    .doc-modelo-classico .test-grid { display: flex; gap: 60px; justify-content: center; }
+    .doc-modelo-classico .test-bloco { text-align: center; min-width: 160px; }
+    .doc-modelo-classico .test-linha { border-top: 1px solid #333; margin-bottom: 5px; }
+
     /* Print styles */
     @media print {
       @page {
         size: A4;
         margin: 0;
+      }
+      @page docClassico {
+        size: A4;
+        margin: 2.5cm 2.5cm 1.5cm 2.5cm;
       }
 
       /* html/body têm overflow:hidden + height:100% fixos pro layout do app
@@ -1461,6 +1519,10 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       body.printing-active {
         height: auto !important;
         overflow: visible !important;
+        /* No tema escuro o fundo do app saía na impressão (margens e fim da
+           última página pretos). Papel é sempre branco. */
+        background: #fff !important;
+        color-scheme: light !important;
       }
       body.printing-active #printStage .receipt-paper {
         box-shadow: none !important;
@@ -1469,6 +1531,18 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       }
       body.printing-active #printStage .doc-a4-sheet {
         box-shadow: none !important;
+      }
+      /* Modelo do gerador antigo: margens da folha iguais às dele (2,5 cm;
+         1,5 cm embaixo), repetidas em todas as páginas do documento. */
+      body.printing-active #printStage.stage-doc-classico {
+        width: auto;
+        page: docClassico;
+      }
+      body.printing-active #printStage .doc-a4-sheet.doc-modelo-classico {
+        width: auto;
+        min-height: 0;
+        padding: 0;
+        border: none;
       }
 
       body:not(.printing-active) .app-sidebar,
@@ -2555,231 +2629,183 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
                 </div>
               </div>
 
-              <!-- PASSO 2: ESCOLHER TIPO DE OUTORGANTE / CONSTITUINTE (ABAS) -->
+              <!-- PASSO 2: QUALIFICAÇÃO (mesmo formulário do gerador antigo do escritório) -->
               <div class="doc-step-box">
                 <div class="doc-step-title">
                   <span class="doc-step-num">2</span>
                   <span>Qualificação das Partes / Outorgante</span>
                 </div>
 
-                <div class="doc-tabs-nav" id="docConstituentTabs">
-                  <button type="button" class="doc-tab-btn active" data-const-type="pf" onclick="setDocConstituentTab('pf')">
-                    👤 Pessoa Física
-                  </button>
-                  <button type="button" class="doc-tab-btn" data-const-type="pj" onclick="setDocConstituentTab('pj')">
-                    🏢 Pessoa Jurídica (Empresa/CNPJ)
-                  </button>
-                  <button type="button" class="doc-tab-btn" data-const-type="menor" onclick="setDocConstituentTab('menor')">
-                    🧒 Menor de Idade (com Representante)
-                  </button>
+                <div class="gd-toggles">
+                  <label class="gd-toggle-row" for="gdChkMenor">
+                    <input type="checkbox" id="gdChkMenor">
+                    <span>Menor de idade <small>— com responsável legal</small></span>
+                  </label>
+                  <label class="gd-toggle-row" for="gdChkPj">
+                    <input type="checkbox" id="gdChkPj">
+                    <span>Pessoa Jurídica <small>— empresa / CNPJ</small></span>
+                  </label>
                 </div>
 
-                <!-- ABA 2.A: PESSOA FÍSICA -->
-                <div id="docTabContentPF">
+                <!-- DADOS DO MENOR (só com "Menor de idade" marcado) -->
+                <div id="gdBlocoMenor" class="gd-bloco" style="display:none;">
+                  <div class="gd-bloco-title">Dados do Menor (Outorgante / Constituinte)</div>
                   <div class="form-row" style="margin-bottom:0.75rem;">
                     <div class="form-field" style="flex:2;">
-                      <label for="docPfName">Nome Completo *</label>
-                      <input type="text" id="docPfName" placeholder="Ex: Maria Souza Silva" required>
+                      <label for="gdMenorNome">Nome completo do menor *</label>
+                      <input type="text" id="gdMenorNome" placeholder="Ex: Samuel Silva Araújo">
                     </div>
                     <div class="form-field">
-                      <label for="docPfGender">Sexo / Tratamento</label>
-                      <select id="docPfGender">
-                        <option value="Feminino">Feminino (Outorgante)</option>
-                        <option value="Masculino">Masculino (Outorgante)</option>
-                      </select>
+                      <label for="gdMenorNac">Nacionalidade</label>
+                      <input type="text" id="gdMenorNac" value="brasileiro(a)">
                     </div>
                   </div>
-
-                  <div class="form-row" style="margin-bottom:0.75rem;">
-                    <div class="form-field">
-                      <label for="docPfNationality">Nacionalidade</label>
-                      <input type="text" id="docPfNationality" value="brasileira">
-                    </div>
-                    <div class="form-field">
-                      <label for="docPfMarital">Estado Civil</label>
-                      <select id="docPfMarital">
-                        <option value="solteira(o)">Solteira(o)</option>
-                        <option value="casada(o)">Casada(o)</option>
-                        <option value="divorciada(o)">Divorciada(o)</option>
-                        <option value="viúva(o)">Viúva(o)</option>
-                        <option value="em união estável">União Estável</option>
-                      </select>
-                    </div>
-                    <div class="form-field">
-                      <label for="docPfProfession">Profissão</label>
-                      <input type="text" id="docPfProfession" placeholder="Ex: Professora / Comerciante / Aposentada">
-                    </div>
-                  </div>
-
-                  <div class="form-row" style="margin-bottom:0.75rem;">
-                    <div class="form-field">
-                      <label for="docPfRg">RG</label>
-                      <input type="text" id="docPfRg" placeholder="Ex: MG-14.890.123">
-                    </div>
-                    <div class="form-field">
-                      <label for="docPfRgEmitter">Órgão Emissor</label>
-                      <input type="text" id="docPfRgEmitter" placeholder="Ex: SSP/MG" value="SSP/MG">
-                    </div>
-                    <div class="form-field">
-                      <label for="docPfCpf">CPF *</label>
-                      <input type="text" id="docPfCpf" placeholder="000.000.000-00">
-                    </div>
-                  </div>
-
-                  <div class="form-field" style="margin-bottom:0.75rem;">
-                    <label for="docPfParentage">Filiação (filha/filho de)</label>
-                    <input type="text" id="docPfParentage" placeholder="Nome do pai e/ou mãe">
-                  </div>
-
-                  <div class="form-row" style="margin-bottom:0.75rem;">
-                    <div class="form-field" style="flex:2;">
-                      <label for="docPfAddress">Endereço Completo (Rua, Número, Bairro)</label>
-                      <input type="text" id="docPfAddress" placeholder="Ex: Rua Floriano Peixoto, 150, Bairro Alvorada">
-                    </div>
-                    <div class="form-field">
-                      <label for="docPfCep">CEP</label>
-                      <input type="text" id="docPfCep" placeholder="38200-000">
-                    </div>
-                  </div>
-
                   <div class="form-row">
                     <div class="form-field">
-                      <label for="docPfCity">Cidade</label>
-                      <input type="text" id="docPfCity" value="Frutal">
+                      <label for="gdMenorCpf">CPF do menor (se houver)</label>
+                      <input type="text" id="gdMenorCpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric">
                     </div>
                     <div class="form-field">
-                      <label for="docPfUf">UF</label>
-                      <input type="text" id="docPfUf" value="MG" maxlength="2">
-                    </div>
-                    <div class="form-field">
-                      <label for="docPfDate">Data do Documento</label>
-                      <input type="date" id="docPfDate">
-                    </div>
-                  </div>
-                </div>
-
-                <!-- ABA 2.B: PESSOA JURÍDICA -->
-                <div id="docTabContentPJ" style="display:none;">
-                  <div class="form-row" style="margin-bottom:0.75rem;">
-                    <div class="form-field" style="flex:2;">
-                      <label for="docPjName">Razão Social da Empresa *</label>
-                      <input type="text" id="docPjName" placeholder="Ex: Metalúrgica Nova Era Ltda">
-                    </div>
-                    <div class="form-field">
-                      <label for="docPjCnpj">CNPJ *</label>
-                      <input type="text" id="docPjCnpj" placeholder="00.000.000/0001-00">
-                    </div>
-                  </div>
-
-                  <div class="form-row" style="margin-bottom:0.75rem;">
-                    <div class="form-field">
-                      <label for="docPjIe">Inscrição Estadual</label>
-                      <input type="text" id="docPjIe" placeholder="Isenta ou nº da IE">
-                    </div>
-                    <div class="form-field" style="flex:2;">
-                      <label for="docPjAddress">Endereço da Empresa</label>
-                      <input type="text" id="docPjAddress" placeholder="Rua, Número, Bairro, Cidade/UF">
-                    </div>
-                    <div class="form-field">
-                      <label for="docPjCep">CEP da Empresa</label>
-                      <input type="text" id="docPjCep" placeholder="38200-000">
-                    </div>
-                  </div>
-
-                  <div style="font-size:0.8rem; font-weight:700; color:var(--brand-primary); text-transform:uppercase; margin:1rem 0 0.5rem;">
-                    👤 Representante Legal da Empresa
-                  </div>
-
-                  <div class="form-row" style="margin-bottom:0.75rem;">
-                    <div class="form-field" style="flex:2;">
-                      <label for="docPjRepName">Nome do Representante Legal *</label>
-                      <input type="text" id="docPjRepName" placeholder="Nome completo do sócio/administrador">
-                    </div>
-                    <div class="form-field">
-                      <label for="docPjRepRole">Cargo / Qualidade</label>
-                      <input type="text" id="docPjRepRole" value="Sócio-Administrador" placeholder="Ex: Sócio-Administrador, Diretor">
-                    </div>
-                  </div>
-
-                  <div class="form-row" style="margin-bottom:0.75rem;">
-                    <div class="form-field">
-                      <label for="docPjRepCpf">CPF do Representante</label>
-                      <input type="text" id="docPjRepCpf" placeholder="000.000.000-00">
-                    </div>
-                    <div class="form-field">
-                      <label for="docPjRepRg">RG do Representante</label>
-                      <input type="text" id="docPjRepRg" placeholder="RG e Órgão Emissor">
-                    </div>
-                    <div class="form-field">
-                      <label for="docPjDate">Data do Documento</label>
-                      <input type="date" id="docPjDate">
-                    </div>
-                  </div>
-                </div>
-
-                <!-- ABA 2.C: MENOR DE IDADE -->
-                <div id="docTabContentMenor" style="display:none;">
-                  <div class="form-row" style="margin-bottom:0.75rem;">
-                    <div class="form-field" style="flex:2;">
-                      <label for="docMenorName">Nome Completo do Menor *</label>
-                      <input type="text" id="docMenorName" placeholder="Nome completo do menor">
-                    </div>
-                    <div class="form-field">
-                      <label for="docMenorNationality">Nacionalidade</label>
-                      <input type="text" id="docMenorNationality" value="brasileiro(a), menor impúbere">
-                    </div>
-                    <div class="form-field">
-                      <label for="docMenorCpf">CPF do Menor (se houver)</label>
-                      <input type="text" id="docMenorCpf" placeholder="000.000.000-00">
-                    </div>
-                  </div>
-
-                  <div style="font-size:0.8rem; font-weight:700; color:var(--brand-primary); text-transform:uppercase; margin:1rem 0 0.5rem;">
-                    👥 Representante / Assistente Legal
-                  </div>
-
-                  <div class="form-row" style="margin-bottom:0.75rem;">
-                    <div class="form-field">
-                      <label for="docMenorRepRel">Qualidade do Representante</label>
-                      <select id="docMenorRepRel">
-                        <option value="sua genitora / mãe">Representado(a) por sua genitora (mãe)</option>
-                        <option value="seu genitor / pai">Representado(a) por seu genitor (pai)</option>
-                        <option value="seu(sua) tutor(a) legal">Representado(a) por tutor(a) legal</option>
+                      <label for="gdMenorParentesco">Qualidade do representante legal</label>
+                      <select id="gdMenorParentesco">
+                        <option value="genitora">genitora</option>
+                        <option value="genitor">genitor</option>
+                        <option value="representante legal">representante legal</option>
+                        <option value="tutora">tutora</option>
+                        <option value="tutor">tutor</option>
+                        <option value="curadora">curadora</option>
+                        <option value="curador">curador</option>
                       </select>
                     </div>
-                    <div class="form-field" style="flex:2;">
-                      <label for="docMenorRepName">Nome do Representante Legal *</label>
-                      <input type="text" id="docMenorRepName" placeholder="Nome completo da mãe/pai/tutor">
-                    </div>
                   </div>
+                </div>
 
-                  <div class="form-row" style="margin-bottom:0.75rem;">
-                    <div class="form-field">
-                      <label for="docMenorRepCpf">CPF do Representante</label>
-                      <input type="text" id="docMenorRepCpf" placeholder="000.000.000-00">
-                    </div>
-                    <div class="form-field">
-                      <label for="docMenorRepRg">RG do Representante</label>
-                      <input type="text" id="docMenorRepRg" placeholder="Ex: MG-12.345.678 SSP/MG">
-                    </div>
-                  </div>
-
+                <!-- DADOS DA EMPRESA (só com "Pessoa Jurídica" marcado) -->
+                <div id="gdBlocoPj" class="gd-bloco" style="display:none;">
+                  <div class="gd-bloco-title">Dados da Empresa (Outorgante / Constituinte)</div>
                   <div class="form-row" style="margin-bottom:0.75rem;">
                     <div class="form-field" style="flex:2;">
-                      <label for="docMenorAddress">Endereço do Menor / Família</label>
-                      <input type="text" id="docMenorAddress" placeholder="Rua, Número, Bairro">
+                      <label for="gdPjRazao">Razão social *</label>
+                      <input type="text" id="gdPjRazao" placeholder="Ex: EMPRESA EXEMPLO LTDA">
                     </div>
                     <div class="form-field">
-                      <label for="docMenorCity">Cidade</label>
-                      <input type="text" id="docMenorCity" value="Frutal">
+                      <label for="gdPjCnpj">CNPJ *</label>
+                      <input type="text" id="gdPjCnpj" placeholder="00.000.000/0000-00" maxlength="18" inputmode="numeric">
                     </div>
                     <div class="form-field">
-                      <label for="docMenorUf">UF</label>
-                      <input type="text" id="docMenorUf" value="MG" maxlength="2">
+                      <label for="gdPjIe">Inscrição estadual</label>
+                      <input type="text" id="gdPjIe" placeholder="Ex: 123.456.789/0001">
+                    </div>
+                  </div>
+                  <div class="form-row" style="margin-bottom:0.75rem;">
+                    <div class="form-field" style="flex:2;">
+                      <label for="gdPjEndereco">Endereço da empresa</label>
+                      <input type="text" id="gdPjEndereco" placeholder="Ex: Rua das Flores, nº 100, Centro">
                     </div>
                     <div class="form-field">
-                      <label for="docMenorDate">Data do Documento</label>
-                      <input type="date" id="docMenorDate">
+                      <label for="gdPjCep">CEP da empresa</label>
+                      <input type="text" id="gdPjCep" placeholder="00000-000" maxlength="9" inputmode="numeric">
+                    </div>
+                  </div>
+                  <div class="form-row" style="margin-bottom:0.75rem;">
+                    <div class="form-field" style="flex:2;">
+                      <label for="gdPjRepNome">Nome do representante legal *</label>
+                      <input type="text" id="gdPjRepNome" placeholder="Ex: JOÃO DA SILVA">
+                    </div>
+                    <div class="form-field">
+                      <label for="gdPjRepCargo">Cargo do representante</label>
+                      <input type="text" id="gdPjRepCargo" placeholder="Ex: sócio-administrador">
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-field">
+                      <label for="gdPjRepCpf">CPF do representante</label>
+                      <input type="text" id="gdPjRepCpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric">
+                    </div>
+                    <div class="form-field">
+                      <label for="gdPjRepRg">RG do representante</label>
+                      <input type="text" id="gdPjRepRg" placeholder="Ex: MG-24.920.727 SSP/MG">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- DADOS DO CLIENTE (ou do responsável, no caso de menor) -->
+                <div class="gd-bloco">
+                  <div class="gd-bloco-title" id="gdCardClienteTitulo">Dados do Cliente</div>
+                  <div class="form-row" style="margin-bottom:0.75rem;">
+                    <div class="form-field" style="flex:2;">
+                      <label for="gdNome"><span id="gdLblNome">Nome completo</span> *</label>
+                      <input type="text" id="gdNome" placeholder="Ex: GLEYCIELE DIAS ARAÚJO">
+                    </div>
+                    <div class="form-field">
+                      <label for="gdSexo">Sexo *</label>
+                      <select id="gdSexo">
+                        <option value="F">Feminino</option>
+                        <option value="M">Masculino</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-row" style="margin-bottom:0.75rem;">
+                    <div class="form-field">
+                      <label for="gdNacionalidade">Nacionalidade</label>
+                      <input type="text" id="gdNacionalidade" value="brasileira">
+                    </div>
+                    <div class="form-field">
+                      <label for="gdEstadoCivil">Estado civil</label>
+                      <select id="gdEstadoCivil">
+                        <option>solteira</option>
+                        <option>casada</option>
+                        <option>divorciada</option>
+                        <option>viúva</option>
+                        <option>separada judicialmente</option>
+                        <option>em união estável</option>
+                      </select>
+                    </div>
+                    <div class="form-field">
+                      <label for="gdProfissao">Profissão</label>
+                      <input type="text" id="gdProfissao" placeholder="Ex: autônoma">
+                    </div>
+                  </div>
+                  <div class="form-row" style="margin-bottom:0.75rem;">
+                    <div class="form-field">
+                      <label for="gdRg">RG *</label>
+                      <input type="text" id="gdRg" placeholder="Ex: MG-24.920.727">
+                    </div>
+                    <div class="form-field">
+                      <label for="gdOrgao">Órgão emissor</label>
+                      <input type="text" id="gdOrgao" placeholder="Ex: SSP/MG">
+                    </div>
+                    <div class="form-field">
+                      <label for="gdCpf">CPF *</label>
+                      <input type="text" id="gdCpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric">
+                    </div>
+                  </div>
+                  <div class="form-field" style="margin-bottom:0.75rem;">
+                    <label for="gdFiliacao">Filiação (filha/filho de)</label>
+                    <input type="text" id="gdFiliacao" placeholder="Ex: Maria Iraildes Dias de Sousa Araújo e Adalci Pereira de Araújo">
+                  </div>
+                  <div class="form-row" style="margin-bottom:0.75rem;">
+                    <div class="form-field" style="flex:2;">
+                      <label for="gdEndereco">Endereço completo *</label>
+                      <input type="text" id="gdEndereco" placeholder="Ex: Rua Nova Ponte, nº 1188, Bairro Progresso">
+                    </div>
+                    <div class="form-field">
+                      <label for="gdCep">CEP</label>
+                      <input type="text" id="gdCep" placeholder="00000-000" maxlength="9" inputmode="numeric">
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-field">
+                      <label for="gdCidade">Cidade *</label>
+                      <input type="text" id="gdCidade" value="Frutal">
+                    </div>
+                    <div class="form-field">
+                      <label for="gdUf">UF</label>
+                      <input type="text" id="gdUf" value="MG">
+                    </div>
+                    <div class="form-field">
+                      <label for="gdData">Data do documento</label>
+                      <input type="date" id="gdData">
                     </div>
                   </div>
                 </div>
@@ -2792,105 +2818,110 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
                   <span id="docStepSpecificLabel">Condições Específicas do Instrumento</span>
                 </div>
 
-                <!-- 3.A CAMPOS ESPECÍFICOS: PROCURAÇÃO -->
+                <!-- 3.A PROCURAÇÃO -->
                 <div id="docFieldsProcuracao">
-                  <div class="form-field" style="margin-bottom:0.75rem;">
-                    <label for="docPowersText">Poderes Outorgados (Editável) *</label>
-                    <textarea id="docPowersText" rows="4" style="min-height:90px; line-height:1.5;">para o foro em geral, com cláusula ad judicia, em qualquer Juízo, Instância ou Tribunal, bem como em procedimentos administrativos, perante quaisquer repartições públicas, para transigir, desistir, firmar compromissos e acordos, podendo ainda representar os outorgantes junto à Instituições Financeiras, receber e dar quitação, assinando pessoalmente requerimentos e todos os demais atos necessários ao fim colimado, substabelecer com ou sem reserva de iguais poderes, postular os benefícios da Justiça Gratuita, intentar medidas cautelares preparatórias ou incidentais, louvar-se em peritos ou impugná-los, podendo propor contra quem de direito as ações competentes e defendê-la nas contrárias, seguindo umas e outras, até decisão final, usando os recursos legais e acompanhando-os, dando tudo por bom e valioso.</textarea>
-                  </div>
-                  <div class="form-row">
-                    <div class="form-field">
-                      <label for="docProcLinkedCase">Processo Vinculado (Opcional - Número CNJ)</label>
-                      <input type="text" id="docProcLinkedCase" placeholder="Ex: 5002148-32.2023.8.13.0271">
-                    </div>
-                    <div class="form-field">
-                      <label for="docProcLinkedCourt">Vara / Tribunal (Opcional)</label>
-                      <input type="text" id="docProcLinkedCourt" placeholder="Ex: 2ª Vara Cível da Comarca de Frutal/MG">
-                    </div>
+                  <div class="form-field">
+                    <label for="docPowersText">Texto dos poderes</label>
+                    <textarea id="docPowersText" rows="6" style="min-height:120px; line-height:1.5;"></textarea>
                   </div>
                 </div>
 
-                <!-- 3.B CAMPOS ESPECÍFICOS: CONTRATO DE HONORÁRIOS -->
+                <!-- 3.B CONTRATO DE HONORÁRIOS -->
                 <div id="docFieldsContrato" style="display:none;">
                   <div class="doc-fees-title">Contrato de honorários — área e detalhes</div>
 
                   <div class="form-field" style="margin-bottom:0.9rem;">
-                    <label for="docContractArea">Área do direito *</label>
-                    <select id="docContractArea">
-                      <option value="Cível / Família">Cível / Família / Sucessões</option>
-                      <option value="Trabalhista">Trabalhista</option>
-                      <option value="Empresarial / Contratos">Empresarial / Contratos</option>
-                      <option value="Consumidor">Consumidor</option>
-                      <option value="Previdenciário">Previdenciário (INSS)</option>
-                      <option value="Outro">Outro</option>
+                    <label for="gdContArea">Área do direito *</label>
+                    <select id="gdContArea">
+                      <option value="previdenciario">Previdenciário</option>
+                      <option value="auxilioacidente">Auxílio Acidente</option>
+                      <option value="trabalhista">Trabalhista</option>
+                      <option value="outros">Outros</option>
                     </select>
                   </div>
                   <div class="form-field" style="margin-bottom:0.9rem;">
-                    <label for="docContractObject">Objeto / serviço contratado *</label>
-                    <input type="text" id="docContractObject" placeholder="Ex: Pedido Judicial de Benefício Assistencial à Pessoa com Deficiência">
+                    <label for="gdContServico">Objeto / serviço contratado *</label>
+                    <input type="text" id="gdContServico" placeholder="Ex: Pedido Judicial de Benefício Assistencial à Pessoa com Deficiência">
                   </div>
 
                   <div class="doc-fees-grid">
                     <div class="form-field">
-                      <label for="docContractFixedFee">Valor fixo dos honorários (R$)</label>
-                      <input type="number" step="0.01" min="0" id="docContractFixedFee" placeholder="0,00">
+                      <label for="gdValor">Valor fixo dos honorários</label>
+                      <input type="text" id="gdValor" placeholder="0,00" inputmode="numeric" style="max-width:180px;">
+                      <span id="gdValorExtenso" class="doc-fees-hint" style="margin:0.25rem 0 0; min-height:1em;"></span>
                     </div>
                     <div class="form-field">
-                      <label for="docContractPaymentMethod">Forma de pagamento do valor fixo</label>
-                      <select id="docContractPaymentMethod">
-                        <option value="PIX">PIX</option>
-                        <option value="Boleto bancário">Boleto</option>
-                        <option value="Cartão de crédito">Cartão de Crédito</option>
-                        <option value="Transferência bancária">Transferência</option>
-                        <option value="Dinheiro">Dinheiro</option>
-                        <option value="Outro">Outro</option>
-                      </select>
+                      <label for="gdPagamento">Forma de pagamento do valor fixo</label>
+                      <div class="field-with-example">
+                        <input type="text" id="gdPagamento" placeholder="Ex: em duas parcelas nos meses 03 e 04/2026">
+                        <button type="button" class="btn-use-example" id="gdPagamentoEx" data-target="gdPagamento" data-example="em duas parcelas nos meses 03 e 04/2026">usar ex.</button>
+                      </div>
                     </div>
                   </div>
 
-                  <div class="doc-fees-grid">
+                  <!-- Previdenciário e Auxílio Acidente -->
+                  <div class="doc-fees-grid" id="gdCamposBeneficio">
                     <div class="form-field">
-                      <label for="docContractInstallments">Parcelas do valor fixo</label>
-                      <input type="number" min="1" max="60" id="docContractInstallments" value="1">
+                      <label for="gdPctAtrasado">% sobre benefícios atrasados</label>
+                      <div class="field-with-example">
+                        <input type="text" id="gdPctAtrasado" placeholder="35" inputmode="decimal" maxlength="6" style="max-width:110px;">
+                        <button type="button" class="btn-use-example" data-target="gdPctAtrasado" data-example="35">usar ex.</button>
+                      </div>
                     </div>
                     <div class="form-field">
-                      <label for="docContractFirstDue">Vencimento da 1ª parcela</label>
-                      <input type="date" id="docContractFirstDue">
+                      <label for="gdParcelasBeneficio">Parcelas do benefício após concessão</label>
+                      <div class="field-with-example">
+                        <input type="text" id="gdParcelasBeneficio" placeholder="Ex: 4 parcelas do benefício">
+                        <button type="button" class="btn-use-example" data-target="gdParcelasBeneficio" data-example="4 parcelas do benefício">usar ex.</button>
+                      </div>
                     </div>
-                  </div>
-                  <div id="docContractInstallPreview" class="doc-fees-hint">
-                    Com valor fixo preenchido, o contrato já lança as parcelas em Contas a Receber (uma por mês, no mesmo dia) e descreve o parcelamento no texto.
                   </div>
 
-                  <div class="form-field" style="margin-bottom:0.9rem;">
-                    <label for="docContractPayText">Como o valor fixo será pago (texto do contrato)</label>
+                  <!-- Trabalhista -->
+                  <div class="form-field" id="gdCamposTrabalhista" style="display:none; margin-bottom:0.9rem;">
+                    <label for="gdTrabPct">% sobre o valor obtido no acordo/sentença *</label>
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                      <input type="text" id="gdTrabPct" placeholder="35" inputmode="numeric" maxlength="3" style="max-width:90px;">
+                      <span class="doc-fees-hint" style="margin:0;">% sobre o valor bruto obtido em acordo ou sentença, incluindo FGTS e Seguro Desemprego</span>
+                    </div>
+                  </div>
+
+                  <!-- Outros -->
+                  <div class="form-field" id="gdCamposOutros" style="display:none; margin-bottom:0.9rem;">
+                    <label for="gdOutrosLivre">Honorários de êxito / outras condições</label>
                     <div class="field-with-example">
-                      <input type="text" id="docContractPayText" placeholder="Ex: em duas parcelas nos meses 03 e 04/2026">
-                      <button type="button" class="btn-use-example" data-target="docContractPayText" data-example="em duas parcelas nos meses 03 e 04/2026">usar ex.</button>
-                    </div>
-                    <small class="doc-fees-hint" style="margin:0.25rem 0 0;">Opcional. Se preencher, este texto entra no contrato no lugar da descrição automática das parcelas.</small>
-                  </div>
-
-                  <div class="doc-fees-grid">
-                    <div class="form-field">
-                      <label for="docContractSuccessPct">% de êxito (sobre atrasados / proveito econômico)</label>
-                      <div class="field-with-example">
-                        <input type="number" step="0.1" min="0" max="100" id="docContractSuccessPct" placeholder="Ex: 35">
-                        <button type="button" class="btn-use-example" data-target="docContractSuccessPct" data-example="35">usar ex.</button>
-                      </div>
-                    </div>
-                    <div class="form-field">
-                      <label for="docContractBenefitInstallments">Parcelas do benefício após concessão</label>
-                      <div class="field-with-example">
-                        <input type="text" id="docContractBenefitInstallments" placeholder="Ex: 4 parcelas do benefício">
-                        <button type="button" class="btn-use-example" data-target="docContractBenefitInstallments" data-example="4 parcelas do benefício">usar ex.</button>
-                      </div>
+                      <textarea id="gdOutrosLivre" rows="3" placeholder="Ex: 35% sobre o valor efetivamente obtido, a ser pago após o recebimento pelo CONSTITUINTE"></textarea>
+                      <button type="button" class="btn-use-example" data-target="gdOutrosLivre" data-example="35% sobre o valor efetivamente obtido, a ser pago após o recebimento pelo CONSTITUINTE">usar ex.</button>
                     </div>
                   </div>
 
-                  <div class="form-field">
-                    <label for="docContractConditions">Outras condições (texto livre)</label>
-                    <textarea id="docContractConditions" rows="3" placeholder="Ex: 20% incidente sobre o proveito econômico obtido em caso de procedência ou acordo judicial homologado..."></textarea>
+                  <!-- Lançamento automático no Financeiro (não altera o texto do contrato) -->
+                  <div class="gd-financeiro-box">
+                    <div class="doc-fees-title" style="margin-top:0;">💰 Lançamento no Financeiro (Contas a Receber)</div>
+                    <div class="doc-fees-grid">
+                      <div class="form-field">
+                        <label for="docContractInstallments">Parcelas do valor fixo</label>
+                        <input type="number" min="1" max="60" id="docContractInstallments" value="1">
+                      </div>
+                      <div class="form-field">
+                        <label for="docContractFirstDue">Vencimento da 1ª parcela</label>
+                        <input type="date" id="docContractFirstDue">
+                      </div>
+                      <div class="form-field">
+                        <label for="docContractPaymentMethod">Meio de pagamento</label>
+                        <select id="docContractPaymentMethod">
+                          <option value="PIX">PIX</option>
+                          <option value="Boleto bancário">Boleto</option>
+                          <option value="Cartão de crédito">Cartão de Crédito</option>
+                          <option value="Transferência bancária">Transferência</option>
+                          <option value="Dinheiro">Dinheiro</option>
+                          <option value="Outro">Outro</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="doc-fees-hint" style="margin:0;">
+                      Com valor fixo preenchido e um cliente cadastrado selecionado no passo 1, o contrato já lança as parcelas em Contas a Receber (uma por mês, no mesmo dia). Estes campos não mudam o texto do contrato.
+                    </div>
                   </div>
 
                   <div class="form-field" style="margin-top:0.75rem; padding-top:0.75rem; border-top:1px dashed var(--border);">
@@ -2915,10 +2946,10 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
                   </div>
                 </div>
 
-                <!-- 3.C CAMPOS ESPECÍFICOS: DECLARAÇÃO DE HIPOSSUFICIÊNCIA -->
+                <!-- 3.C DECLARAÇÃO DE HIPOSSUFICIÊNCIA -->
                 <div id="docFieldsHipossuficiencia" style="display:none;">
-                  <div class="alert alert-info" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:0.9rem; font-size:0.85rem; color:#1e293b; line-height:1.5;">
-                    ⚖ <strong>Modelo Padrão da Banca:</strong> O documento utilizará a redação formal padrão de declaração de hipossuficiência econômica fundada no <strong>art. 99, § 3º do CPC</strong> e <strong>art. 5º, LXXIV da CF/88</strong>. Não são necessários dados adicionais além da qualificação do declarante.
+                  <div class="doc-fees-hint" style="margin:0;">
+                    O texto da declaração já está configurado conforme o modelo do escritório. Nenhum campo adicional necessário.
                   </div>
                 </div>
 
@@ -5499,7 +5530,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261014-113906";
+const APP_VERSION = "20261014-122110";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -5745,9 +5776,9 @@ function attachDocMask(id, formatter) {
   });
 }
 
-['docPfCpf', 'docPjRepCpf', 'docMenorCpf', 'docMenorRepCpf', 'clientPfCpf', 'clientPjRepCpf', 'clientMenorCpf', 'clientMenorRepCpf']
+['gdCpf', 'gdPjRepCpf', 'gdMenorCpf', 'clientPfCpf', 'clientPjRepCpf', 'clientMenorCpf', 'clientMenorRepCpf']
   .forEach(id => attachDocMask(id, formatCPF));
-['docPjCnpj', 'clientPjCnpj', 'cfgOfficeCnpj']
+['gdPjCnpj', 'clientPjCnpj', 'cfgOfficeCnpj']
   .forEach(id => attachDocMask(id, formatCNPJ));
 
 function getDaysDiff(dateStr) {
@@ -12012,7 +12043,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 // MÓDULO DOCUMENTOS JURÍDICOS (OFICIAL CACILDA SOUZA)
 // =======================================================
 let currentActiveDoc = null;
-let currentConstituentTab = "pf";
 let docOriginalHtmlBackup = "";
 
 function initDocumentsModule() {
@@ -12059,138 +12089,595 @@ function populateDocClientSelect() {
   if (curVal) sel.value = curVal;
 }
 
-// 3. INTEGRAÇÃO COMPLETA COM O MÓDULO DOCUMENTOS
-// Quando o cliente for selecionado no módulo Documentos, auto preenche TODOS os campos cadastrados:
+// 3. INTEGRAÇÃO COM O CADASTRO DE CLIENTES
+// Selecionar um cliente cadastrado preenche o formulário do gerador.
 const docClientSelectEl = document.getElementById("docClientSelect");
 if (docClientSelectEl) {
   docClientSelectEl.addEventListener("change", (e) => {
-    const selectedId = e.target.value;
-    if (!selectedId) return;
-
-    const cl = AppState.clients.find(c => c.id === selectedId);
+    const cl = AppState.clients.find(c => c.id === e.target.value);
     if (!cl) return;
-
-    // Detectar tipo de cliente: "pf", "pj", "menor"
-    const cType = cl.clientType || (cl.companyName || (cl.doc && cl.doc.length > 14) ? "pj" : (cl.minorName ? "menor" : "pf"));
-
-    if (cType === "pj") {
-      setDocConstituentTab("pj");
-      document.getElementById("docPjName").value = cl.companyName || cl.name || "";
-      document.getElementById("docPjCnpj").value = cl.cnpj || cl.doc || "";
-      document.getElementById("docPjIe").value = cl.stateRegistration || "";
-      document.getElementById("docPjAddress").value = cl.address || "";
-      document.getElementById("docPjCep").value = cl.cep || "38200-000";
-      document.getElementById("docPjRepName").value = cl.repName || "";
-      document.getElementById("docPjRepRole").value = cl.repRole || "Sócio-Administrador";
-      document.getElementById("docPjRepCpf").value = cl.repCpf || "";
-      document.getElementById("docPjRepRg").value = cl.repRg || "";
-      document.getElementById("docPjDate").value = getOffsetDate(0);
-    } else if (cType === "menor") {
-      setDocConstituentTab("menor");
-      document.getElementById("docMenorName").value = cl.minorName || cl.name || "";
-      document.getElementById("docMenorNationality").value = cl.nationality || "brasileiro(a), menor impúbere";
-      document.getElementById("docMenorCpf").value = cl.minorCpf || cl.doc || "";
-      
-      // Mapear qualidade do representante para o select do gerador
-      const q = (cl.repQuality || "").toLowerCase();
-      if (q.includes("pai") || q.includes("genitor")) {
-        document.getElementById("docMenorRepRel").value = "seu genitor / pai";
-      } else if (q.includes("tutor") || q.includes("guard")) {
-        document.getElementById("docMenorRepRel").value = "seu(sua) tutor(a) legal";
-      } else {
-        document.getElementById("docMenorRepRel").value = "sua genitora / mãe";
-      }
-
-      document.getElementById("docMenorRepName").value = cl.repName || "";
-      document.getElementById("docMenorRepCpf").value = cl.repCpf || "";
-      document.getElementById("docMenorRepRg").value = cl.repRg || "";
-      document.getElementById("docMenorAddress").value = cl.address || "";
-      document.getElementById("docMenorCity").value = cl.city || "Frutal";
-      document.getElementById("docMenorUf").value = cl.uf || "MG";
-      document.getElementById("docMenorDate").value = getOffsetDate(0);
-    } else {
-      // Pessoa Física (PF)
-      setDocConstituentTab("pf");
-      document.getElementById("docPfName").value = cl.name || "";
-      document.getElementById("docPfGender").value = (cl.gender === "Masculino" ? "Masculino" : "Feminino");
-      document.getElementById("docPfNationality").value = cl.nationality || "brasileira";
-
-      // Estado civil
-      const mStatus = (cl.maritalStatus || "").toLowerCase();
-      if (mStatus.includes("casad")) document.getElementById("docPfMarital").value = "casada(o)";
-      else if (mStatus.includes("divorc")) document.getElementById("docPfMarital").value = "divorciada(o)";
-      else if (mStatus.includes("viuv") || mStatus.includes("viúv")) document.getElementById("docPfMarital").value = "viúva(o)";
-      else if (mStatus.includes("união") || mStatus.includes("uniao")) document.getElementById("docPfMarital").value = "em união estável";
-      else document.getElementById("docPfMarital").value = "solteira(o)";
-
-      document.getElementById("docPfProfession").value = cl.profession || "";
-      document.getElementById("docPfRg").value = cl.rg || "";
-      document.getElementById("docPfRgEmitter").value = cl.rgEmitter || "SSP/MG";
-      document.getElementById("docPfCpf").value = cl.cpf || cl.doc || "";
-      document.getElementById("docPfParentage").value = cl.parentage || "";
-      document.getElementById("docPfAddress").value = cl.address || "";
-      document.getElementById("docPfCep").value = cl.cep || "38200-000";
-      document.getElementById("docPfCity").value = cl.city || "Frutal";
-      document.getElementById("docPfUf").value = cl.uf || "MG";
-      document.getElementById("docPfDate").value = getOffsetDate(0);
-    }
-
-    // Preenche campos contratuais e do processo se existirem
-    if (cl.service) {
-      document.getElementById("docContractObject").value = cl.service;
-    }
-    if (cl.area) {
-      const contractAreaSelect = document.getElementById("docContractArea");
-      if (contractAreaSelect) {
-        if (cl.area.includes("Trabalhista")) contractAreaSelect.value = "Trabalhista";
-        else if (cl.area.includes("Empresarial")) contractAreaSelect.value = "Empresarial e Contratos";
-        else if (cl.area.includes("Consumidor")) contractAreaSelect.value = "Direito do Consumidor";
-        else if (cl.area.includes("Previdenciário")) contractAreaSelect.value = "Previdenciário";
-        else contractAreaSelect.value = "Cível / Família e Sucessões";
-      }
-    }
-    if (cl.feeAmount) {
-      document.getElementById("docContractFixedFee").value = cl.feeAmount;
-    }
-    if (cl.paymentMethod) {
-      document.getElementById("docContractPaymentMethod").value = cl.paymentMethod;
-    }
-    if (cl.successFee !== undefined && cl.successFee !== null && cl.successFee !== "") {
-      document.getElementById("docContractSuccessPct").value = cl.successFee;
-      if (Number(cl.successFee) > 0) {
-        document.getElementById("docContractConditions").value = `${cl.successFee}% incidente sobre o proveito econômico obtido em caso de procedência ou acordo judicial homologado.`;
-      }
-    }
-    if (cl.linkedCase) {
-      document.getElementById("docProcLinkedCase").value = cl.linkedCase;
-    }
-
-    showToast(`Dados completos de ${cl.name} preenchidos no gerador!`, "✨");
+    gdPreencherComCliente(cl);
+    showToast(`Dados de ${cl.name} preenchidos no gerador!`, "✨");
   });
 }
 
-function setDocConstituentTab(tabKey) {
-  currentConstituentTab = tabKey;
-  document.querySelectorAll("#docConstituentTabs .doc-tab-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.getAttribute("data-const-type") === tabKey);
-  });
+// ==========================================
+// GERADOR DE DOCUMENTOS — mesmo formulário, textos e formatação do gerador
+// antigo do escritório (procuração, contrato de honorários por área e
+// declaração de hipossuficiência). Os campos têm prefixo "gd".
+// ==========================================
 
-  document.getElementById("docTabContentPF").style.display = tabKey === "pf" ? "block" : "none";
-  document.getElementById("docTabContentPJ").style.display = tabKey === "pj" ? "block" : "none";
-  document.getElementById("docTabContentMenor").style.display = tabKey === "menor" ? "block" : "none";
+const gdEl = (id) => document.getElementById(id);
+// Valor cru (para nomes gravados no banco) e valor escapado (para o HTML do documento)
+const gdRaw = (id) => (gdEl(id)?.value || "").trim();
+const gdTxt = (id) => esc(gdRaw(id));
+const gdEhMenor = () => gdEl("gdChkMenor").checked;
+const gdEhPj = () => gdEl("gdChkPj").checked;
+const gdEhMasc = () => gdEl("gdSexo").value === "M";
+
+function gdSet(id, value) {
+  const el = gdEl(id);
+  if (el) el.value = value ?? "";
+}
+
+// "Menor de idade" e "Pessoa Jurídica" não podem ficar marcados juntos: o
+// último marcado vale.
+function gdToggleTipo(e) {
+  const chkMenor = gdEl("gdChkMenor");
+  const chkPj = gdEl("gdChkPj");
+  if (chkMenor.checked && chkPj.checked) {
+    if (e && e.target === chkMenor) chkPj.checked = false;
+    else chkMenor.checked = false;
+  }
+  gdEl("gdBlocoMenor").style.display = chkMenor.checked ? "block" : "none";
+  gdEl("gdBlocoPj").style.display = chkPj.checked ? "block" : "none";
+
+  if (chkMenor.checked) {
+    gdEl("gdCardClienteTitulo").textContent = "Dados do Responsável Legal (Representante)";
+    gdEl("gdLblNome").textContent = "Nome completo do responsável";
+  } else if (chkPj.checked) {
+    gdEl("gdCardClienteTitulo").textContent = "Dados da Pessoa Jurídica — Contratante";
+    gdEl("gdLblNome").textContent = "Razão social (para o contrato)";
+  } else {
+    gdEl("gdCardClienteTitulo").textContent = "Dados do Cliente";
+    gdEl("gdLblNome").textContent = "Nome completo";
+  }
+}
+gdEl("gdChkMenor").addEventListener("change", gdToggleTipo);
+gdEl("gdChkPj").addEventListener("change", gdToggleTipo);
+
+// Sexo muda nacionalidade e estado civil para o feminino/masculino
+function gdAtualizarSexo() {
+  const M = gdEhMasc();
+  gdEl("gdNacionalidade").value = M ? "brasileiro" : "brasileira";
+  const ec = gdEl("gdEstadoCivil");
+  const idx = ec.selectedIndex;
+  const opcoes = M
+    ? ["solteiro", "casado", "divorciado", "viúvo", "separado judicialmente", "em união estável"]
+    : ["solteira", "casada", "divorciada", "viúva", "separada judicialmente", "em união estável"];
+  ec.innerHTML = opcoes.map(o => `<option>${o}</option>`).join("");
+  ec.selectedIndex = Math.max(0, idx);
+  gdEl("gdProfissao").placeholder = M ? "Ex: comerciante" : "Ex: autônoma";
+}
+gdEl("gdSexo").addEventListener("change", gdAtualizarSexo);
+
+const GD_EXEMPLOS_PAGAMENTO = {
+  previdenciario: "em duas parcelas nos meses 03 e 04/2026",
+  auxilioacidente: "em duas parcelas nos meses 03 e 04/2026",
+  trabalhista: "no ato da assinatura deste contrato",
+  outros: "50% na assinatura e 50% na distribuição"
+};
+const GD_EXEMPLOS_SERVICO = {
+  previdenciario: "Ex: Pedido Judicial de Benefício Assistencial à Pessoa com Deficiência",
+  auxilioacidente: "Ex: Pedido Judicial de Auxílio Acidente",
+  trabalhista: "Ex: Ação Trabalhista",
+  outros: "Ex: Ação Indenizatória Danos Morais/Materiais"
+};
+// Área do contrato → área usada nas Contas a Receber
+const GD_AREA_FINANCEIRO = {
+  previdenciario: "Previdenciário",
+  auxilioacidente: "Previdenciário",
+  trabalhista: "Trabalhista",
+  outros: "Cível / Família"
+};
+const GD_AREA_NOME = {
+  previdenciario: "Previdenciário",
+  auxilioacidente: "Auxílio Acidente",
+  trabalhista: "Trabalhista",
+  outros: "Outros"
+};
+
+function gdTrocarAreaContrato() {
+  const area = gdEl("gdContArea").value;
+  gdEl("gdCamposBeneficio").style.display = (area === "previdenciario" || area === "auxilioacidente") ? "" : "none";
+  gdEl("gdCamposTrabalhista").style.display = area === "trabalhista" ? "" : "none";
+  gdEl("gdCamposOutros").style.display = area === "outros" ? "" : "none";
+  gdEl("gdContServico").placeholder = GD_EXEMPLOS_SERVICO[area] || "";
+  gdEl("gdPagamento").placeholder = "Ex: " + GD_EXEMPLOS_PAGAMENTO[area];
+  gdEl("gdPagamentoEx").dataset.example = GD_EXEMPLOS_PAGAMENTO[area];
+}
+gdEl("gdContArea").addEventListener("change", gdTrocarAreaContrato);
+
+// ---------- Máscaras ----------
+attachDocMask("gdCep", d => d.slice(0, 8).replace(/^(\d{5})(\d)/, "$1-$2"));
+attachDocMask("gdPjCep", d => d.slice(0, 8).replace(/^(\d{5})(\d)/, "$1-$2"));
+attachDocMask("gdTrabPct", d => d.slice(0, 3));
+
+gdEl("gdPctAtrasado").addEventListener("input", (e) => {
+  const el = e.target;
+  let val = el.value.replace(/[^\d,.]/g, "").replace(",", ".");
+  const m = val.match(/^\d{0,3}(\.\d{0,1})?/);
+  val = m ? m[0] : "";
+  el.value = val ? val + "%" : "";
+  if (el.value.endsWith("%") && document.activeElement === el) {
+    const pos = el.value.length - 1;
+    el.setSelectionRange(pos, pos);
+  }
+});
+
+// Valor em reais: digita só números, vira "1.500,00" e mostra o extenso
+function gdValorCentavos() {
+  const digits = gdEl("gdValor").value.replace(/\D/g, "");
+  return digits ? parseInt(digits, 10) : 0;
+}
+function gdAtualizarValor() {
+  const centavos = gdValorCentavos();
+  if (!centavos) {
+    gdEl("gdValor").value = "";
+    gdEl("gdValorExtenso").textContent = "";
+    return;
+  }
+  gdEl("gdValor").value = (centavos / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  gdEl("gdValorExtenso").textContent = gdCapitalizar(gdValorCompleto(centavos));
+}
+gdEl("gdValor").addEventListener("input", gdAtualizarValor);
+
+// Busca de CEP (ViaCEP), como no gerador antigo: completa endereço e cidade
+async function gdBuscarCep(cepId, enderecoId, preencheCidade) {
+  const cep = gdEl(cepId).value.replace(/\D/g, "");
+  if (cep.length !== 8) return;
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const d = await r.json();
+    if (d.erro) return;
+    const end = gdEl(enderecoId);
+    if (!end.value) end.value = `${d.logradouro}${d.bairro ? ", " + d.bairro : ""}`;
+    if (preencheCidade && (!gdEl("gdCidade").value || gdEl("gdCidade").value === "Frutal")) {
+      gdEl("gdCidade").value = d.localidade;
+      gdEl("gdUf").value = d.uf;
+    }
+  } catch (err) { /* sem internet ou CEP inválido: segue sem completar */ }
+}
+gdEl("gdCep").addEventListener("blur", () => gdBuscarCep("gdCep", "gdEndereco", true));
+gdEl("gdPjCep").addEventListener("blur", () => gdBuscarCep("gdPjCep", "gdPjEndereco", false));
+
+// ---------- Valor por extenso ----------
+const GD_UNIDADES = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"];
+const GD_DEZENAS = ["", "", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"];
+const GD_CENTENAS = ["", "cem", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"];
+
+function gdNumExtenso(n) {
+  if (n === 0) return "zero";
+  const partes = [];
+  if (n >= 1000000) {
+    const m = Math.floor(n / 1000000);
+    partes.push(gdNumExtenso(m) + (m === 1 ? " milhão" : " milhões"));
+    n %= 1000000;
+  }
+  if (n >= 1000) {
+    const mil = Math.floor(n / 1000);
+    partes.push(mil === 1 ? "mil" : gdNumExtenso(mil) + " mil");
+    n %= 1000;
+  }
+  if (n >= 100) {
+    const c = Math.floor(n / 100);
+    partes.push(n % 100 === 0 ? GD_CENTENAS[c] : (c === 1 ? "cento" : GD_CENTENAS[c]));
+    n %= 100;
+  }
+  if (n >= 20) {
+    const d = Math.floor(n / 10);
+    const u = n % 10;
+    partes.push(u ? GD_DEZENAS[d] + " e " + GD_UNIDADES[u] : GD_DEZENAS[d]);
+  } else if (n > 0) {
+    partes.push(GD_UNIDADES[n]);
+  }
+  return partes.join(" e ");
+}
+
+function gdValorCompleto(centavos) {
+  const reais = Math.floor(centavos / 100);
+  const cts = centavos % 100;
+  const rStr = `${gdNumExtenso(reais)} ${reais === 1 ? "real" : "reais"}`;
+  if (cts === 0) return rStr;
+  return `${rStr} e ${gdNumExtenso(cts)} ${cts === 1 ? "centavo" : "centavos"}`;
+}
+
+const gdCapitalizar = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+function gdFormatarData(str) {
+  if (!str) return "_____ de _____________ de ______";
+  const [y, m, d] = str.split("-");
+  const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+  return `${parseInt(d, 10)} de ${meses[parseInt(m, 10) - 1]} de ${y}`;
+}
+
+// ---------- Preenchimento a partir do cadastro ----------
+// Estado civil do cadastro ("Casado(a)") → opção do gerador ("casada"/"casado")
+function gdEstadoCivilDoCadastro(marital, masc) {
+  const m = searchNorm(marital);
+  if (m.includes("uniao")) return "em união estável";
+  if (m.includes("separad")) return masc ? "separado judicialmente" : "separada judicialmente";
+  const base = m.includes("casad") ? "casad" : m.includes("divorc") ? "divorciad" : m.includes("viuv") ? "viúv" : "solteir";
+  return base + (masc ? "o" : "a");
+}
+
+const GD_CAMPOS_PARTE = [
+  "gdMenorNome", "gdMenorCpf", "gdPjRazao", "gdPjCnpj", "gdPjIe", "gdPjEndereco", "gdPjCep",
+  "gdPjRepNome", "gdPjRepCargo", "gdPjRepCpf", "gdPjRepRg", "gdNome", "gdProfissao", "gdRg",
+  "gdOrgao", "gdCpf", "gdFiliacao", "gdEndereco", "gdCep"
+];
+
+function gdPreencherComCliente(cl) {
+  const tipo = cl.clientType || (cl.companyName ? "pj" : (cl.minorName ? "menor" : "pf"));
+  gdEl("gdChkPj").checked = tipo === "pj";
+  gdEl("gdChkMenor").checked = tipo === "menor";
+  gdToggleTipo();
+  // Não deixa sobrar dado de outro cliente selecionado antes
+  GD_CAMPOS_PARTE.forEach(id => gdSet(id, ""));
+  gdSet("gdCidade", cl.city || "Frutal");
+  gdSet("gdUf", cl.uf || "MG");
+
+  if (tipo === "pj") {
+    gdSet("gdPjRazao", cl.companyName || cl.name);
+    gdSet("gdPjCnpj", cl.cnpj || cl.doc);
+    gdSet("gdPjIe", cl.stateRegistration);
+    gdSet("gdPjEndereco", cl.address);
+    gdSet("gdPjCep", cl.cep);
+    gdSet("gdPjRepNome", cl.repName);
+    gdSet("gdPjRepCargo", cl.repRole);
+    gdSet("gdPjRepCpf", cl.repCpf);
+    gdSet("gdPjRepRg", cl.repRg);
+    gdSet("gdNome", cl.companyName || cl.name);
+  } else if (tipo === "menor") {
+    gdSet("gdMenorNome", cl.minorName || cl.name);
+    gdSet("gdMenorCpf", cl.minorCpf);
+    const q = searchNorm(cl.repQuality);
+    const parentesco = q.includes("mae") || q.includes("genitora") ? "genitora"
+      : q.includes("pai") || q.includes("genitor") ? "genitor"
+      : "representante legal";
+    gdEl("gdMenorParentesco").value = parentesco;
+    gdEl("gdSexo").value = parentesco === "genitor" ? "M" : "F";
+    gdAtualizarSexo();
+    gdSet("gdNome", cl.repName);
+    gdSet("gdCpf", cl.repCpf);
+    gdSet("gdRg", cl.repRg);
+    gdSet("gdEndereco", cl.address);
+    gdSet("gdCep", cl.cep);
+  } else {
+    const masc = cl.gender === "Masculino";
+    gdEl("gdSexo").value = masc ? "M" : "F";
+    gdAtualizarSexo();
+    gdSet("gdNome", cl.name);
+    if (cl.nationality && !searchNorm(cl.nationality).startsWith("brasileir")) gdSet("gdNacionalidade", cl.nationality);
+    gdEl("gdEstadoCivil").value = gdEstadoCivilDoCadastro(cl.maritalStatus, masc);
+    gdSet("gdProfissao", cl.profession);
+    gdSet("gdRg", cl.rg);
+    gdSet("gdOrgao", cl.rgEmitter);
+    gdSet("gdCpf", cl.cpf || cl.doc);
+    gdSet("gdFiliacao", cl.parentage);
+    gdSet("gdEndereco", cl.address);
+    gdSet("gdCep", cl.cep);
+  }
+
+  // Dados do contrato que vierem do cadastro
+  if (cl.service) gdSet("gdContServico", cl.service);
+  if (cl.area) {
+    const a = searchNorm(cl.area);
+    gdEl("gdContArea").value = a.includes("trabalh") ? "trabalhista" : a.includes("previd") ? "previdenciario" : "outros";
+    gdTrocarAreaContrato();
+  }
+  if (Number(cl.feeAmount) > 0) {
+    gdSet("gdValor", String(Math.round(Number(cl.feeAmount) * 100)));
+    gdAtualizarValor();
+  }
+  if (Number(cl.successFee) > 0) {
+    gdSet("gdPctAtrasado", `${cl.successFee}%`);
+    gdSet("gdTrabPct", String(Math.round(Number(cl.successFee))));
+  }
+  if (cl.paymentMethod && [...gdEl("docContractPaymentMethod").options].some(o => o.value === cl.paymentMethod)) {
+    gdEl("docContractPaymentMethod").value = cl.paymentMethod;
+  }
+}
+
+// ---------- Textos dos documentos (modelos do escritório) ----------
+// Qualificação da advogada: a procuração escreve "OAB/MG 159.859" e o
+// contrato "OAB/MG nº 159.859", como nos modelos do escritório.
+const GD_ESCRITORIO = "com escritório profissional na Rua Gonçalves Dias, nº 308 – Centro, na cidade de Frutal/MG";
+const GD_OUTORGADA = `<strong>CACILDA TEIXEIRA DE SOUZA</strong>, brasileira, casada, advogada inscrita na OAB/MG 159.859, ${GD_ESCRITORIO}`;
+const GD_CONSTITUIDA = `<strong>CACILDA TEIXEIRA DE SOUZA</strong>, brasileira, casada, advogada inscrita na OAB/MG nº 159.859, ${GD_ESCRITORIO}`;
+
+// Qualificação completa da parte (pessoa física, menor ou pessoa jurídica)
+function gdQualificacao() {
+  const nome = gdRaw("gdNome") || "[NOME]";
+  const nac = gdTxt("gdNacionalidade");
+  const ec = gdTxt("gdEstadoCivil");
+  const prof = gdTxt("gdProfissao");
+  const rg = gdTxt("gdRg");
+  const orgao = gdTxt("gdOrgao");
+  const cpf = gdTxt("gdCpf");
+  const fil = gdTxt("gdFiliacao");
+  const end = gdTxt("gdEndereco");
+  const cep = gdRaw("gdCep") ? `, CEP ${gdTxt("gdCep")}` : "";
+  const cidadeUf = `${gdTxt("gdCidade")}/${gdTxt("gdUf")}`;
+  const M = gdEhMasc();
+  const portador = M ? "portador" : "portadora";
+  const inscrito = M ? "inscrito" : "inscrita";
+  const residente = M ? "residente e domiciliado" : "residente e domiciliada";
+  const filho = M ? "filho" : "filha";
+
+  if (gdEhPj()) {
+    const razao = gdRaw("gdPjRazao") || "[RAZÃO SOCIAL]";
+    const cnpj = gdTxt("gdPjCnpj") || "[CNPJ]";
+    const ie = gdTxt("gdPjIe");
+    const endPJ = gdTxt("gdPjEndereco") || end;
+    const cepPJ = gdRaw("gdPjCep") ? `, CEP ${gdTxt("gdPjCep")}` : "";
+    const repNome = gdRaw("gdPjRepNome") || "[REPRESENTANTE]";
+    const repCargo = gdTxt("gdPjRepCargo") || "representante legal";
+    const repCPF = gdTxt("gdPjRepCpf");
+    const repRG = gdTxt("gdPjRepRg");
+
+    let txt = `<strong>${esc(razao.toUpperCase())}</strong>, pessoa jurídica de direito privado, inscrita no CNPJ sob o nº ${cnpj}`;
+    if (ie) txt += `, Inscrição Estadual nº ${ie}`;
+    if (endPJ) txt += `, com sede na ${endPJ}, na cidade de ${cidadeUf}${cepPJ}`;
+    txt += `, neste ato representada por seu ${repCargo} <strong>${esc(repNome.toUpperCase())}</strong>`;
+    if (repRG) txt += `, ${portador} do RG nº ${repRG}`;
+    if (repCPF) txt += `, ${inscrito} no CPF sob o nº ${repCPF}`;
+    return txt;
+  }
+
+  if (gdEhMenor()) {
+    const menorNome = gdRaw("gdMenorNome") || "[NOME DO MENOR]";
+    const menorNac = gdTxt("gdMenorNac") || "brasileiro(a)";
+    const menorCpf = gdTxt("gdMenorCpf");
+    const parentesco = gdTxt("gdMenorParentesco") || "genitora";
+
+    let txt = `<strong>${esc(menorNome.toUpperCase())}</strong>, ${menorNac}, menor impúbere`;
+    if (menorCpf) txt += `, portador do CPF nº ${menorCpf}`;
+    txt += `, neste ato representado por ${M ? "seu" : "sua"} ${parentesco} <strong>${esc(nome.toUpperCase())}</strong>`;
+    const partes = [nac, ec].filter(Boolean);
+    if (partes.length) txt += `, ${partes.join(", ")}`;
+    if (rg) txt += `, ${portador} da cédula de RG nº ${rg}${orgao ? " " + orgao : ""}`;
+    if (cpf) txt += `, ${inscrito} no CPF sob o nº ${cpf}`;
+    if (fil) txt += `, ${filho} de ${fil}`;
+    if (end) txt += `, ${residente} na ${end}, na cidade de ${cidadeUf}${cep}`;
+    return txt;
+  }
+
+  let txt = `<strong>${esc(nome.toUpperCase())}</strong>`;
+  const partes = [nac, ec, prof].filter(Boolean);
+  if (partes.length) txt += `, ${partes.join(", ")}`;
+  if (rg) txt += `, ${portador} da cédula de RG nº ${rg}${orgao ? " " + orgao : ""}`;
+  if (cpf) txt += `, ${inscrito} no CPF sob o nº ${cpf}`;
+  if (fil) txt += `, ${filho} de ${fil}`;
+  if (end) txt += `, ${residente} na ${end}, na cidade de ${cidadeUf}${cep}`;
+  return txt;
+}
+
+// Quem assina (representante, no caso de PJ e menor)
+function gdNomeAssinante() {
+  if (gdEhPj()) return gdRaw("gdPjRepNome") || gdRaw("gdNome") || "[REPRESENTANTE]";
+  if (gdEhMenor()) return gdRaw("gdNome") || "[NOME DO RESPONSÁVEL]";
+  return gdRaw("gdNome") || "[NOME]";
+}
+
+// Nome que identifica o documento no histórico (empresa, menor ou cliente)
+function gdNomeDocumento() {
+  if (gdEhPj()) return gdRaw("gdPjRazao") || gdRaw("gdNome") || "[RAZÃO SOCIAL]";
+  if (gdEhMenor()) return gdRaw("gdMenorNome") || "[NOME DO MENOR]";
+  return gdRaw("gdNome") || "[NOME]";
+}
+
+function gdAssinaturaUnica(nome, qualidade) {
+  return `
+        <div class="assinaturas">
+          <div class="ass-grid">
+            <div class="ass-bloco">
+              <div class="ass-linha"></div>
+              <div class="ass-nome">${esc(nome)}</div>
+              <div class="ass-qual">${qualidade}${gdEhMenor() ? " (Responsável Legal)" : ""}</div>
+            </div>
+          </div>
+        </div>`;
+}
+
+// Cláusula de honorários do contrato, conforme a área
+function gdClausulaHonorarios(area) {
+  const servico = gdTxt("gdContServico") || "[DESCREVER O SERVIÇO]";
+  const centavos = gdValorCentavos();
+  const valor = centavos
+    ? `R$ ${(centavos / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${gdCapitalizar(gdValorCompleto(centavos))})`
+    : "";
+  const pagto = gdTxt("gdPagamento");
+  const item = (t) => `<p style="padding-left:2em">— ${t}</p>`;
+  const abertura = `<p>A CONSTITUINTE pagará ao CONSTITUÍDO, em remuneração dos serviços contratados (<strong>${servico}</strong>), os seguintes honorários:</p>`;
+  const documentos = `<p>A CONSTITUINTE obriga-se a fornecer ao CONSTITUÍDO todos os documentos que lhe forem solicitados, dentro do prazo legal, providência essa necessária ao perfeito andamento do processo.</p>`;
+  const aDefinir = item("[HONORÁRIOS A DEFINIR].");
+
+  if (area === "previdenciario" || area === "auxilioacidente") {
+    const pct = gdTxt("gdPctAtrasado");
+    const parcelas = gdTxt("gdParcelasBeneficio");
+    let itens = "";
+    if (valor && pagto) itens += item(`${valor}, pagos da seguinte forma: ${pagto};`);
+    if (pct) itens += item(`${pct} dos valores apurados referentes ao pagamento dos benefícios atrasados, que serão pagos após a liberação desses valores;`);
+    if (parcelas) itens += item(`${parcelas}, após a implementação do benefício, cujo pagamento poderá ser combinado com a CONSTITUÍDA.`);
+    return abertura + (itens || aDefinir) + documentos;
+  }
+
+  if (area === "trabalhista") {
+    const n = gdRaw("gdTrabPct").replace(/\D/g, "");
+    const pct = n ? `${n}% sobre o valor bruto obtido em acordo ou sentença, incluindo FGTS e Seguro Desemprego` : "[% A DEFINIR]";
+    let itens = "";
+    if (valor && pagto) itens += item(`Valor fixo de ${valor}, a ser pago ${pagto};`);
+    itens += item(`${pct}, a ser pago após o recebimento dos valores pelo CONSTITUINTE, no prazo de até 5 (cinco) dias úteis da data do crédito.`);
+    return abertura + itens
+      + `<p>Os honorários de êxito são devidos ainda que o resultado favorável se dê por acordo celebrado em qualquer fase do processo, inclusive antes da distribuição da ação.</p>`
+      + documentos;
+  }
+
+  // Outros
+  const livre = gdTxt("gdOutrosLivre");
+  let itens = "";
+  if (valor && pagto) itens += item(`Honorários fixos de ${valor}, pagos da seguinte forma: ${pagto};`);
+  if (livre) itens += item(`${livre}.`);
+  return abertura + (itens || aDefinir) + documentos;
+}
+
+// Monta o documento no modelo do escritório. Devolve título e HTML da folha.
+function gdMontarDocumento(docType) {
+  const data = gdFormatarData(gdRaw("gdData"));
+  const cidade = gdTxt("gdCidade") || "Frutal";
+  const uf = gdTxt("gdUf") || "MG";
+  const nomeSign = gdNomeAssinante();
+  const qualificacao = gdQualificacao();
+
+  if (docType === "procuracao") {
+    const poderes = gdTxt("docPowersText") || esc(DEFAULT_PROCURACAO_POWERS);
+    return {
+      title: "PROCURAÇÃO",
+      html: `
+        <div class="doc-titulo">P R O C U R A Ç Ã O</div>
+        <p><strong>OUTORGANTE:</strong> ${qualificacao}.</p>
+        <p><strong>OUTORGADOS:</strong> ${GD_OUTORGADA}.</p>
+        <p><strong>PODERES:</strong> ${poderes}</p>
+        <div class="local-data">Frutal, ${data}.</div>
+        ${gdAssinaturaUnica(nomeSign, "Outorgante")}
+      `
+    };
+  }
+
+  if (docType === "hipossuficiencia") {
+    return {
+      title: "DECLARAÇÃO PARA FINS DE ASSISTÊNCIA JUDICIÁRIA GRATUITA",
+      html: `
+        <div class="doc-titulo">DECLARAÇÃO PARA FINS DE ASSISTÊNCIA JUDICIÁRIA GRATUITA</div>
+        <p>${qualificacao}.</p>
+        <p>Nos termos do art. 99, §1º do Código de Processo Civil (Lei nº 13.105/2015), combinado com a Lei nº 7.115 de 08 de Agosto de 1950, sujeitando-se às sanções cíveis, administrativas e criminais previstas nas legislações aplicáveis, inclusive àquelas do art. 99, §2º do CPC, declara ser pobre no sentido legal, não possuindo condições de arcar com as custas processuais e os honorários advocatícios sem prejuízo do próprio sustento e de sua família.</p>
+        <div class="local-data">Frutal, ${data}.</div>
+        ${gdAssinaturaUnica(nomeSign, "Declarante")}
+      `
+    };
+  }
+
+  if (docType === "lgpd") {
+    return buildLgpdDoc({
+      qualificationText: qualificacao + ".",
+      signerName: nomeSign,
+      dateText: data,
+      purposes: gdRaw("docLgpdPurposes"),
+      comms: gdEl("docLgpdComms").checked,
+      office: AppState.officeSettings
+    });
+  }
+
+  // Contrato de honorários
+  const area = gdEl("gdContArea").value;
+  return {
+    title: "CONTRATO DE HONORÁRIOS ADVOCATÍCIOS",
+    html: `
+        <div class="doc-titulo">CONTRATO DE HONORÁRIOS ADVOCATÍCIOS</div>
+        <p>Pelo presente instrumento de contrato de prestação de serviços, de um lado ${GD_CONSTITUIDA}. Adiante denominada simplesmente <strong>CONSTITUÍDO</strong> e, de outro ${qualificacao}. A partir de agora em diante chamado de <strong>CONSTITUINTE</strong>, têm justo e contratado o seguinte:</p>
+
+        <p><span class="clausula-title">1)</span> O CONSTITUÍDO, face ao mandato extrajudicial que lhe foi outorgado pela CONSTITUINTE, na qualidade de Procurador e advogado, obriga-se a prestar serviços profissionais para propor processo judicial, comprometendo-se a acompanhá-lo em qualquer juízo, até final decisão.</p>
+
+        ${gdClausulaHonorarios(area)}
+
+        <p><span class="clausula-title">2)</span> As custas e despesas decorrentes de xerox e/ou outros documentos, que porventura forem necessários, correrão por conta do CONSTITUINTE.</p>
+
+        <p><span class="clausula-title">3)</span> O presente contrato abrange a prestação contida no item 01 (um) deste instrumento. Quaisquer ações subsequentes, mesmo que correlatas, ficam sujeitas à celebração de um novo Contrato.</p>
+
+        <p><span class="clausula-title">4)</span> Eventuais honorários de sucumbência serão revertidos em favor do CONSTITUÍDO, nos termos do art. 22 da Lei n. 8.906/94 (Estatuto da Advocacia), sem prejuízo dos honorários estabelecidos na cláusula "01", desvinculado do presente contrato e isento de qualquer desconto.</p>
+
+        <p><span class="clausula-title">5)</span> Quaisquer despesas que se fizerem necessárias para que o CONSTITUÍDO cumpra o presente contrato, correrão única e exclusivamente por conta do CONSTITUINTE. O CONSTITUINTE obriga-se a fornecer ao CONSTITUÍDO todos os documentos solicitados no prazo máximo de 10 (dez) dias úteis a contar de cada solicitação. O atraso ou a omissão no fornecimento de documentos por parte do CONSTITUINTE não gerará qualquer responsabilidade ao CONSTITUÍDO, podendo inclusive ensejar a suspensão ou rescisão do contrato, sem prejuízo dos honorários devidos até aquela data.</p>
+
+        <p><span class="clausula-title">6)</span> As partes elegem como meio preferencial de comunicação o aplicativo WhatsApp e/ou o endereço de e-mail informado no momento da contratação, sendo consideradas válidas e eficazes todas as notificações, intimações e comunicações realizadas por esses canais. O CONSTITUINTE compromete-se a manter seus dados de contato atualizados junto ao CONSTITUÍDO, sendo de sua exclusiva responsabilidade os prejuízos decorrentes de eventual impossibilidade de comunicação por informações desatualizadas.</p>
+
+        <p><span class="clausula-title">7)</span> Em conformidade com a Lei nº 13.709/2018 (Lei Geral de Proteção de Dados — LGPD), o CONSTITUÍDO declara que os dados pessoais do CONSTITUINTE coletados para a execução deste contrato serão utilizados exclusivamente para as finalidades a ele relacionadas, tratados com sigilo e confidencialidade, e não serão compartilhados com terceiros salvo quando exigido por obrigação legal ou necessário ao cumprimento do objeto contratual. O CONSTITUINTE consente expressamente com o tratamento de seus dados pessoais para as finalidades descritas neste instrumento.</p>
+
+        <p><span class="clausula-title">8)</span> Os valores devidos pelo CONSTITUINTE ao CONSTITUÍDO em razão deste contrato, caso não pagos na data de vencimento, serão atualizados monetariamente pelo IPCA (Índice de Preços ao Consumidor Amplo) acumulado no período, acrescidos de juros moratórios de 1% (um por cento) ao mês e multa de 2% (dois por cento) sobre o valor total em atraso, a contar da data do vencimento até o efetivo pagamento.</p>
+
+        <p><span class="clausula-title">9)</span> No caso de desistência da ação por parte do CONSTITUINTE, sem motivo justificável, após o prazo de 15 (quinze) dias contados da assinatura deste instrumento, será devida ao CONSTITUÍDO uma multa compensatória equivalente a 50% (cinquenta por cento) dos honorários de êxito que seriam devidos caso obtido resultado favorável, calculados sobre o valor atribuído à causa ou sobre o benefício pleiteado, a critério do CONSTITUÍDO. Caso a desistência ocorra dentro do prazo de 15 (quinze) dias da assinatura, ficará devido exclusivamente o valor fixo estabelecido na cláusula 1ª deste contrato, sem acréscimos. O não pagamento dos valores devidos em razão da desistência facultará ao CONSTITUÍDO, a seu exclusivo critério, a adoção das seguintes medidas: inclusão do nome do CONSTITUINTE nos cadastros de proteção ao crédito, encaminhamento a protesto extrajudicial e/ou execução judicial do débito, respondendo o CONSTITUINTE por todas as custas e honorários advocatícios decorrentes.</p>
+
+        <p><span class="clausula-title">10)</span> No caso de revogação do mandato ou substituição do CONSTITUÍDO por outro profissional, por iniciativa do CONSTITUINTE, a qualquer tempo e independentemente de decisão judicial favorável, serão devidos integralmente os honorários contratados, proporcionalmente aos serviços já prestados, sem prejuízo da multa compensatória prevista na cláusula anterior, caso aplicável. Na hipótese de o processo já estar em fase de instrução, com audiência designada ou em grau de recurso, os honorários serão devidos integralmente, tendo em vista o trabalho já desenvolvido pelo CONSTITUÍDO até aquele momento. O CONSTITUÍDO reterá cópia de todos os documentos e peças processuais produzidas até a data da revogação, facultando-lhe ainda o exercício do direito de retenção dos autos até o pagamento integral dos honorários devidos.</p>
+
+        <p><span class="clausula-title">11)</span> A obrigação relativa ao pagamento dos honorários transmite-se aos herdeiros e sucessores do CONSTITUINTE.</p>
+
+        <p><span class="clausula-title">12)</span> Fica eleito o foro da Comarca de ${cidade}/${uf}, para dirimir qualquer dúvida ou questão oriunda do presente contrato, não obstante a idoneidade e sinceridade do propósito de ambas as partes.</p>
+
+        <p>E por estarem as partes assim contratadas, firmam o presente contrato particular, consciente e espontaneamente, em duas vias de igual teor, na presença de 02 testemunhas.</p>
+
+        <div class="local-data">Frutal, ${data}.</div>
+
+        <div class="assinaturas">
+          <div class="ass-grid">
+            <div class="ass-bloco">
+              <div class="ass-linha"></div>
+              <div class="ass-nome">CACILDA TEIXEIRA DE SOUZA</div>
+              <div class="ass-qual">Constituído</div>
+              <div class="ass-oab">OAB/MG 159.859</div>
+            </div>
+            <div class="ass-bloco">
+              <div class="ass-linha"></div>
+              <div class="ass-nome">${esc(nomeSign.toUpperCase())}</div>
+              <div class="ass-qual">Constituinte${gdEhMenor() ? " (Responsável Legal)" : ""}</div>
+            </div>
+          </div>
+          <div class="testemunhas-titulo">TESTEMUNHAS:</div>
+          <div class="test-grid">
+            <div class="test-bloco"><div class="test-linha"></div><div style="font-size:10pt">1ª Testemunha</div></div>
+            <div class="test-bloco"><div class="test-linha"></div><div style="font-size:10pt">2ª Testemunha</div></div>
+          </div>
+        </div>
+    `
+  };
+}
+
+// Conferência antes de gerar (as mesmas do gerador antigo, mais a do valor)
+function gdValidar(docType) {
+  if (gdEhPj()) {
+    if (!gdRaw("gdPjRazao")) return { msg: "⚠ Preencha a razão social da empresa.", el: "gdPjRazao" };
+    if (!gdRaw("gdPjRepNome")) return { msg: "⚠ Preencha o nome do representante legal da empresa.", el: "gdPjRepNome" };
+  } else {
+    if (!gdRaw("gdNome")) return { msg: "⚠ Preencha o nome antes de gerar.", el: "gdNome" };
+    if (!gdRaw("gdCpf") && !gdRaw("gdRg")) return { msg: "⚠ Preencha ao menos o RG ou CPF.", el: "gdCpf" };
+    if (gdEhMenor() && !gdRaw("gdMenorNome")) return { msg: "⚠ Preencha o nome do menor.", el: "gdMenorNome" };
+  }
+  if (docType === "contrato" && gdValorCentavos() > 0 && !gdRaw("gdPagamento")) {
+    return { msg: "⚠ Preencha a forma de pagamento do valor fixo: sem ela, o valor não aparece no contrato.", el: "gdPagamento" };
+  }
+  return null;
+}
+
+// Volta o formulário ao estado inicial de cada documento
+function gdAplicarPadroes() {
+  document.getElementById("formDocGeneration").reset();
+  document.getElementById("docPowersText").value = DEFAULT_PROCURACAO_POWERS;
+  document.getElementById("docLgpdPurposes").value = DEFAULT_LGPD_PURPOSES;
+  document.getElementById("docLgpdComms").checked = true;
+  const inssTypeBox = document.getElementById("fieldInssType");
+  if (inssTypeBox) inssTypeBox.style.display = "none";
+  gdEl("gdData").value = getOffsetDate(0);
+  gdEl("gdValorExtenso").textContent = "";
+  gdAtualizarSexo();
+  gdToggleTipo();
+  gdTrocarAreaContrato();
 }
 
 function startDocGeneration(docType) {
   // Começa SEMPRE em branco: antes, o CPF, endereço, objeto e valor do
   // documento anterior ficavam nos campos e iam parar no documento novo.
-  document.getElementById("formDocGeneration").reset();
-  document.getElementById("docPowersText").value = DEFAULT_PROCURACAO_POWERS;
-  document.getElementById("docLgpdPurposes").value = DEFAULT_LGPD_PURPOSES;
-  const inssTypeBox = document.getElementById("fieldInssType");
-  if (inssTypeBox) inssTypeBox.style.display = "none";
+  gdAplicarPadroes();
   document.getElementById("docTypeField").value = docType;
   const sectionTitle = document.getElementById("docFormSectionTitle");
-  const specificBox = document.getElementById("docSpecificBox");
   const stepLabel = document.getElementById("docStepSpecificLabel");
 
   const fieldsProc = document.getElementById("docFieldsProcuracao");
@@ -12202,26 +12689,18 @@ function startDocGeneration(docType) {
   fieldsCont.style.display = "none";
   fieldsHipo.style.display = "none";
   fieldsLgpd.style.display = "none";
-  document.getElementById("docLgpdPurposes").value = DEFAULT_LGPD_PURPOSES;
-  document.getElementById("docLgpdComms").checked = true;
-
-  // Data default de hoje
-  const today = getOffsetDate(0);
-  document.getElementById("docPfDate").value = today;
-  document.getElementById("docPjDate").value = today;
-  document.getElementById("docMenorDate").value = today;
 
   if (docType === "procuracao") {
-    sectionTitle.textContent = "⚖️ Emitir Procuração Ad Judicia et Extra";
-    stepLabel.textContent = "Poderes Outorgados & Processo Vinculado";
+    sectionTitle.textContent = "⚖️ Emitir Procuração";
+    stepLabel.textContent = "Procuração — Poderes Outorgados";
     fieldsProc.style.display = "block";
   } else if (docType === "contrato") {
-    sectionTitle.textContent = "📜 Emitir Contrato de Prestação de Serviços Advocatícios";
-    stepLabel.textContent = "Cláusulas Contratuais, Honorários & Condições";
+    sectionTitle.textContent = "📜 Emitir Contrato de Honorários Advocatícios";
+    stepLabel.textContent = "Contrato de Honorários — Área e Detalhes";
     fieldsCont.style.display = "block";
   } else if (docType === "hipossuficiencia") {
     sectionTitle.textContent = "🏛️ Emitir Declaração de Hipossuficiência (Justiça Gratuita)";
-    stepLabel.textContent = "Modelo Legal Fundamentado (Art. 99, § 3º, CPC)";
+    stepLabel.textContent = "Declaração de Hipossuficiência";
     fieldsHipo.style.display = "block";
   } else if (docType === "lgpd") {
     sectionTitle.textContent = "🔒 Emitir Termo de Consentimento (LGPD)";
@@ -12233,14 +12712,10 @@ function startDocGeneration(docType) {
 }
 
 function resetDocForm() {
-  document.getElementById("formDocGeneration").reset();
-  const today = getOffsetDate(0);
-  document.getElementById("docPfDate").value = today;
-  document.getElementById("docPjDate").value = today;
-  document.getElementById("docMenorDate").value = today;
-  document.getElementById("docPowersText").value = DEFAULT_PROCURACAO_POWERS;
-  document.getElementById("docLgpdPurposes").value = DEFAULT_LGPD_PURPOSES;
-  document.getElementById("docLgpdComms").checked = true;
+  if (!confirm("Limpar todos os campos?")) return;
+  const docType = document.getElementById("docTypeField").value;
+  gdAplicarPadroes();
+  document.getElementById("docTypeField").value = docType;
   showToast("Campos do formulário limpos.");
 }
 
@@ -12249,10 +12724,7 @@ function backToDocForm() {
 }
 
 // ==========================================
-// MODELOS OFICIAIS DA BANCA (Procuração, Contrato de Honorários,
-// Declaração de Hipossuficiência) — fonte única usada tanto pelo
-// formulário manual do módulo "Documentos" quanto pela geração
-// automática dos 3 documentos no cadastro de cliente.
+// NOMES E TEXTOS PADRÃO DOS DOCUMENTOS
 // ==========================================
 
 const DOC_TYPE_NAMES = {
@@ -12270,400 +12742,119 @@ const DEFAULT_LGPD_PURPOSES =
 
 const DEFAULT_PROCURACAO_POWERS = "para o foro em geral, com cláusula ad judicia, em qualquer Juízo, Instância ou Tribunal, bem como em procedimentos administrativos, perante quaisquer repartições públicas, para transigir, desistir, firmar compromissos e acordos, podendo ainda representar os outorgantes junto à Instituições Financeiras, receber e dar quitação, assinando pessoalmente requerimentos e todos os demais atos necessários ao fim colimado, substabelecer com ou sem reserva de iguais poderes, postular os benefícios da Justiça Gratuita, intentar medidas cautelares preparatórias ou incidentais, louvar-se em peritos ou impugná-los, podendo propor contra quem de direito as ações competentes e defendê-la nas contrárias, seguindo umas e outras, até decisão final, usando os recursos legais e acompanhando-os, dando tudo por bom e valioso.";
 
-// Mapeia a "Qualidade do Representante" escolhida no cadastro de cliente
-// (menor de idade) para o trecho de texto usado na qualificação jurídica.
-const MENOR_REP_QUALITY_MAP = {
-  "Mãe / Genitora": "por sua genitora (mãe)",
-  "Pai / Genitor": "por seu genitor (pai)",
-  "Tutor(a) legal": "por seu(sua) tutor(a) legal",
-  "Guardião(ã) legal": "por seu(sua) guardião(ã) legal"
-};
-
-// Monta o parágrafo de qualificação da parte (Outorgante / Contratante /
-// Declarante) a partir de um tipo ("pf" | "pj" | "menor") e um objeto de
-// dados normalizado. Usada tanto pelo formulário manual quanto pela
-// geração automática a partir do cadastro de cliente.
-function buildPartyQualification(type, d) {
-  // O texto de qualificação vira HTML do documento: os campos digitados são
-  // escapados aqui. O nome devolvido em "name" continua cru (é usado em campos
-  // de texto do banco); onde ele entra em HTML, é escapado no modelo.
-  const rawName = d.name || "";
-  const upperName = esc((d.name || "").toUpperCase());
-  const upperRepName = esc((d.repName || "").toUpperCase());
-  d = Object.fromEntries(Object.entries(d).map(([k, v]) => [k, typeof v === "string" ? esc(v) : v]));
-  d.name = upperName;
-  d.repName = upperRepName;
-  const result = buildPartyQualificationRaw(type, d);
-  return { name: rawName, text: result.text };
-}
-
-function buildPartyQualificationRaw(type, d) {
-  if (type === "pj") {
-    const iePart = d.stateRegistration ? `, Inscrição Estadual nº ${d.stateRegistration}` : "";
-    const cepPart = d.cep ? `, CEP ${d.cep}` : "";
-    const repRgPart = d.repRg ? `, portador do RG nº ${d.repRg}` : "";
-    const repCpfPart = d.repCpf ? ` e CPF sob o nº ${d.repCpf}` : "";
-    return {
-      name: d.name || "",
-      text: `<strong>${d.name || ""}</strong>, pessoa jurídica de direito privado, inscrita no CNPJ sob o nº ${d.cnpj || ""}${iePart}, com sede na ${d.address || "Frutal/MG"}${cepPart}, neste ato representada por seu ${d.repRole || "Sócio-Administrador"}, <strong>${d.repName || ""}</strong>${repRgPart}${repCpfPart}.`
-    };
-  } else if (type === "menor") {
-    const menorCpfPart = d.cpf ? `, inscrito(a) no CPF sob o nº ${d.cpf}` : "";
-    const repRgPart = d.repRg ? `, portador(a) do RG nº ${d.repRg}` : "";
-    const repCpfPart = d.repCpf ? ` e CPF sob o nº ${d.repCpf}` : "";
-    const addrPart = d.address ? `, residentes e domiciliados na ${d.address}, ${d.city || "Frutal"}/${d.uf || "MG"}` : `, domiciliados em ${d.city || "Frutal"}/${d.uf || "MG"}`;
-    const rawRel = (d.repRel || "").trim();
-    const repRelText = rawRel ? (rawRel.startsWith("por ") ? rawRel : `por ${rawRel}`) : "por seu(sua) representante legal";
-    return {
-      name: d.name || "",
-      text: `<strong>${d.name || ""}</strong>, ${d.nationality || "brasileiro(a), menor impúbere"}${menorCpfPart}, neste ato representado(a) ${repRelText}, <strong>${d.repName || ""}</strong>${repRgPart}${repCpfPart}${addrPart}.`
-    };
-  }
-  // Pessoa Física (padrão)
-  const rgPart = d.rg ? `portador(a) do RG nº ${d.rg} ${d.rgEmitter || "SSP/MG"} e ` : "";
-  const parentagePart = d.parentage ? `, filha(o) de ${d.parentage}` : "";
-  const addrPart = d.address ? `, residente e domiciliado(a) na ${d.address}${d.cep ? `, CEP ${d.cep}` : ""}, ${d.city || "Frutal"}/${d.uf || "MG"}` : `, domiciliado(a) em ${d.city || "Frutal"}/${d.uf || "MG"}`;
-  return {
-    name: d.name || "",
-    text: `<strong>${d.name || ""}</strong>, ${d.nationality || "brasileira"}, ${d.maritalStatus || ""}, ${d.profession || "profissão não informada"}, ${rgPart}inscrito(a) no CPF sob o nº ${d.cpf || ""}${parentagePart}${addrPart}.`
-  };
-}
-
-// Modelo: Procuração Ad Judicia et Extra
-function buildProcuracaoDoc({ qualificationText, constituentName, dateStr, powers, linkedCase, court }) {
-  const formattedDateBR = formatDateBR(dateStr);
-  const powersText = (powers && powers.trim()) ? esc(powers.trim()) : DEFAULT_PROCURACAO_POWERS;
-  const cfg = AppState.officeSettings || DEFAULT_OFFICE_SETTINGS;
-  const title = "PROCURAÇÃO AD JUDICIA ET EXTRA";
-  const body = `
-      <p><strong>OUTORGANTE:</strong> ${qualificationText}</p>
-
-      <p><strong>OUTORGADOS:</strong> <strong>CACILDA TEIXEIRA DE SOUZA</strong>, brasileira, casada, advogada inscrita na ${cfg.oab || "OAB/MG 159.859"}, com escritório profissional na ${cfg.address || "Rua Gonçalves Dias, nº 308 – Centro, Frutal/MG"}.</p>
-
-      <p><strong>PODERES:</strong> Pelo presente instrumento particular de procuração, a(o) Outorgante nomeia e constitui a Outorgada sua bastante procuradora, outorgando-lhe ${powersText}</p>
-
-      ${linkedCase ? `<p><strong>PROCESSO VINCULADO:</strong> Ação distribuída sob o nº <strong>${esc(linkedCase)}</strong>${court ? ` perante a <strong>${esc(court)}</strong>` : ''}.</p>` : ''}
-
-      <p style="text-align: right; margin-top: 2.5rem;">Frutal, ${formattedDateBR}.</p>
-
-      <div class="doc-signature-row">
-        <div class="doc-sig-box">
-          <div class="doc-sig-line"></div>
-          <strong>${esc((constituentName || "").toUpperCase())}</strong><br>
-          <span style="font-size:9.5pt; color:#4a455a;">Outorgante</span>
-        </div>
-      </div>
-    `;
-  return { title, body };
-}
-
-// Modelo: Contrato de Honorários Advocatícios
-function buildContratoDoc({ qualificationText, constituentName, dateStr, objeto, valorForma, exitoTexto, parcelasTexto }) {
-  const formattedDateBR = formatDateBR(dateStr);
-  const cfg = AppState.officeSettings || DEFAULT_OFFICE_SETTINGS;
-  const title = "CONTRATO DE HONORÁRIOS ADVOCATÍCIOS";
-  const objetoTexto = esc(objeto || "prestação de serviços advocatícios");
-  const valorFormaTexto = esc(valorForma || "A combinar conforme condições específicas do caso");
-  const exitoLine = esc(exitoTexto || "Não aplicável ao presente contrato");
-  const parcelasLine = esc(parcelasTexto || "Pagamento em parcela única");
-
-  const body = `
-      <p>Pelo presente instrumento de contrato de prestação de serviços, de um lado <strong>CACILDA TEIXEIRA DE SOUZA</strong>, brasileira, casada, advogada inscrita na ${cfg.oab || "OAB/MG 159.859"}, com escritório profissional na ${cfg.address || "Rua Gonçalves Dias, nº 308 – Centro, Frutal/MG"}. Adiante denominada simplesmente <strong>CONSTITUÍDO</strong> e, de outro ${qualificationText} A partir de agora em diante chamado de <strong>CONSTITUINTE</strong>, têm justo e contratado o seguinte:</p>
-
-      <p><strong>1)</strong> O CONSTITUÍDO, face ao mandato extrajudicial que lhe foi outorgado pela CONSTITUINTE, na qualidade de Procurador e advogado, obriga-se a prestar serviços profissionais para propor processo judicial, comprometendo-se a acompanhá-lo em qualquer juízo, até final decisão.</p>
-      <p>A CONSTITUINTE pagará ao CONSTITUÍDO, em remuneração dos serviços contratados (<strong>${objetoTexto}</strong>), os seguintes honorários:</p>
-      <p>— ${valorFormaTexto};</p>
-      <p>— ${exitoLine};</p>
-      <p>— ${parcelasLine}.</p>
-      <p>A CONSTITUINTE obriga-se a fornecer ao CONSTITUÍDO todos os documentos que lhe forem solicitados, dentro do prazo máximo de 10 (dez) dias úteis a contar de cada solicitação. O atraso ou a omissão no fornecimento de documentos por parte do CONSTITUINTE não gerará qualquer responsabilidade ao CONSTITUÍDO, podendo inclusive ensejar a suspensão ou rescisão do contrato, sem prejuízo dos honorários devidos até aquela data.</p>
-
-      <p><strong>2)</strong> As custas e despesas decorrentes de xerox e/ou outros documentos, que porventura forem necessários, correrão por conta do CONSTITUINTE.</p>
-
-      <p><strong>3)</strong> O presente contrato abrange a prestação contida no item 01 (um) deste instrumento. Quaisquer ações subsequentes, mesmo que correlatas, ficam sujeitas à celebração de um novo Contrato.</p>
-
-      <p><strong>4)</strong> Eventuais honorários de sucumbência serão revertidos em favor do CONSTITUÍDO, nos termos do art. 22 da Lei n. 8.906/94 (Estatuto da Advocacia), sem prejuízo dos honorários estabelecidos na cláusula "01", desvinculado do presente contrato e isento de qualquer desconto.</p>
-
-      <p><strong>5)</strong> Quaisquer despesas que se fizerem necessárias para que o CONSTITUÍDO cumpra o presente contrato, correrão única e exclusivamente por conta do CONSTITUINTE.</p>
-
-      <p><strong>6)</strong> As partes elegem como meio preferencial de comunicação o aplicativo WhatsApp e/ou o endereço de e-mail informado no momento da contratação, sendo consideradas válidas e eficazes todas as notificações, intimações e comunicações realizadas por esses canais. O CONSTITUINTE compromete-se a manter seus dados de contato atualizados junto ao CONSTITUÍDO, sendo de sua exclusiva responsabilidade os prejuízos decorrentes de eventual impossibilidade de comunicação por informações desatualizadas.</p>
-
-      <p><strong>7)</strong> Em conformidade com a Lei nº 13.709/2018 (Lei Geral de Proteção de Dados — LGPD), o CONSTITUÍDO declara que os dados pessoais do CONSTITUINTE coletados para a execução deste contrato serão utilizados exclusivamente para as finalidades a ele relacionadas, tratados com sigilo e confidencialidade, e não serão compartilhados com terceiros salvo quando exigido por obrigação legal ou necessário ao cumprimento do objeto contratual. O CONSTITUINTE consente expressamente com o tratamento de seus dados pessoais para as finalidades descritas neste instrumento.</p>
-
-      <p><strong>8)</strong> Os valores devidos pelo CONSTITUINTE ao CONSTITUÍDO em razão deste contrato, caso não pagos na data de vencimento, serão atualizados monetariamente pelo IPCA (Índice de Preços ao Consumidor Amplo) acumulado no período, acrescidos de juros moratórios de 1% (um por cento) ao mês e multa de 2% (dois por cento) sobre o valor total em atraso, a contar da data do vencimento até o efetivo pagamento.</p>
-
-      <p><strong>9)</strong> No caso de desistência da ação por parte do CONSTITUINTE, sem motivo justificável, após o prazo de 15 (quinze) dias contados da assinatura deste instrumento, será devida ao CONSTITUÍDO uma multa compensatória equivalente a 50% (cinquenta por cento) dos honorários de êxito que seriam devidos caso obtido resultado favorável, calculados sobre o valor atribuído à causa ou sobre o benefício pleiteado, a critério do CONSTITUÍDO. Caso a desistência ocorra dentro do prazo de 15 (quinze) dias da assinatura, ficará devido exclusivamente o valor fixo estabelecido na cláusula 1ª deste contrato, sem acréscimos. O não pagamento dos valores devidos em razão da desistência facultará ao CONSTITUÍDO, a seu exclusivo critério, a adoção das seguintes medidas: inclusão do nome do CONSTITUINTE nos cadastros de proteção ao crédito, encaminhamento a protesto extrajudicial e/ou execução judicial do débito, respondendo o CONSTITUINTE por todas as custas e honorários advocatícios decorrentes.</p>
-
-      <p><strong>10)</strong> No caso de revogação do mandato ou substituição do CONSTITUÍDO por outro profissional, por iniciativa do CONSTITUINTE, a qualquer tempo e independentemente de decisão judicial favorável, serão devidos integralmente os honorários contratados, proporcionalmente aos serviços já prestados, sem prejuízo da multa compensatória prevista na cláusula anterior, caso aplicável. Na hipótese de o processo já estar em fase de instrução, com audiência designada ou em grau de recurso, os honorários serão devidos integralmente, tendo em vista o trabalho já desenvolvido pelo CONSTITUÍDO até aquele momento. O CONSTITUÍDO reterá cópia de todos os documentos e peças processuais produzidas até a data da revogação, facultando-lhe ainda o exercício do direito de retenção dos autos até o pagamento integral dos honorários devidos.</p>
-
-      <p><strong>11)</strong> A obrigação relativa ao pagamento dos honorários transmite-se aos herdeiros e sucessores do CONSTITUINTE.</p>
-
-      <p><strong>12)</strong> Fica eleito o foro da Comarca de Frutal/MG, para dirimir qualquer dúvida ou questão oriunda do presente contrato, não obstante a idoneidade e sinceridade do propósito de ambas as partes.</p>
-
-      <p>E por estarem as partes assim contratadas, firmam o presente contrato particular, consciente e espontaneamente, em duas vias de igual teor, na presença de 02 testemunhas.</p>
-
-      <p style="text-align: right; margin-top: 1.5rem;">Frutal, ${formattedDateBR}.</p>
-
-      <div class="doc-signature-row">
-        <div class="doc-sig-box">
-          <div class="doc-sig-line"></div>
-          <strong>CACILDA TEIXEIRA DE SOUZA</strong><br>
-          <span style="font-size:9.5pt; color:#4a455a;">Constituído &mdash; ${cfg.oab || "OAB/MG 159.859"}</span>
-        </div>
-        <div class="doc-sig-box">
-          <div class="doc-sig-line"></div>
-          <strong>${esc((constituentName || "").toUpperCase())}</strong><br>
-          <span style="font-size:9.5pt; color:#4a455a;">Constituinte</span>
-        </div>
-      </div>
-
-      <div class="doc-signature-row" style="margin-top:2.5rem;">
-        <div class="doc-sig-box">
-          <div class="doc-sig-line"></div>
-          <span style="font-size:9.5pt; color:#4a455a;">1ª Testemunha</span>
-        </div>
-        <div class="doc-sig-box">
-          <div class="doc-sig-line"></div>
-          <span style="font-size:9.5pt; color:#4a455a;">2ª Testemunha</span>
-        </div>
-      </div>
-    `;
-  return { title, body };
-}
-
-// Modelo: Declaração de Hipossuficiência (Assistência Judiciária Gratuita)
-function buildHipossuficienciaDoc({ qualificationText, constituentName, dateStr }) {
-  const formattedDateBR = formatDateBR(dateStr);
-  const title = "DECLARAÇÃO PARA FINS DE ASSISTÊNCIA JUDICIÁRIA GRATUITA";
-  const body = `
-      <p>${qualificationText}</p>
-
-      <p>Nos termos do art. 99, §1º do Código de Processo Civil (Lei nº 13.105/2015), combinado com a Lei nº 7.115 de 08 de Agosto de 1950, sujeitando-se às sanções cíveis, administrativas e criminais previstas nas legislações aplicáveis, inclusive àquelas do art. 99, §2º do CPC, declara ser pobre no sentido legal, não possuindo condições de arcar com as custas processuais e os honorários advocatícios sem prejuízo do próprio sustento e de sua família.</p>
-
-      <p style="text-align: right; margin-top: 2.5rem;">Frutal, ${formattedDateBR}.</p>
-
-      <div class="doc-signature-row">
-        <div class="doc-sig-box">
-          <div class="doc-sig-line"></div>
-          <strong>${esc((constituentName || "").toUpperCase())}</strong><br>
-          <span style="font-size:9.5pt; color:#4a455a;">Declarante</span>
-        </div>
-      </div>
-    `;
-  return { title, body };
-}
-
 // Termo de Consentimento para tratamento de dados pessoais (LGPD, Lei nº
 // 13.709/2018, arts. 7º, I e 11, I). Modelo do escritório: finalidades,
 // dados tratados, compartilhamento, prazo de guarda, direitos do titular e
-// contato do encarregado.
-function buildLgpdDoc({ qualificationText, constituentName, dateStr, purposes, comms, office }) {
-  const formattedDateBR = formatDateBR(dateStr);
+// contato do encarregado. Mesma formatação dos outros documentos.
+function buildLgpdDoc({ qualificationText, signerName, dateText, purposes, comms, office }) {
   const title = "TERMO DE CONSENTIMENTO PARA TRATAMENTO DE DADOS PESSOAIS";
   const officeName = esc((office && office.name) || DEFAULT_OFFICE_SETTINGS.name);
   const officeContact = [office && office.email, office && office.phone].filter(Boolean).map(esc).join(" · ");
   const commsLine = comms
     ? "AUTORIZO o contato por telefone, e-mail ou mensagem para informar andamentos processuais, prazos, agendamentos e questões financeiras relacionadas aos serviços contratados."
     : "NÃO AUTORIZO contatos por telefone, e-mail ou mensagem além dos estritamente necessários à prestação dos serviços.";
-  const body = `
-      <p>${qualificationText}</p>
+  const html = `
+        <div class="doc-titulo">${title}</div>
+        <p>${qualificationText}</p>
 
-      <p>Pelo presente <strong>Termo de Consentimento</strong>, em conformidade com a Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018 – LGPD), o(a) <strong>TITULAR</strong> acima qualificado(a) <strong>AUTORIZA</strong> <strong>${officeName}</strong>, na qualidade de <strong>CONTROLADOR</strong>, a realizar o tratamento de seus dados pessoais, nos termos a seguir.</p>
+        <p>Pelo presente <strong>Termo de Consentimento</strong>, em conformidade com a Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018 – LGPD), o(a) <strong>TITULAR</strong> acima qualificado(a) <strong>AUTORIZA</strong> <strong>${officeName}</strong>, na qualidade de <strong>CONTROLADOR</strong>, a realizar o tratamento de seus dados pessoais, nos termos a seguir.</p>
 
-      <p><strong>1. Dados tratados.</strong> Nome, estado civil, profissão, documentos (RG, CPF/CNPJ), filiação, data de nascimento, endereço, telefone, e-mail, informações do caso e documentos fornecidos para a prestação dos serviços, bem como, quando indispensável ao caso, dados pessoais sensíveis (por exemplo, dados de saúde em ações previdenciárias).</p>
+        <p><span class="clausula-title">1. Dados tratados.</span> Nome, estado civil, profissão, documentos (RG, CPF/CNPJ), filiação, data de nascimento, endereço, telefone, e-mail, informações do caso e documentos fornecidos para a prestação dos serviços, bem como, quando indispensável ao caso, dados pessoais sensíveis (por exemplo, dados de saúde em ações previdenciárias).</p>
 
-      <p><strong>2. Finalidades.</strong> ${esc(purposes || DEFAULT_LGPD_PURPOSES)}</p>
+        <p><span class="clausula-title">2. Finalidades.</span> ${esc(purposes || DEFAULT_LGPD_PURPOSES)}</p>
 
-      <p><strong>3. Compartilhamento.</strong> Os dados poderão ser compartilhados, somente no estritamente necessário, com órgãos do Poder Judiciário, INSS e demais órgãos públicos, peritos, correspondentes jurídicos, cartórios, instituições financeiras e prestadores de serviço do escritório vinculados ao dever de confidencialidade. Os dados não serão vendidos nem usados para fins estranhos aos descritos neste termo.</p>
+        <p><span class="clausula-title">3. Compartilhamento.</span> Os dados poderão ser compartilhados, somente no estritamente necessário, com órgãos do Poder Judiciário, INSS e demais órgãos públicos, peritos, correspondentes jurídicos, cartórios, instituições financeiras e prestadores de serviço do escritório vinculados ao dever de confidencialidade. Os dados não serão vendidos nem usados para fins estranhos aos descritos neste termo.</p>
 
-      <p><strong>4. Armazenamento e segurança.</strong> Os dados são guardados em ambiente com controle de acesso e permanecem arquivados durante a prestação dos serviços e pelo prazo necessário ao cumprimento de obrigações legais, regulatórias e do exercício regular de direitos.</p>
+        <p><span class="clausula-title">4. Armazenamento e segurança.</span> Os dados são guardados em ambiente com controle de acesso e permanecem arquivados durante a prestação dos serviços e pelo prazo necessário ao cumprimento de obrigações legais, regulatórias e do exercício regular de direitos.</p>
 
-      <p><strong>5. Direitos do titular.</strong> O(a) TITULAR poderá, a qualquer tempo e mediante solicitação, confirmar a existência de tratamento, acessar, corrigir ou atualizar seus dados, solicitar a anonimização ou eliminação de dados desnecessários, obter informações sobre compartilhamentos e <strong>revogar este consentimento</strong>, ciente de que a revogação não afeta os tratamentos já realizados nem os que decorram de obrigação legal ou do exercício de direitos em processos.</p>
+        <p><span class="clausula-title">5. Direitos do titular.</span> O(a) TITULAR poderá, a qualquer tempo e mediante solicitação, confirmar a existência de tratamento, acessar, corrigir ou atualizar seus dados, solicitar a anonimização ou eliminação de dados desnecessários, obter informações sobre compartilhamentos e <strong>revogar este consentimento</strong>, ciente de que a revogação não afeta os tratamentos já realizados nem os que decorram de obrigação legal ou do exercício de direitos em processos.</p>
 
-      <p><strong>6. Comunicações.</strong> ${commsLine}</p>
+        <p><span class="clausula-title">6. Comunicações.</span> ${commsLine}</p>
 
-      <p><strong>7. Contato do controlador.</strong> ${officeName}${officeContact ? " — " + officeContact : ""}.</p>
+        <p><span class="clausula-title">7. Contato do controlador.</span> ${officeName}${officeContact ? " — " + officeContact : ""}.</p>
 
-      <p style="text-align: right; margin-top: 2.5rem;">Frutal, ${formattedDateBR}.</p>
+        <div class="local-data">Frutal, ${dateText}.</div>
 
-      <div class="doc-signature-row">
-        <div class="doc-sig-box">
-          <div class="doc-sig-line"></div>
-          <strong>${esc((constituentName || "").toUpperCase())}</strong><br>
-          <span style="font-size:9.5pt; color:#4a455a;">Titular dos dados</span>
+        <div class="assinaturas">
+          <div class="ass-grid">
+            <div class="ass-bloco">
+              <div class="ass-linha"></div>
+              <div class="ass-nome">${esc((signerName || "").toUpperCase())}</div>
+              <div class="ass-qual">Titular dos dados${gdEhMenor() ? " (Responsável Legal)" : ""}</div>
+            </div>
+            <div class="ass-bloco">
+              <div class="ass-linha"></div>
+              <div class="ass-nome">${officeName.toUpperCase()}</div>
+              <div class="ass-qual">Controlador</div>
+            </div>
+          </div>
         </div>
-        <div class="doc-sig-box">
-          <div class="doc-sig-line"></div>
-          <strong>${officeName.toUpperCase()}</strong><br>
-          <span style="font-size:9.5pt; color:#4a455a;">Controlador</span>
-        </div>
-      </div>
     `;
-  return { title, body };
+  return { title, html };
 }
 
-// Gera os 3 documentos (Procuração, Contrato de Honorários e Declaração de
-// Hipossuficiência) de uma só vez, a partir dos dados preenchidos no
-// cadastro de cliente (newObj), e salva todos no Histórico de Documentos.
-// Retorna a quantidade de documentos gerados.
+// Mostra o documento na folha. Documentos novos (com .doc-titulo no HTML)
+// usam a formatação do gerador antigo; os do histórico anterior mantêm a
+// formatação com que foram gerados.
+function showDocOnPaper(title, html) {
+  const classico = (html || "").includes('class="doc-titulo"');
+  document.getElementById("docA4Paper").classList.toggle("doc-modelo-classico", classico);
+  const titleEl = document.getElementById("docRenderedTitle");
+  titleEl.textContent = classico ? "" : (title || "");
+  titleEl.style.display = classico ? "none" : "";
+  document.getElementById("docRenderedBody").innerHTML = html || "";
+}
+
 // SUBMIT DO FLUXO DE GERAÇÃO
 document.getElementById("formDocGeneration").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const submitBtnDoc = document.querySelector('#formDocGeneration button[type="submit"]');
-  if (submitBtnDoc) submitBtnDoc.disabled = true;
   const docType = document.getElementById("docTypeField").value;
   const selectedClientId = document.getElementById("docClientSelect") ? document.getElementById("docClientSelect").value : "";
 
-  // Montar qualificação da parte de acordo com a aba ativa
-  let docDateStr = "";
-  let partyData = {};
-
-  if (currentConstituentTab === "pf") {
-    docDateStr = document.getElementById("docPfDate").value || getOffsetDate(0);
-    partyData = {
-      name: document.getElementById("docPfName").value.trim(),
-      nationality: document.getElementById("docPfNationality").value.trim() || "brasileira",
-      maritalStatus: document.getElementById("docPfMarital").value,
-      profession: document.getElementById("docPfProfession").value.trim() || "profissão não informada",
-      rg: document.getElementById("docPfRg").value.trim(),
-      rgEmitter: document.getElementById("docPfRgEmitter").value.trim() || "SSP/MG",
-      cpf: document.getElementById("docPfCpf").value.trim(),
-      parentage: document.getElementById("docPfParentage").value.trim(),
-      address: document.getElementById("docPfAddress").value.trim(),
-      cep: document.getElementById("docPfCep").value.trim(),
-      city: document.getElementById("docPfCity").value.trim() || "Frutal",
-      uf: document.getElementById("docPfUf").value.trim() || "MG"
-    };
-  } else if (currentConstituentTab === "pj") {
-    docDateStr = document.getElementById("docPjDate").value || getOffsetDate(0);
-    partyData = {
-      name: document.getElementById("docPjName").value.trim(),
-      cnpj: document.getElementById("docPjCnpj").value.trim(),
-      stateRegistration: document.getElementById("docPjIe").value.trim(),
-      address: document.getElementById("docPjAddress").value.trim() || "Frutal/MG",
-      cep: document.getElementById("docPjCep").value.trim(),
-      repName: document.getElementById("docPjRepName").value.trim(),
-      repRole: document.getElementById("docPjRepRole").value.trim() || "Sócio-Administrador",
-      repCpf: document.getElementById("docPjRepCpf").value.trim(),
-      repRg: document.getElementById("docPjRepRg").value.trim()
-    };
-  } else {
-    docDateStr = document.getElementById("docMenorDate").value || getOffsetDate(0);
-    partyData = {
-      name: document.getElementById("docMenorName").value.trim(),
-      nationality: document.getElementById("docMenorNationality").value.trim() || "brasileiro(a), menor impúbere",
-      cpf: document.getElementById("docMenorCpf").value.trim(),
-      repRel: document.getElementById("docMenorRepRel").value,
-      repName: document.getElementById("docMenorRepName").value.trim(),
-      repCpf: document.getElementById("docMenorRepCpf").value.trim(),
-      repRg: document.getElementById("docMenorRepRg").value.trim(),
-      address: document.getElementById("docMenorAddress").value.trim(),
-      city: document.getElementById("docMenorCity").value.trim() || "Frutal",
-      uf: document.getElementById("docMenorUf").value.trim() || "MG"
-    };
+  const problema = gdValidar(docType);
+  if (problema) {
+    alert(problema.msg);
+    const campo = gdEl(problema.el);
+    if (campo) campo.focus();
+    return;
   }
 
-  const qualification = buildPartyQualification(currentConstituentTab, partyData);
-  const constituentName = qualification.name;
-  const qualificationText = qualification.text;
+  const docDateStr = gdRaw("gdData") || getOffsetDate(0);
+  const constituentName = gdNomeDocumento();
+  const constituentType = gdEhPj() ? "pj" : gdEhMenor() ? "menor" : "pf";
 
-  // GERAÇÃO DO DOCUMENTO CONFORME O TIPO (usa os modelos oficiais da banca)
-  let generatedTitle = "";
-  let generatedBody = "";
-  let linkedCaseStr = "";
-  let courtStr = "";
+  // Dados do contrato usados no Financeiro (não mudam o texto do documento)
   let contractFixedFee = 0;
   let contractPaymentMethod = "";
   let contractArea = "";
   let contractObj = "";
   let contractInstallments = 1;
   let contractFirstDue = "";
-
-  if (docType === "procuracao") {
-    const powers = document.getElementById("docPowersText").value.trim();
-    linkedCaseStr = document.getElementById("docProcLinkedCase").value.trim();
-    courtStr = document.getElementById("docProcLinkedCourt").value.trim();
-
-    const doc = buildProcuracaoDoc({ qualificationText, constituentName, dateStr: docDateStr, powers, linkedCase: linkedCaseStr, court: courtStr });
-    generatedTitle = doc.title;
-    generatedBody = doc.body;
-  } else if (docType === "contrato") {
-    const area = document.getElementById("docContractArea").value;
-    const obj = document.getElementById("docContractObject").value.trim() || "prestação de serviços advocatícios";
-    const fixedFee = Number(document.getElementById("docContractFixedFee").value || 0);
-    const method = document.getElementById("docContractPaymentMethod").value;
-    const successPct = Number(document.getElementById("docContractSuccessPct").value || 0);
-    const conditions = document.getElementById("docContractConditions").value.trim();
+  if (docType === "contrato") {
+    contractFixedFee = gdValorCentavos() / 100;
+    contractPaymentMethod = document.getElementById("docContractPaymentMethod").value;
+    contractArea = GD_AREA_FINANCEIRO[gdEl("gdContArea").value] || "Cível / Família";
+    contractObj = gdRaw("gdContServico") || `prestação de serviços advocatícios (${GD_AREA_NOME[gdEl("gdContArea").value]})`;
     contractInstallments = Math.min(60, Math.max(1, parseInt(document.getElementById("docContractInstallments").value, 10) || 1));
     contractFirstDue = document.getElementById("docContractFirstDue").value || getOffsetDate(0);
-    if (fixedFee > 0 && !selectedClientId) {
+    if (contractFixedFee > 0 && !selectedClientId) {
       const goOn = confirm(
         "Nenhum cliente cadastrado foi selecionado.\n\n" +
         "O contrato será gerado, mas os honorários NÃO serão lançados no Financeiro " +
         "(o lançamento precisa de um cliente cadastrado).\n\nGerar o contrato assim mesmo?"
       );
-      if (!goOn) {
-        if (submitBtnDoc) submitBtnDoc.disabled = false;
-        return;
-      }
+      if (!goOn) return;
     }
-    contractFixedFee = fixedFee;
-    contractPaymentMethod = method;
-    contractArea = area;
-    contractObj = obj;
-
-    const objetoTexto = `${area} — ${obj}`;
-    const contractPlan = buildMonthlyPlan(contractInstallments > 1 ? "parcelas" : "unico", fixedFee, contractInstallments, contractFirstDue);
-    const planFirst = contractPlan[0];
-    const planLast = contractPlan[contractPlan.length - 1];
-    const payText = document.getElementById("docContractPayText").value.trim();
-    const benefitInstallments = document.getElementById("docContractBenefitInstallments").value.trim();
-    // Texto digitado no campo "Como o valor fixo será pago" vale mais que a
-    // descrição automática das parcelas.
-    const installmentsClause = fixedFee <= 0
-      ? ""
-      : payText
-        ? `, ${payText}`
-        : contractInstallments > 1
-          ? `, em ${contractInstallments} parcelas mensais e sucessivas de ${formatBRL(planFirst.value)}${planLast.value !== planFirst.value ? ` (a última de ${formatBRL(planLast.value)})` : ""}, vencendo-se a primeira em ${formatDateBR(contractFirstDue)} e as demais no mesmo dia dos meses seguintes`
-          : "";
-    const valorForma = fixedFee > 0
-      ? `Honorários fixos no valor de ${formatBRL(fixedFee)}, a serem pagos via ${method}${installmentsClause}`
-      : "A combinar conforme condições específicas do caso";
-    const benefitClause = benefitInstallments
-      ? `, a serem pagos em ${benefitInstallments} após a concessão do benefício`
-      : "";
-    const exitoTexto = successPct > 0
-      ? `Honorários de êxito correspondentes a ${successPct.toFixed(1)}% (por cento) incidentes sobre o proveito econômico obtido em caso de acordo, sentença favorável ou transação judicial/extrajudicial${benefitClause}`
-      : benefitInstallments
-        ? `Honorários de êxito a serem pagos em ${benefitInstallments} após a concessão do benefício`
-        : "Não aplicável ao presente contrato";
-    const parcelasTexto = conditions || (payText && fixedFee > 0
-      ? "Pagamento nas condições descritas na cláusula 1ª"
-      : contractInstallments > 1 && fixedFee > 0
-        ? `Pagamento parcelado em ${contractInstallments} parcelas mensais, conforme cláusula 1ª`
-        : "Pagamento em parcela única, conforme cláusula 1ª");
-
-    const doc = buildContratoDoc({ qualificationText, constituentName, dateStr: docDateStr, objeto: objetoTexto, valorForma, exitoTexto, parcelasTexto });
-    generatedTitle = doc.title;
-    generatedBody = doc.body;
-  } else if (docType === "lgpd") {
-    const doc = buildLgpdDoc({
-      qualificationText, constituentName, dateStr: docDateStr,
-      purposes: document.getElementById("docLgpdPurposes").value.trim(),
-      comms: document.getElementById("docLgpdComms").checked,
-      office: AppState.officeSettings
-    });
-    generatedTitle = doc.title;
-    generatedBody = doc.body;
-  } else {
-    const doc = buildHipossuficienciaDoc({ qualificationText, constituentName, dateStr: docDateStr });
-    generatedTitle = doc.title;
-    generatedBody = doc.body;
   }
 
-  // Renderizar no papel A4
-  document.getElementById("docRenderedTitle").textContent = generatedTitle;
-  document.getElementById("docRenderedBody").innerHTML = generatedBody;
+  const submitBtnDoc = document.querySelector('#formDocGeneration button[type="submit"]');
+  if (submitBtnDoc) submitBtnDoc.disabled = true;
+
+  const generated = gdMontarDocumento(docType);
+
+  // Mostra o documento já (mesmo que salvar no histórico falhe, nada se perde)
+  showDocOnPaper(generated.title, generated.html);
+  showDocSubView("preview");
 
   // Salvar no Supabase
   const newDocRecord = await persistDocument({
@@ -12671,18 +12862,18 @@ document.getElementById("formDocGeneration").addEventListener("submit", async (e
     typeName: DOC_TYPE_NAMES[docType] || "Documento Jurídico",
     clientId: selectedClientId || null,
     clientName: constituentName,
-    constituentType: currentConstituentTab,
+    constituentType: constituentType,
     date: docDateStr,
-    linkedCase: linkedCaseStr || "",
-    court: courtStr || "",
-    title: generatedTitle,
-    htmlContent: generatedBody,
+    linkedCase: "",
+    court: "",
+    title: generated.title,
+    htmlContent: generated.html,
     value: docType === "contrato" && contractFixedFee > 0 ? contractFixedFee : null,
     area: docType === "contrato" ? contractArea : null
   });
 
   if (!newDocRecord) {
-    showToast("Documento gerado, mas não foi possível salvar no histórico.", "⚠");
+    alert("O documento foi gerado e está na tela (pode imprimir), mas não foi possível salvar no histórico nem lançar no Financeiro. Verifique a internet e gere de novo se precisar do registro.");
     if (submitBtnDoc) submitBtnDoc.disabled = false;
     return;
   }
@@ -12783,7 +12974,6 @@ document.getElementById("formDocGeneration").addEventListener("submit", async (e
   }
 
   renderDocHistory();
-  showDocSubView("preview");
   showToast("Documento gerado com sucesso!" + financeMsg + inssMsg + lgpdMsg, "✨");
   if (submitBtnDoc) submitBtnDoc.disabled = false;
 });
@@ -12863,12 +13053,14 @@ function printGeneratedDoc() {
   if (!stage || !source) return;
   stage.innerHTML = "";
   stage.appendChild(source.cloneNode(true));
+  stage.classList.toggle("stage-doc-classico", source.classList.contains("doc-modelo-classico"));
   document.documentElement.classList.add("printing-active");
   document.body.classList.add("printing-active");
   window.print();
   setTimeout(() => {
     document.documentElement.classList.remove("printing-active");
     document.body.classList.remove("printing-active");
+    stage.classList.remove("stage-doc-classico");
     stage.innerHTML = "";
   }, 500);
 }
@@ -12923,8 +13115,7 @@ window.viewHistoryDoc = function(docId) {
   if (!doc) return;
 
   currentActiveDoc = doc;
-  document.getElementById("docRenderedTitle").textContent = doc.title || doc.typeName;
-  document.getElementById("docRenderedBody").innerHTML = doc.htmlContent;
+  showDocOnPaper(doc.title || doc.typeName, doc.htmlContent);
 
   showDocSubView("preview");
 };
