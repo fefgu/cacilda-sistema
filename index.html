@@ -5530,7 +5530,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261014-122110";
+const APP_VERSION = "20261014-124117";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -12793,6 +12793,75 @@ function buildLgpdDoc({ qualificationText, signerName, dateText, purposes, comms
   return { title, html };
 }
 
+// Cliente do cadastro com o mesmo CPF/CNPJ do formulário (ou, sem documento,
+// com o mesmo nome — só se houver exatamente um).
+function gdAcharClienteCadastrado() {
+  const digitos = (v) => (v || "").replace(/\D/g, "");
+  const doc = digitos(gdEhPj() ? gdRaw("gdPjCnpj") : gdEhMenor() ? gdRaw("gdMenorCpf") : gdRaw("gdCpf"));
+  if (doc) {
+    const porDoc = AppState.clients.find(c => [c.doc, c.cpf, c.cnpj, c.minorCpf].some(d => digitos(d) === doc));
+    if (porDoc) return porDoc;
+  }
+  const chave = (t) => searchNorm(t).replace(/[^a-z0-9]+/g, " ").trim();
+  const nome = chave(gdNomeDocumento());
+  const porNome = AppState.clients.filter(c => chave(c.name) === nome);
+  return porNome.length === 1 ? porNome[0] : null;
+}
+
+const GD_ESTADO_CIVIL_CADASTRO = [
+  ["solteir", "Solteiro(a)"], ["casad", "Casado(a)"], ["divorciad", "Divorciado(a)"],
+  ["viuv", "Viúvo(a)"], ["em uniao", "União estável"]
+];
+const GD_QUALIDADE_REP_CADASTRO = {
+  genitora: "Mãe / Genitora", genitor: "Pai / Genitor", tutora: "Tutor(a) legal", tutor: "Tutor(a) legal"
+};
+
+// Cadastra o cliente com os dados preenchidos no gerador. Devolve o cliente
+// ou null (com aviso) se não for possível.
+async function gdCadastrarCliente() {
+  const base = { city: gdRaw("gdCidade") || "Frutal", uf: gdRaw("gdUf") || "MG" };
+  let dados;
+  if (gdEhPj()) {
+    dados = {
+      ...base, clientType: "pj", name: gdRaw("gdPjRazao"), companyName: gdRaw("gdPjRazao"),
+      cnpj: gdRaw("gdPjCnpj"), doc: gdRaw("gdPjCnpj"), stateRegistration: gdRaw("gdPjIe"),
+      address: gdRaw("gdPjEndereco"), cep: gdRaw("gdPjCep"), repName: gdRaw("gdPjRepNome"),
+      repRole: gdRaw("gdPjRepCargo"), repCpf: gdRaw("gdPjRepCpf"), repRg: gdRaw("gdPjRepRg")
+    };
+  } else if (gdEhMenor()) {
+    dados = {
+      ...base, clientType: "menor", name: gdRaw("gdMenorNome"), minorName: gdRaw("gdMenorNome"),
+      minorCpf: gdRaw("gdMenorCpf"), doc: gdRaw("gdMenorCpf"), nationality: gdRaw("gdMenorNac"),
+      repQuality: GD_QUALIDADE_REP_CADASTRO[gdRaw("gdMenorParentesco")] || null,
+      repName: gdRaw("gdNome"), repCpf: gdRaw("gdCpf"), repRg: gdRaw("gdRg"),
+      address: gdRaw("gdEndereco"), cep: gdRaw("gdCep")
+    };
+  } else {
+    const ec = searchNorm(gdRaw("gdEstadoCivil"));
+    dados = {
+      ...base, clientType: "pf", name: gdRaw("gdNome"), gender: gdEhMasc() ? "Masculino" : "Feminino",
+      nationality: gdRaw("gdNacionalidade"),
+      maritalStatus: (GD_ESTADO_CIVIL_CADASTRO.find(([k]) => ec.startsWith(k)) || [])[1] || null,
+      profession: gdRaw("gdProfissao"), rg: gdRaw("gdRg"), rgEmitter: gdRaw("gdOrgao"),
+      cpf: gdRaw("gdCpf"), doc: gdRaw("gdCpf"), parentage: gdRaw("gdFiliacao"),
+      address: gdRaw("gdEndereco"), cep: gdRaw("gdCep")
+    };
+  }
+  const { data, error } = await sb.from("clients").insert(mapClientToDb(dados)).select().single();
+  if (error) {
+    alert("Não foi possível cadastrar o cliente: " + friendlyDbError(error, {
+      duplicateMessage: "Já existe outro cliente cadastrado com esse mesmo CPF/CNPJ."
+    }) + "\n\nO contrato será gerado sem lançar no Financeiro.");
+    return null;
+  }
+  const novo = mapClientFromDb(data);
+  AppState.clients.unshift(novo);
+  populateDocClientSelect();
+  renderClients();
+  showToast(`${novo.name} cadastrado(a) em Clientes. Complete telefone/WhatsApp no cadastro.`, "👤");
+  return novo;
+}
+
 // Mostra o documento na folha. Documentos novos (com .doc-titulo no HTML)
 // usam a formatação do gerador antigo; os do histórico anterior mantêm a
 // formatação com que foram gerados.
@@ -12809,7 +12878,7 @@ function showDocOnPaper(title, html) {
 document.getElementById("formDocGeneration").addEventListener("submit", async (e) => {
   e.preventDefault();
   const docType = document.getElementById("docTypeField").value;
-  const selectedClientId = document.getElementById("docClientSelect") ? document.getElementById("docClientSelect").value : "";
+  let selectedClientId = document.getElementById("docClientSelect") ? document.getElementById("docClientSelect").value : "";
 
   const problema = gdValidar(docType);
   if (problema) {
@@ -12837,18 +12906,31 @@ document.getElementById("formDocGeneration").addEventListener("submit", async (e
     contractObj = gdRaw("gdContServico") || `prestação de serviços advocatícios (${GD_AREA_NOME[gdEl("gdContArea").value]})`;
     contractInstallments = Math.min(60, Math.max(1, parseInt(document.getElementById("docContractInstallments").value, 10) || 1));
     contractFirstDue = document.getElementById("docContractFirstDue").value || getOffsetDate(0);
-    if (contractFixedFee > 0 && !selectedClientId) {
-      const goOn = confirm(
-        "Nenhum cliente cadastrado foi selecionado.\n\n" +
-        "O contrato será gerado, mas os honorários NÃO serão lançados no Financeiro " +
-        "(o lançamento precisa de um cliente cadastrado).\n\nGerar o contrato assim mesmo?"
-      );
-      if (!goOn) return;
-    }
   }
 
   const submitBtnDoc = document.querySelector('#formDocGeneration button[type="submit"]');
   if (submitBtnDoc) submitBtnDoc.disabled = true;
+
+  // Nenhum cliente escolhido no passo 1: procura no cadastro pelo CPF/CNPJ
+  // (ou nome) digitado. No contrato que lança no Financeiro (ou cria a tarefa
+  // do INSS), se não achar, oferece cadastrar o cliente com os dados do
+  // formulário — o lançamento precisa de um cliente cadastrado.
+  if (!selectedClientId) {
+    const existente = gdAcharClienteCadastrado();
+    const precisaCliente = docType === "contrato" &&
+      (contractFixedFee > 0 || document.getElementById("docContractIsInssAdmin").checked);
+    if (existente) {
+      selectedClientId = existente.id;
+    } else if (precisaCliente && confirm(
+      `${constituentName} ainda não está cadastrado(a) em Clientes.\n\n` +
+      "OK: cadastrar agora com os dados deste formulário e lançar os honorários no Financeiro.\n" +
+      "Cancelar: gerar o contrato sem lançar no Financeiro."
+    )) {
+      const novo = await gdCadastrarCliente();
+      if (novo) selectedClientId = novo.id;
+    }
+    if (selectedClientId) document.getElementById("docClientSelect").value = selectedClientId;
+  }
 
   const generated = gdMontarDocumento(docType);
 
