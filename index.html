@@ -2753,6 +2753,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
                     <div class="form-field">
                       <label for="gdEstadoCivil">Estado civil</label>
                       <select id="gdEstadoCivil">
+                        <option value="">— não informar —</option>
                         <option>solteira</option>
                         <option>casada</option>
                         <option>divorciada</option>
@@ -2911,8 +2912,9 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
                         <label for="docContractPaymentMethod">Meio de pagamento</label>
                         <select id="docContractPaymentMethod">
                           <option value="PIX">PIX</option>
-                          <option value="Boleto bancário">Boleto</option>
+                          <option value="Boleto">Boleto</option>
                           <option value="Cartão de crédito">Cartão de Crédito</option>
+                          <option value="Cartão de débito">Cartão de Débito</option>
                           <option value="Transferência bancária">Transferência</option>
                           <option value="Dinheiro">Dinheiro</option>
                           <option value="Outro">Outro</option>
@@ -3094,14 +3096,6 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         <div class="module-toolbar">
           <div class="filter-group">
             <input type="text" class="form-control-inline" id="searchCases" placeholder="Buscar por nº do processo, parte, vara..." autocomplete="off" style="min-width:260px;">
-            <select class="form-control-inline" id="filterProcessArea">
-              <option value="">Todas as Áreas</option>
-              <option value="Cível / Família">Cível / Família</option>
-              <option value="Trabalhista">Trabalhista</option>
-              <option value="Empresarial / Contratos">Empresarial / Contratos</option>
-              <option value="Consumidor">Consumidor</option>
-              <option value="Previdenciário">Previdenciário</option>
-            </select>
             <select class="form-control-inline" id="filterProcessStatus">
               <option value="">Todos os Status</option>
               <option value="Em andamento">Em andamento</option>
@@ -3288,7 +3282,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <div class="kpi-card-value" id="kpiFinExpenses" style="color:var(--danger);">R$ 0,00</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-card-header">Saldo Líquido Operacional</div>
+            <div class="kpi-card-header">Saldo do Mês (Recebido − Despesas)</div>
             <div class="kpi-card-value" id="kpiFinNet" style="color:var(--brand-gold-dark);">R$ 0,00</div>
           </div>
           <div class="kpi-card">
@@ -4029,10 +4023,10 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             </div>
 
             <div class="form-field" style="margin-bottom:1.5rem;">
-              <label for="cfgBoletoAssignee">Responsável por Gerar Boletos (Tarefas Automáticas)</label>
-              <input type="text" id="cfgBoletoAssignee" placeholder="Secretaria / Financeiro" value="Secretaria">
+              <label for="cfgBoletoAssignee">Responsável pelas Tarefas Administrativas (Automáticas)</label>
+              <input type="text" id="cfgBoletoAssignee" placeholder="Ex: Neto" value="Neto">
               <span style="font-size:0.75rem; color:#564F75; margin-top:2px;">
-                Profissional atribuído automaticamente para emitir boletos bancários ao registrar novos contratos com essa forma de pagamento.
+                Recebe automaticamente as tarefas de gerar boleto (recebíveis e contratos pagos por boleto) e de protocolar pedido administrativo no INSS.
               </span>
             </div>
 
@@ -4484,6 +4478,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <div class="form-field">
               <label for="clientPfMarital">Estado Civil</label>
               <select id="clientPfMarital">
+                <option value="">— não informar —</option>
                 <option value="Solteiro(a)">Solteiro(a)</option>
                 <option value="Casado(a)">Casado(a)</option>
                 <option value="Divorciado(a)">Divorciado(a)</option>
@@ -5530,7 +5525,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261014-124117";
+const APP_VERSION = "20261014-135939";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -5631,7 +5626,7 @@ const DEFAULT_OFFICE_SETTINGS = {
   whatsapp: "(34) 99974-3510",
   site: "www.cacildasouza.adv.br",
   email: "contato@cacildasouza.adv.br",
-  boletoAssignee: "Secretaria"
+  boletoAssignee: "Neto"
 };
 
 // --- APP STATE & LOCAL STORAGE ---
@@ -5767,6 +5762,22 @@ function formatCNPJ(digits) {
   return digits;
 }
 
+// CPF (11 dígitos) ou CNPJ (14) já gravado: devolve formatado. Os clientes
+// importados do eLawAdv vieram só com números ("12345678900") e saíam assim
+// nas listas, nos documentos e nos recibos. Outros valores ficam como estão.
+function formatDocBR(value) {
+  const raw = (value ?? "").toString().trim();
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 11 && digits.length === raw.replace(/[.\-\s]/g, "").length) return formatCPF(digits);
+  if (digits.length === 14 && digits.length === raw.replace(/[.\-\/\s]/g, "").length) return formatCNPJ(digits);
+  return raw;
+}
+
+// Campo que aceita CPF ou CNPJ: formata conforme a quantidade de dígitos
+function formatCpfOuCnpj(digits) {
+  return digits.length > 11 ? formatCNPJ(digits) : formatCPF(digits);
+}
+
 function attachDocMask(id, formatter) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -5780,6 +5791,8 @@ function attachDocMask(id, formatter) {
   .forEach(id => attachDocMask(id, formatCPF));
 ['gdPjCnpj', 'clientPjCnpj', 'cfgOfficeCnpj']
   .forEach(id => attachDocMask(id, formatCNPJ));
+['baixaDocNumber']
+  .forEach(id => attachDocMask(id, formatCpfOuCnpj));
 
 function getDaysDiff(dateStr) {
   if (!dateStr) return 0;
@@ -6485,10 +6498,15 @@ window.copyAppointmentConfirmation = function(appointmentId) {
 };
 
 // 3. HELPER: CRIAÇÃO AUTOMÁTICA DE TAREFA PARA GERAÇÃO DE BOLETO
+// Quem recebe as tarefas automáticas (gerar boleto, protocolar no INSS):
+// o responsável definido em Configurações (padrão: Neto).
+function gdResponsavelAdministrativo() {
+  const cfg = AppState.officeSettings && AppState.officeSettings.boletoAssignee;
+  return (cfg && cfg.trim()) || "Neto";
+}
+
 function createAutoBoletoTask({ clientName, clientPhone, clientDoc, totalValue, installments, installmentValue, dueDates, serviceDesc, linkedRef }) {
-  const assignee = (AppState.officeSettings && AppState.officeSettings.boletoAssignee)
-    ? AppState.officeSettings.boletoAssignee.trim()
-    : "José Guilherme Neto";
+  const assignee = gdResponsavelAdministrativo();
 
   // Obter telefone do cadastro do cliente caso não tenha sido passado diretamente
   const phone = (clientPhone && clientPhone.trim()) ? clientPhone.trim() : getClientPhoneByName(clientName);
@@ -6509,7 +6527,7 @@ function createAutoBoletoTask({ clientName, clientPhone, clientDoc, totalValue, 
     id: Date.now() + Math.floor(Math.random() * 800),
     title: `Gerar boleto - ${clientName}`,
     desc: desc,
-    assignee: assignee || "José Guilherme Neto",
+    assignee: assignee,
     dueDate: getOffsetDate(1), // Data de hoje + 1 dia (pendente e urgente)
     priority: "Alta",
     status: "Pendente"
@@ -6620,14 +6638,12 @@ function renderCases() {
   const tbody = document.querySelector("#tableProcesses tbody");
   tbody.innerHTML = "";
 
-  const filterArea = document.getElementById("filterProcessArea").value;
   const filterStatus = document.getElementById("filterProcessStatus").value;
   const filterLawyer = document.getElementById("filterProcessLawyer").value;
 
   const searchTerm = document.getElementById("searchCases")?.value || "";
 
   const filtered = AppState.cases.filter(c => {
-    if (filterArea && c.area !== filterArea) return false;
     if (filterStatus && c.status !== filterStatus) return false;
     if (filterLawyer && String(c.lawyerId) !== filterLawyer) return false;
     if (!matchesSearch(searchTerm, c.number, c.client, c.clientName, c.opposingParty, c.court, getLawyerName(c.lawyerId), c.status)) return false;
@@ -6694,10 +6710,19 @@ function renderFinancial() {
   let expensesTotal = 0;
   let overdueTotal = 0;
 
+  // "Do mês" = mês atual: recebido pela data do pagamento, despesas pelo
+  // vencimento (mesmo critério do Relatório). Antes somava tudo desde sempre,
+  // inclusive parcelas futuras.
+  const isCurrentMonth = (dateStr) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr + "T00:00:00");
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  };
+
   AppState.receivables.forEach(r => {
     const val = Number(r.value || 0);
     if (r.status === "Recebido") {
-      receivedTotal += val;
+      if (isCurrentMonth(r.paidDate || r.dueDate)) receivedTotal += val;
     } else if (r.status === "Pendente") {
       toReceiveTotal += val;
       if (getDaysDiff(r.dueDate) < 0) {
@@ -6711,7 +6736,7 @@ function renderFinancial() {
 
   AppState.payables.forEach(p => {
     const val = Number(p.value || 0);
-    if (p.status === "Pago" || p.status === "Pendente") {
+    if ((p.status === "Pago" || p.status === "Pendente" || p.status === "Vencido") && isCurrentMonth(p.dueDate)) {
       expensesTotal += val;
     }
   });
@@ -6736,6 +6761,11 @@ function renderFinancial() {
     if (r.status === "Vencido") badge = "badge-danger";
     if (r.status === "Pendente") badge = "badge-warn";
     if (r.status === "Aguardando êxito") badge = "badge-purple";
+    // Pendente com vencimento já passado: destaca em vermelho com os dias de atraso
+    const recDiasAtraso = (r.status === "Pendente" || r.status === "Vencido") && r.dueDate ? -getDaysDiff(r.dueDate) : 0;
+    const recStatusHtml = recDiasAtraso > 0
+      ? `<span class="badge-status badge-danger">Vencido</span><div style="font-size:0.72rem; color:var(--danger); font-weight:700; margin-top:2px;">há ${recDiasAtraso} dia(s)</div>`
+      : `<span class="badge-status ${badge}">${esc(r.status)}</span>`;
 
     const payMethodDisplay = r.paymentMethod 
       ? `<span class="badge badge-info" style="font-size:0.75rem;">${esc(r.paymentMethod)}</span>` 
@@ -6775,9 +6805,9 @@ function renderFinancial() {
       <td>${esc(r.client)}</td>
       <td style="font-weight:700; color:var(--success); font-size:0.95rem;">${formatBRL(r.value)}</td>
       <td style="max-width:230px;">${splitDisplay}</td>
-      <td>${formatDateBR(r.dueDate)}</td>
+      <td style="${recDiasAtraso > 0 ? "color:var(--danger); font-weight:700;" : ""}">${formatDateBR(r.dueDate)}</td>
       <td>${payMethodDisplay}</td>
-      <td><span class="badge-status ${badge}">${r.status}</span></td>
+      <td>${recStatusHtml}</td>
       <td style="text-align:right;">
         <div class="actions-cell" style="justify-content:flex-end;">
           ${r.status !== 'Recebido'
@@ -6805,14 +6835,18 @@ function renderFinancial() {
     if (p.status === "Pago") badge = "badge-success";
     if (p.status === "Vencido") badge = "badge-danger";
     if (p.status === "Pendente") badge = "badge-warn";
+    const payDiasAtraso = (p.status === "Pendente" || p.status === "Vencido") && p.dueDate ? -getDaysDiff(p.dueDate) : 0;
+    const payStatusHtml = payDiasAtraso > 0
+      ? `<span class="badge-status badge-danger">Vencido</span><div style="font-size:0.72rem; color:var(--danger); font-weight:700; margin-top:2px;">há ${payDiasAtraso} dia(s)</div>`
+      : `<span class="badge-status ${badge}">${esc(p.status)}</span>`;
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td><strong>${esc(p.desc)}</strong></td>
       <td>${esc(p.supplier)}</td>
       <td style="font-weight:700; color:var(--danger);">${formatBRL(p.value)}</td>
-      <td>${formatDateBR(p.dueDate)}</td>
-      <td><span class="badge-status ${badge}">${p.status}</span></td>
+      <td style="${payDiasAtraso > 0 ? "color:var(--danger); font-weight:700;" : ""}">${formatDateBR(p.dueDate)}</td>
+      <td>${payStatusHtml}</td>
       <td style="text-align:right;">
         <div class="actions-cell" style="justify-content:flex-end;">
           ${p.status !== 'Pago' ? `<button class="btn-icon" title="Marcar Pago" onclick="markPayablePaid('${p.id}')">✔ Pagar</button>` : ''}
@@ -7364,6 +7398,20 @@ document.getElementById("formClient").addEventListener("submit", async (e) => {
     ...pjData,
     ...menorData
   };
+
+  // CPF/CNPJ repetido: bloqueia comparando só os dígitos (cadastros
+  // importados têm o documento sem pontuação e o banco não pegava).
+  const docKey = (d) => (d || "").toString().replace(/\D/g, "");
+  const newDocDigits = docKey(doc);
+  if (newDocDigits) {
+    const sameDoc = AppState.clients.find(c => c.id !== id && [c.doc, c.cpf, c.cnpj, c.minorCpf].some(d => docKey(d) === newDocDigits));
+    if (sameDoc) {
+      alert(`Já existe um cliente cadastrado com esse CPF/CNPJ: "${sameDoc.name}".
+
+Use o cadastro existente (busque pelo nome ou CPF na lista de clientes).`);
+      return;
+    }
+  }
 
   // Aviso de possível duplicidade: mesmo nome (ignora acento, maiúsculas e
   // espaços) já cadastrado. Não bloqueia (podem ser homônimos), mas pergunta.
@@ -8453,7 +8501,7 @@ function renderOfficeSettings() {
   }
   document.getElementById("cfgOfficeEmail").value = cfg.email || "contato@cacildasouza.adv.br";
   if (document.getElementById("cfgBoletoAssignee")) {
-    document.getElementById("cfgBoletoAssignee").value = cfg.boletoAssignee || "Secretaria";
+    document.getElementById("cfgBoletoAssignee").value = cfg.boletoAssignee || "Neto";
   }
   const tplEl = document.getElementById("cfgCollectionTemplate");
   if (tplEl) tplEl.value = cfg.collectionTemplate || DEFAULT_COLLECTION_TEMPLATE;
@@ -8474,7 +8522,7 @@ document.getElementById("formOfficeSettings").addEventListener("submit", async (
     whatsapp: (document.getElementById("cfgOfficeWhatsapp")?.value || "(34) 99974-3510").trim(),
     site: (document.getElementById("cfgOfficeSite")?.value || "www.cacildasouza.adv.br").trim(),
     email: document.getElementById("cfgOfficeEmail").value.trim() || "contato@cacildasouza.adv.br",
-    boletoAssignee: document.getElementById("cfgBoletoAssignee").value.trim() || "Secretaria",
+    boletoAssignee: document.getElementById("cfgBoletoAssignee").value.trim() || "Neto",
     collectionTemplate: document.getElementById("cfgCollectionTemplate").value.trim()
   };
 
@@ -9262,7 +9310,6 @@ function setupNavigation() {
     const el = document.getElementById(id);
     if (el) el.addEventListener("input", fn);
   });
-  document.getElementById("filterProcessArea").addEventListener("change", renderCases);
   document.getElementById("filterProcessStatus").addEventListener("change", renderCases);
   document.getElementById("filterProcessLawyer").addEventListener("change", renderCases);
   document.getElementById("searchReceipts").addEventListener("input", renderReceipts);
@@ -9478,6 +9525,8 @@ window.toggleTaskDone = async function(id, isChecked) {
 window.editTask = function(id) {
   const task = AppState.tasks.find(t => t.id === id);
   if (!task) return;
+  // Garante que o responsável atual exista na lista (senão o campo abre vazio)
+  populateTaskAssigneeSelects();
   document.getElementById("taskId").value = task.id;
   document.getElementById("taskTitle").value = task.title;
   document.getElementById("taskAssignee").value = task.assignee;
@@ -9818,9 +9867,12 @@ function getReceivableLawyerId(r) {
   return getLawyersOnly()[0] ? getLawyersOnly()[0].id : null;
 }
 
+// Refeito a cada abertura do relatório: antes era montado uma vez só e
+// clientes de contratos gerados depois não apareciam no filtro.
 function populateClosedContractsClientFilter() {
   const sel = document.getElementById("contractsFilterClient");
-  if (!sel || sel.dataset.populated === "1") return;
+  if (!sel) return;
+  const current = sel.value;
   const clientsWithContract = new Set(
     AppState.documents.filter(d => d.type === "contrato" && d.clientId).map(d => d.clientId)
   );
@@ -9829,8 +9881,22 @@ function populateClosedContractsClientFilter() {
     .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
     .map(c => `<option value="${c.id}">${esc(c.name)}</option>`)
     .join("");
-  sel.insertAdjacentHTML("beforeend", options);
-  sel.dataset.populated = "1";
+  sel.innerHTML = '<option value="">Todos os Clientes</option>' + options;
+  if ([...sel.options].some(o => o.value === current)) sel.value = current;
+}
+
+// Objeto do contrato: sai do próprio texto do contrato ("serviços
+// contratados (<strong>OBJETO</strong>)"), o que vale também para contratos
+// gerados antes desta versão.
+function contractObjectOf(d) {
+  const m = (d.htmlContent || "").match(/serviços contratados\s*\(<strong>([\s\S]*?)<\/strong>\)/i);
+  if (m) {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = m[1];
+    const txt = tmp.textContent.trim();
+    if (txt && !/^\[DESCREVER/.test(txt)) return txt;
+  }
+  return "-";
 }
 
 function clearClosedContractsFilter() {
@@ -9846,6 +9912,7 @@ function renderClosedContractsReport() {
   const to = document.getElementById("contractsFilterTo").value;
   const clientId = document.getElementById("contractsFilterClient").value;
   const area = document.getElementById("contractsFilterArea").value;
+  populateClosedContractsClientFilter();
 
   let list = AppState.documents.filter(d => d.type === "contrato");
   if (from) list = list.filter(d => d.date && d.date >= from);
@@ -9868,7 +9935,7 @@ function renderClosedContractsReport() {
       <td>${formatDateBR(d.date)}</td>
       <td>${esc(d.clientName || "-")}</td>
       <td>${esc(d.area || "-")}</td>
-      <td>${esc(d.title || d.typeName)}</td>
+      <td>${esc(contractObjectOf(d))}</td>
       <td style="text-align:right; font-weight:600;">${d.value ? formatBRL(d.value) : "-"}</td>
     </tr>
   `).join("");
@@ -10715,13 +10782,16 @@ function exportFinancialReportCsv() {
   let csv = "\uFEFF"; // UTF-8 BOM
   csv += "ID;Descricao;Cliente;Area;Advogado;Valor;Vencimento;Status;FormaPagamento;DataPagamento;Recibo\n";
 
+  // Valores e datas no padrão brasileiro: o Excel em português lê "300.00"
+  // como 30.000 (ponto = milhar) e a soma da planilha saía errada.
+  const csvDate = (d) => (d ? formatDateBR(d) : "");
   filtered.forEach(r => {
     const lawyer = getLawyerName(getReceivableLawyerId(r));
     const area = getReceivableArea(r);
     csv += [
       csvCell(r.id), csvCell(r.desc), csvCell(r.client), csvCell(area), csvCell(lawyer),
-      `"${Number(r.value || 0).toFixed(2)}"`,
-      csvCell(r.dueDate), csvCell(r.status), csvCell(r.paymentMethod), csvCell(r.paidDate), csvCell(r.receiptNumber)
+      `"${Number(r.value || 0).toFixed(2).replace(".", ",")}"`,
+      csvCell(csvDate(r.dueDate)), csvCell(r.status), csvCell(r.paymentMethod), csvCell(csvDate(r.paidDate)), csvCell(r.receiptNumber)
     ].join(";") + "\n";
   });
 
@@ -10773,8 +10843,8 @@ function mapClientFromDb(row) {
     profession: row.profession,
     rg: row.rg,
     rgEmitter: row.rg_emitter,
-    doc: row.doc,
-    cpf: row.cpf,
+    doc: formatDocBR(row.doc),
+    cpf: formatDocBR(row.cpf),
     parentage: row.parentage,
     birthDate: row.birth_date,
     address: row.address,
@@ -10800,14 +10870,14 @@ function mapClientFromDb(row) {
     situation: row.situation,
     notes: row.notes,
     companyName: row.company_name,
-    cnpj: row.cnpj,
+    cnpj: formatDocBR(row.cnpj),
     stateRegistration: row.state_registration,
     repName: row.rep_name,
     repRole: row.rep_role,
-    repCpf: row.rep_cpf,
+    repCpf: formatDocBR(row.rep_cpf),
     repRg: row.rep_rg,
     minorName: row.minor_name,
-    minorCpf: row.minor_cpf,
+    minorCpf: formatDocBR(row.minor_cpf),
     repQuality: row.rep_quality,
     lgpdConsentAt: row.lgpd_consent_at || ""
   };
@@ -11110,7 +11180,9 @@ function mapReceivableFromDb(row) {
     value: row.value,
     dueDate: row.due_date,
     status: row.status,
-    paymentMethod: row.payment_method,
+    // Contratos antigos gravavam "Boleto bancário", que não existe na lista
+    // do Financeiro (o campo abria vazio ao editar).
+    paymentMethod: row.payment_method === "Boleto bancário" ? "Boleto" : row.payment_method,
     paidDate: row.paid_date,
     receiptNumber: row.receipt_number,
     notes: row.notes,
@@ -11310,7 +11382,7 @@ function mapOfficeSettingsFromDb(row) {
   return {
     name: row.name,
     oab: row.oab,
-    cnpj: row.cnpj,
+    cnpj: formatDocBR(row.cnpj),
     address: row.address,
     phone: row.phone,
     whatsapp: row.whatsapp,
@@ -12152,10 +12224,11 @@ function gdAtualizarSexo() {
   gdEl("gdNacionalidade").value = M ? "brasileiro" : "brasileira";
   const ec = gdEl("gdEstadoCivil");
   const idx = ec.selectedIndex;
+  // Começa em branco: o estado civil só entra no documento se for escolhido
   const opcoes = M
     ? ["solteiro", "casado", "divorciado", "viúvo", "separado judicialmente", "em união estável"]
     : ["solteira", "casada", "divorciada", "viúva", "separada judicialmente", "em união estável"];
-  ec.innerHTML = opcoes.map(o => `<option>${o}</option>`).join("");
+  ec.innerHTML = '<option value="">— não informar —</option>' + opcoes.map(o => `<option>${o}</option>`).join("");
   ec.selectedIndex = Math.max(0, idx);
   gdEl("gdProfissao").placeholder = M ? "Ex: comerciante" : "Ex: autônoma";
 }
@@ -12305,6 +12378,7 @@ function gdFormatarData(str) {
 // Estado civil do cadastro ("Casado(a)") → opção do gerador ("casada"/"casado")
 function gdEstadoCivilDoCadastro(marital, masc) {
   const m = searchNorm(marital);
+  if (!m.trim()) return "";
   if (m.includes("uniao")) return "em união estável";
   if (m.includes("separad")) return masc ? "separado judicialmente" : "separada judicialmente";
   const base = m.includes("casad") ? "casad" : m.includes("divorc") ? "divorciad" : m.includes("viuv") ? "viúv" : "solteir";
@@ -13021,6 +13095,31 @@ document.getElementById("formDocGeneration").addEventListener("submit", async (e
           financeMsg = installPlan.length > 1
             ? ` ${installPlan.length} parcelas lançadas no Financeiro!`
             : " Honorários lançados no Financeiro!";
+          // Pago por boleto: mesma tarefa "Gerar boleto" do cadastro manual de recebível
+          if (contractPaymentMethod === "Boleto") {
+            const cl = AppState.clients.find(c => c.id === selectedClientId);
+            const clName = cl ? cl.name : constituentName;
+            const autoTask = createAutoBoletoTask({
+              clientName: clName,
+              clientPhone: getClientPhoneByName(clName),
+              clientDoc: cl ? cl.doc : "",
+              totalValue: contractFixedFee,
+              installments: installPlan.length,
+              installmentValue: installPlan[0].value,
+              dueDates: installPlan.map(p => p.dueDate),
+              serviceDesc: contractDesc,
+              linkedRef: `Contrato ${contractObj}`
+            });
+            const persistedTask = await persistTask(autoTask);
+            const taskIdx = AppState.tasks.findIndex(t => t.id === autoTask.id);
+            if (persistedTask && taskIdx !== -1) {
+              AppState.tasks[taskIdx] = persistedTask;
+              financeMsg += " Tarefa 'Gerar boleto' criada.";
+            } else {
+              AppState.tasks = AppState.tasks.filter(t => t.id !== autoTask.id);
+              financeMsg += " Não foi possível criar a tarefa de gerar boleto — crie manualmente em Tarefas.";
+            }
+          }
         }
       }
     }
@@ -13038,7 +13137,7 @@ document.getElementById("formDocGeneration").addEventListener("submit", async (e
       const inssType = document.getElementById("docContractInssType").value;
       const newTask = await persistTask({
         title: `Protocolar pedido administrativo (${inssType}) - ${constituentName}`,
-        assignee: "Secretaria",
+        assignee: gdResponsavelAdministrativo(),
         dueDate: getOffsetDate(5),
         priority: "Alta",
         status: "Pendente",
@@ -13459,9 +13558,9 @@ async function handleImportClientsFile(evt) {
     newRows.push({
       clientType: docDigits.length > 11 ? "pj" : "pf",
       name,
-      doc: docDigits || null,
-      cpf: docDigits && docDigits.length <= 11 ? docDigits : null,
-      cnpj: docDigits && docDigits.length > 11 ? docDigits : null,
+      doc: docDigits ? formatDocBR(docDigits) : null,
+      cpf: docDigits && docDigits.length <= 11 ? formatDocBR(docDigits) : null,
+      cnpj: docDigits && docDigits.length > 11 ? formatDocBR(docDigits) : null,
       email: email || null,
       phone: (r["Telefone"] || "").toString().trim() || null,
       whatsapp: (r["Telefone"] || "").toString().trim() || null,
