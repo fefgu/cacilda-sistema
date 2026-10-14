@@ -5499,7 +5499,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261013-005728";
+const APP_VERSION = "20261014-113906";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -7016,11 +7016,63 @@ document.querySelectorAll("[data-close]").forEach(btn => {
   });
 });
 
-window.addEventListener("click", (e) => {
-  if (e.target.classList.contains("modal-backdrop")) {
-    e.target.classList.remove("open");
+// Janelas só fecham pelo "Cancelar"/"Fechar"/"×": clicar fora NÃO fecha
+// mais (antes fechava e perdia tudo o que tinha sido digitado).
+
+// --- VALIDAÇÃO DOS FORMULÁRIOS ---
+// Campos de seções escondidas (ex.: CNPJ da PJ quando o cadastro é de Pessoa
+// Física, ou o nome da PF quando o documento é de PJ/Menor) travavam o envio
+// SEM AVISO NENHUM: o navegador bloqueia o "Salvar" mas não consegue apontar
+// um campo invisível. Agora, no clique do botão, os campos escondidos que
+// estão inválidos ficam de fora da validação (só durante esse clique).
+let warnNextInvalidField = false;
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest && e.target.closest('button[type="submit"], input[type="submit"]');
+  if (!btn || !btn.form || btn.form.noValidate) return;
+  warnNextInvalidField = true;
+  const skipped = [];
+  for (const el of btn.form.elements) {
+    if (el.disabled || el.type === "hidden" || !el.willValidate) continue;
+    if (el.getClientRects().length > 0 || el.validity.valid) continue;
+    el.disabled = true;
+    skipped.push(el);
   }
-});
+  setTimeout(() => {
+    warnNextInvalidField = false;
+    skipped.forEach(el => { el.disabled = false; });
+  }, 0);
+}, true);
+
+// Campo visível inválido: além do balão do navegador (que passa despercebido),
+// mostra qual campo precisa ser corrigido.
+document.addEventListener("invalid", (e) => {
+  if (!warnNextInvalidField) return; // só o primeiro campo de cada tentativa
+  warnNextInvalidField = false;
+  const el = e.target;
+  const field = el.closest && el.closest(".form-field");
+  const labelEl = (el.labels && el.labels[0]) || (field && field.querySelector("label"));
+  const label = labelEl ? labelEl.textContent.replace(/\*/g, "").trim() : "";
+  showToast((label ? `Confira o campo "${label}": ` : "Confira os campos destacados: ") + el.validationMessage, "⚠");
+}, true);
+
+// Erro inesperado no meio de um "Salvar"/"Gerar": antes o botão ficava
+// travado e nada acontecia. Agora destrava os botões e avisa — os dados
+// digitados continuam na tela para tentar de novo.
+let lastUnexpectedErrorAt = 0;
+function handleUnexpectedError(err) {
+  const msg = String((err && err.message) || err || "");
+  if (!msg || msg.includes("ResizeObserver")) return;
+  console.error(err);
+  const stuck = document.querySelectorAll('form button[type="submit"]:disabled');
+  if (!stuck.length) return; // erro de fundo, sem nenhuma ação travada: só registra
+  stuck.forEach(b => { b.disabled = false; });
+  const now = Date.now();
+  if (now - lastUnexpectedErrorAt < 3000) return;
+  lastUnexpectedErrorAt = now;
+  alert("Algo deu errado e a ação não foi concluída.\n\nO que você digitou continua na tela: tente de novo. Se o erro continuar, avise o suporte com esta mensagem:\n\n" + msg);
+}
+window.addEventListener("error", (e) => handleUnexpectedError(e.error || e.message));
+window.addEventListener("unhandledrejection", (e) => handleUnexpectedError(e.reason));
 
 // --- APPOINTMENTS HANDLERS ---
 const appEventTypeSelect = document.getElementById("appEventType");
