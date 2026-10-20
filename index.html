@@ -1649,6 +1649,32 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       box-shadow: 0 10px 24px rgba(189, 163, 94, 0.35) !important;
     }
     .nav-btn.active .nav-icon { color: #17141f !important; }
+    .cep-status { display:block; font-size:0.72rem; min-height:1em; margin-top:2px; }
+    /* Ficha de atendimento */
+    .at-area-btns { display:flex; gap:0.5rem; flex-wrap:wrap; }
+    .at-checklist { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:0.35rem 0.9rem; margin-bottom:0.6rem; }
+    .at-check { display:flex; align-items:center; gap:0.45rem; font-weight:500; font-size:0.875rem; cursor:pointer; }
+    .at-check input { width:auto; margin:0; }
+    .at-fields { flex-wrap:wrap; }
+    .doc-a4-sheet.at-ficha-sheet { display:block; min-height:0; padding:1.6cm 1.6cm; font-family:'Jost', 'Segoe UI', sans-serif; font-size:10.5pt; line-height:1.45; color:#1a1a2e; margin:0 auto; }
+    .at-f-head { border-bottom:2px solid #B5993A; padding-bottom:0.6rem; margin-bottom:0.9rem; }
+    .at-f-office { font-weight:800; color:#2E2E5A; font-size:12.5pt; letter-spacing:0.02em; }
+    .at-f-sub { font-size:9pt; color:#555; }
+    .at-f-sec { margin-bottom:0.8rem; break-inside:avoid; page-break-inside:avoid; }
+    .at-f-sec h4 { font-size:9.5pt; text-transform:uppercase; letter-spacing:0.05em; color:#2E2E5A; border-left:3px solid #B5993A; padding-left:0.45rem; margin:0 0 0.4rem; }
+    .at-f-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.3rem 1.2rem; }
+    .at-f-item span { display:block; font-size:7.5pt; text-transform:uppercase; color:#777; letter-spacing:0.04em; }
+    .at-f-item div { font-size:10pt; color:#111; }
+    .at-f-full { grid-column:1 / -1; }
+    .at-f-checks { list-style:none; padding:0; margin:0 0 0.4rem; display:grid; grid-template-columns:1fr 1fr; gap:0.15rem 1.2rem; font-size:10pt; }
+    @media print { body.printing-active #printStage .at-ficha-sheet { width:auto; padding:1.2cm 1.4cm; box-shadow:none; } }
+    /* Número de tarefas pendentes atribuídas ao usuário logado */
+    .nav-badge {
+      margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px;
+      border-radius: 10px; background: #dc2626; color: #fff !important;
+      font-size: 0.72rem; font-weight: 800; line-height: 20px; text-align: center;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.25);
+    }
     .sidebar-footer {
       background: rgba(0, 0, 0, 0.18) !important;
       border-top: 1px solid rgba(189, 163, 94, 0.16) !important;
@@ -2138,6 +2164,11 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
         </button>
       </li>
       <li>
+        <button class="nav-btn" data-target="atendimentos">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><line x1="8.5" y1="10" x2="15.5" y2="10"/><line x1="8.5" y1="14" x2="15.5" y2="14"/><line x1="8.5" y1="18" x2="12.5" y2="18"/></svg></span> Novo Atendimento
+        </button>
+      </li>
+      <li>
         <button class="nav-btn" data-target="documentos">
           <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><line x1="8.5" y1="13" x2="15.5" y2="13"/><line x1="8.5" y1="17" x2="15.5" y2="17"/></svg></span> Documentos
         </button>
@@ -2161,6 +2192,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       <li>
         <button class="nav-btn" data-target="tarefas">
           <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M8 12.5l2.6 2.6L16.5 9"/></svg></span> Tarefas
+          <span class="nav-badge" id="navBadgeTasks" style="display:none;" title="Tarefas pendentes atribuídas a você"></span>
         </button>
       </li>
       <li class="nav-group-title" data-group="Financeiro" aria-hidden="true">Financeiro</li>
@@ -2510,6 +2542,84 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       </section>
 
       <!-- NOVO MÓDULO: DOCUMENTOS JURÍDICOS -->
+      <!-- NOVO ATENDIMENTO (ficha de atendimento por área, ligada ao cliente) -->
+      <section id="view-atendimentos" class="view-pane">
+        <div class="card-box" style="margin-bottom:1.25rem;">
+          <div class="card-box-header" style="flex-wrap:wrap; gap:0.5rem;">
+            <div>
+              <h2 class="card-box-title" id="atFormTitle">🗂 Novo Atendimento</h2>
+              <span style="font-size:0.8rem; color:var(--text-muted);">Vincule o cliente, escolha a área e preencha a ficha. Ao concluir, ela fica no histórico de atendimentos do cliente.</span>
+            </div>
+          </div>
+
+          <form id="formAtendimento" novalidate>
+            <input type="hidden" id="atId">
+
+            <div class="doc-step-box">
+              <div class="doc-step-title"><span class="doc-step-num">1</span><span>Cliente</span></div>
+              <div class="form-row" style="align-items:flex-end;">
+                <div class="form-field" style="flex:1;">
+                  <label for="atClientSearch">Buscar cliente cadastrado</label>
+                  <input type="text" id="atClientSearch" placeholder="Digite o nome ou CPF para filtrar a lista" autocomplete="off">
+                </div>
+                <div class="form-field" style="flex:2;">
+                  <label for="atClient">Vincular ao cliente</label>
+                  <select id="atClient"></select>
+                </div>
+                <div class="form-field" style="flex:0 0 auto;">
+                  <button type="button" class="btn btn-secondary" id="btnAtNewClient">+ Cadastrar novo cliente</button>
+                </div>
+              </div>
+              <small class="doc-fees-hint" style="margin:0.35rem 0 0;">Os dados do cliente escolhido preenchem a ficha. Sem cliente vinculado, a ficha é salva só na lista de atendimentos.</small>
+            </div>
+
+            <div class="doc-step-box">
+              <div class="doc-step-title"><span class="doc-step-num">2</span><span>Área do atendimento</span></div>
+              <div class="at-area-btns" id="atAreaBtns">
+                <button type="button" class="btn btn-secondary" data-at-area="trabalhista">👷 Trabalhista</button>
+                <button type="button" class="btn btn-secondary" data-at-area="previdenciario">🏛 Previdenciário</button>
+                <button type="button" class="btn btn-secondary" data-at-area="civel">⚖ Cível</button>
+                <button type="button" class="btn btn-secondary" data-at-area="criminal">🛡 Criminal</button>
+              </div>
+            </div>
+
+            <div class="doc-step-box" id="atFichaBox" style="display:none;">
+              <div class="doc-step-title"><span class="doc-step-num">3</span><span id="atFichaTitle">Ficha de Atendimento</span></div>
+              <div id="atFichaCampos"></div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+              <button type="button" class="btn btn-secondary" id="btnAtReset">🧹 Limpar ficha</button>
+              <button type="submit" class="btn btn-gold" id="btnAtSave" style="font-size:0.95rem; padding:0.6rem 1.4rem;">✔ Concluir atendimento</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card-box">
+          <div class="card-box-header" style="flex-wrap:wrap; gap:0.5rem;">
+            <h2 class="card-box-title">📚 Atendimentos realizados</h2>
+            <div class="filter-group">
+              <input type="text" class="form-control-inline" id="searchAtendimentos" placeholder="Buscar por cliente, advogado..." autocomplete="off">
+              <select class="form-control-inline" id="filterAtArea">
+                <option value="">Todas as áreas</option>
+                <option value="trabalhista">Trabalhista</option>
+                <option value="previdenciario">Previdenciário</option>
+                <option value="civel">Cível</option>
+                <option value="criminal">Criminal</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" id="tableAtendimentos">
+              <thead>
+                <tr><th>Data</th><th>Cliente</th><th>Área</th><th>Advogado</th><th>Petição (quem / prazo)</th><th>Prioridade</th><th style="text-align:right;">Ações</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
       <section id="view-documentos" class="view-pane">
         <!-- Subheader Toolbar -->
         <div class="module-toolbar">
@@ -2880,7 +2990,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
 
                   <!-- Trabalhista -->
                   <div class="form-field" id="gdCamposTrabalhista" style="display:none; margin-bottom:0.9rem;">
-                    <label for="gdTrabPct">% sobre o valor obtido no acordo/sentença *</label>
+                    <label for="gdTrabPct">% sobre o valor obtido no acordo/sentença (deixe em branco se não houver êxito)</label>
                     <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                       <input type="text" id="gdTrabPct" placeholder="35" inputmode="numeric" maxlength="3" style="max-width:90px;">
                       <span class="doc-fees-hint" style="margin:0;">% sobre o valor bruto obtido em acordo ou sentença, incluindo FGTS e Seguro Desemprego</span>
@@ -4210,6 +4320,24 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
 </div>
 
 <!-- MODAL: MENSAGEM DE COBRANÇA (copiar) -->
+<div class="modal-backdrop" id="modalAtendimentoView">
+  <div class="modal-card" style="max-width:900px;">
+    <div class="modal-header">
+      <h3 id="atViewTitle">Ficha de atendimento</h3>
+      <button class="modal-close-btn" data-close="modalAtendimentoView">&times;</button>
+    </div>
+    <div class="modal-body" style="background:#e5e3eb;">
+      <div class="doc-a4-sheet at-ficha-sheet" id="atViewSheet"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-close="modalAtendimentoView">Fechar</button>
+      <button type="button" class="btn btn-secondary" id="btnAtViewEdit">✏️ Editar</button>
+      <button type="button" class="btn btn-secondary" id="btnAtViewDocs">📄 Gerar documentos</button>
+      <button type="button" class="btn btn-gold" id="btnAtViewPrint">🖨 Imprimir ficha</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="modalCollection">
   <div class="modal-card">
     <div class="modal-header">
@@ -4519,13 +4647,29 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           </div>
 
           <div class="form-row" style="margin-bottom:0.75rem;">
+            <div class="form-field" style="max-width:170px;">
+              <label for="clientPfCep">CEP</label>
+              <input type="text" id="clientPfCep" class="cep-input" data-cep-prefix="clientPf" placeholder="00000-000" inputmode="numeric" maxlength="9">
+              <small id="clientPfCepStatus" class="cep-status"></small>
+            </div>
             <div class="form-field" style="flex:2;">
-              <label for="clientPfAddress">Endereço Completo</label>
-              <input type="text" id="clientPfAddress" placeholder="Ex: Rua Floriano Peixoto, 150, Bairro Alvorada">
+              <label for="clientPfStreet">Rua / Avenida</label>
+              <input type="text" id="clientPfStreet" placeholder="Ex: Rua Floriano Peixoto">
+            </div>
+            <div class="form-field" style="max-width:130px;">
+              <label for="clientPfNumber">Número</label>
+              <input type="text" id="clientPfNumber" placeholder="Ex: 150 ou s/n">
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-bottom:0.75rem;">
+            <div class="form-field">
+              <label for="clientPfComplement">Complemento</label>
+              <input type="text" id="clientPfComplement" placeholder="Ex: Apto 12, Casa 2 (opcional)">
             </div>
             <div class="form-field">
-              <label for="clientPfCep">CEP</label>
-              <input type="text" id="clientPfCep" placeholder="38200-000">
+              <label for="clientPfNeighborhood">Bairro</label>
+              <input type="text" id="clientPfNeighborhood" placeholder="Ex: Centro">
             </div>
           </div>
 
@@ -4534,7 +4678,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
               <label for="clientPfCity">Cidade</label>
               <input type="text" id="clientPfCity" value="Frutal">
             </div>
-            <div class="form-field">
+            <div class="form-field" style="max-width:110px;">
               <label for="clientPfUf">UF</label>
               <input type="text" id="clientPfUf" value="MG" maxlength="2">
             </div>
@@ -4559,13 +4703,46 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
               <label for="clientPjIe">Inscrição Estadual</label>
               <input type="text" id="clientPjIe" placeholder="Isenta ou nº da IE">
             </div>
+          </div>
+
+          <div style="font-size:0.8rem; font-weight:700; color:var(--brand-primary); text-transform:uppercase; margin:0.85rem 0 0.4rem;">
+            📍 Endereço da Empresa
+          </div>
+          <div class="form-row" style="margin-bottom:0.75rem;">
+            <div class="form-field" style="max-width:170px;">
+              <label for="clientPjCep">CEP</label>
+              <input type="text" id="clientPjCep" class="cep-input" data-cep-prefix="clientPj" placeholder="00000-000" inputmode="numeric" maxlength="9">
+              <small id="clientPjCepStatus" class="cep-status"></small>
+            </div>
             <div class="form-field" style="flex:2;">
-              <label for="clientPjAddress">Endereço da Empresa</label>
-              <input type="text" id="clientPjAddress" placeholder="Rua, Número, Bairro">
+              <label for="clientPjStreet">Rua / Avenida</label>
+              <input type="text" id="clientPjStreet" placeholder="Ex: Rua Floriano Peixoto">
+            </div>
+            <div class="form-field" style="max-width:130px;">
+              <label for="clientPjNumber">Número</label>
+              <input type="text" id="clientPjNumber" placeholder="Ex: 150 ou s/n">
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-bottom:0.75rem;">
+            <div class="form-field">
+              <label for="clientPjComplement">Complemento</label>
+              <input type="text" id="clientPjComplement" placeholder="Ex: Apto 12, Casa 2 (opcional)">
             </div>
             <div class="form-field">
-              <label for="clientPjCep">CEP da Empresa</label>
-              <input type="text" id="clientPjCep" placeholder="38200-000">
+              <label for="clientPjNeighborhood">Bairro</label>
+              <input type="text" id="clientPjNeighborhood" placeholder="Ex: Centro">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="clientPjCity">Cidade</label>
+              <input type="text" id="clientPjCity" value="Frutal">
+            </div>
+            <div class="form-field" style="max-width:110px;">
+              <label for="clientPjUf">UF</label>
+              <input type="text" id="clientPjUf" value="MG" maxlength="2">
             </div>
           </div>
 
@@ -4652,13 +4829,29 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
           </div>
 
           <div class="form-row" style="margin-bottom:0.75rem;">
+            <div class="form-field" style="max-width:170px;">
+              <label for="clientMenorCep">CEP</label>
+              <input type="text" id="clientMenorCep" class="cep-input" data-cep-prefix="clientMenor" placeholder="00000-000" inputmode="numeric" maxlength="9">
+              <small id="clientMenorCepStatus" class="cep-status"></small>
+            </div>
             <div class="form-field" style="flex:2;">
-              <label for="clientMenorAddress">Endereço Completo</label>
-              <input type="text" id="clientMenorAddress" placeholder="Rua, Número, Bairro">
+              <label for="clientMenorStreet">Rua / Avenida</label>
+              <input type="text" id="clientMenorStreet" placeholder="Ex: Rua Floriano Peixoto">
+            </div>
+            <div class="form-field" style="max-width:130px;">
+              <label for="clientMenorNumber">Número</label>
+              <input type="text" id="clientMenorNumber" placeholder="Ex: 150 ou s/n">
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-bottom:0.75rem;">
+            <div class="form-field">
+              <label for="clientMenorComplement">Complemento</label>
+              <input type="text" id="clientMenorComplement" placeholder="Ex: Apto 12, Casa 2 (opcional)">
             </div>
             <div class="form-field">
-              <label for="clientMenorCep">CEP</label>
-              <input type="text" id="clientMenorCep" placeholder="38200-000">
+              <label for="clientMenorNeighborhood">Bairro</label>
+              <input type="text" id="clientMenorNeighborhood" placeholder="Ex: Centro">
             </div>
           </div>
 
@@ -4667,7 +4860,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
               <label for="clientMenorCity">Cidade</label>
               <input type="text" id="clientMenorCity" value="Frutal">
             </div>
-            <div class="form-field">
+            <div class="form-field" style="max-width:110px;">
               <label for="clientMenorUf">UF</label>
               <input type="text" id="clientMenorUf" value="MG" maxlength="2">
             </div>
@@ -5525,7 +5718,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261014-135939";
+const APP_VERSION = "20261020-121625";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -5663,6 +5856,7 @@ const AppState = {
     this.inssProcesses = await fetchInssProcesses();
     this.team = await fetchTeamMembers();
     this.monthlyGoals = await fetchMonthlyGoals();
+    this.attendances = await fetchAttendances();
   }
 };
 
@@ -6813,7 +7007,8 @@ function renderFinancial() {
           ${r.status !== 'Recebido'
             ? `<button class="btn-icon" style="background:#15803d; color:#fff; border-color:#15803d; font-weight:600;" title="Baixar com Forma de Pagamento" onclick="openBaixaModal('${r.id}')">✔ Baixar</button>
                <button class="btn-icon" title="Gerar a mensagem de cobrança para copiar" onclick="openCollectionMessage('${r.id}')">Cobrar</button>`
-            : `<button class="btn-icon" title="Visualizar Recibo" onclick="viewReceiptByReceivableId('${r.id}')">🧾 Recibo</button>`}
+            : `<button class="btn-icon" title="Visualizar Recibo" onclick="viewReceiptByReceivableId('${r.id}')">🧾 Recibo</button>
+               <button class="btn-icon" title="Estornar o pagamento (baixa feita por engano): cancela o recibo e volta para pendente" onclick="reverseReceivable('${r.id}')">↩ Estornar</button>`}
           <button class="btn-icon" title="Editar" onclick="editReceivable('${r.id}')">✏</button>
           <button class="btn-icon" title="Excluir" onclick="deleteReceivable('${r.id}')">🗑</button>
         </div>
@@ -7034,7 +7229,8 @@ function populateLawyerSelects() {
 
 function getTaskAssigneeNames(extra) {
   const names = [];
-  const add = (n) => { if (n && !names.includes(n)) names.push(n); };
+  // sem repetir o mesmo nome escrito com maiúscula/acento diferente
+  const add = (n) => { if (n && !names.some(x => searchNorm(x).trim() === searchNorm(n).trim())) names.push(n); };
   (AppState.team || []).forEach(m => add(m.fullName));
   if (names.length === 0) {
     // migração 0030 ainda não rodada: usa a equipe cadastrada (advogados etc.)
@@ -7269,6 +7465,94 @@ window.deleteAppointment = async function(id) {
   }
 };
 
+// --- ENDEREÇO DO CLIENTE (campos separados) ---
+// Monta o endereço completo no formato usado nos documentos:
+// "Rua X, nº 150, Apto 12, Bairro Centro" (cidade/UF e CEP entram à parte).
+function composeAddress({ street, addressNumber, complement, neighborhood }) {
+  const rua = (street || "").trim();
+  const num = (addressNumber || "").trim();
+  const comp = (complement || "").trim();
+  const bairro = (neighborhood || "").trim();
+  const numTxt = !num ? "" : /^\d/.test(num) ? `nº ${num}` : num;
+  const bairroTxt = !bairro ? "" : /^bairro\b/i.test(bairro) ? bairro : `Bairro ${bairro}`;
+  return [[rua, numTxt].filter(Boolean).join(", "), comp, bairroTxt].filter(Boolean).join(", ");
+}
+
+function readClientAddress(px) {
+  const v = (suffix) => (document.getElementById(px + suffix)?.value || "").trim();
+  const parts = { street: v("Street"), addressNumber: v("Number"), complement: v("Complement"), neighborhood: v("Neighborhood") };
+  return {
+    ...parts,
+    address: composeAddress(parts),
+    cep: v("Cep"),
+    city: v("City") || "Frutal",
+    uf: (v("Uf") || "MG").toUpperCase()
+  };
+}
+
+// Cadastros antigos só têm o endereço completo: ele vai para "Rua / Avenida"
+// para a secretária separar quando editar.
+function fillClientAddress(px, c) {
+  const set = (suffix, val) => { const el = document.getElementById(px + suffix); if (el) el.value = val || ""; };
+  const temPartes = c.street || c.addressNumber || c.neighborhood || c.complement;
+  set("Street", temPartes ? c.street : c.address);
+  set("Number", temPartes ? c.addressNumber : "");
+  set("Complement", temPartes ? c.complement : "");
+  set("Neighborhood", temPartes ? c.neighborhood : "");
+  set("Cep", c.cep);
+  set("City", c.city || "Frutal");
+  set("Uf", c.uf || "MG");
+  const st = document.getElementById(px + "CepStatus");
+  if (st) st.textContent = "";
+}
+
+// CEP: máscara 00000-000 e, com os 8 dígitos, busca rua, bairro e cidade
+// (ViaCEP). Não apaga o que já foi digitado na rua/bairro.
+async function lookupCep(px) {
+  const cepEl = document.getElementById(px + "Cep");
+  const status = document.getElementById(px + "CepStatus");
+  const digits = (cepEl.value || "").replace(/\D/g, "");
+  if (digits.length !== 8) return;
+  if (cepEl.dataset.lastLookup === digits) return;
+  cepEl.dataset.lastLookup = digits;
+  if (status) { status.textContent = "Buscando endereço..."; status.style.color = "var(--text-muted)"; }
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+    const d = await r.json();
+    if (d.erro) {
+      if (status) { status.textContent = "CEP não encontrado. Preencha o endereço."; status.style.color = "var(--danger)"; }
+      return;
+    }
+    const set = (suffix, val, overwrite) => {
+      const el = document.getElementById(px + suffix);
+      if (el && val && (overwrite || !el.value.trim())) el.value = val;
+    };
+    set("Street", d.logradouro, false);
+    set("Neighborhood", d.bairro, false);
+    set("City", d.localidade, true);
+    set("Uf", d.uf, true);
+    if (status) { status.textContent = d.logradouro ? "Endereço encontrado ✓" : "CEP geral da cidade: preencha a rua."; status.style.color = "var(--success)"; }
+    const numEl = document.getElementById(px + "Number");
+    const streetEl = document.getElementById(px + "Street");
+    if (streetEl && !streetEl.value.trim()) streetEl.focus();
+    else if (numEl && !numEl.value.trim()) numEl.focus();
+  } catch (err) {
+    if (status) { status.textContent = "Sem conexão para buscar o CEP. Preencha o endereço."; status.style.color = "var(--danger)"; }
+    cepEl.dataset.lastLookup = "";
+  }
+}
+
+document.querySelectorAll(".cep-input").forEach(el => {
+  const px = el.dataset.cepPrefix;
+  el.addEventListener("input", () => {
+    const d = el.value.replace(/\D/g, "").slice(0, 8);
+    el.value = d.length > 5 ? d.slice(0, 5) + "-" + d.slice(5) : d;
+    if (d.length === 8) lookupCep(px);
+    else el.dataset.lastLookup = "";
+  });
+  el.addEventListener("blur", () => lookupCep(px));
+});
+
 // --- CLIENTS HANDLERS (SEÇÕES ADAPTATIVAS & CAMPOS COMPLETOS DO GERADOR DE DOCUMENTOS) ---
 function updateClientTypeFields() {
   const cType = document.getElementById("clientTypeSelect").value;
@@ -7293,8 +7577,11 @@ document.getElementById("btnOpenNewClientModal").addEventListener("click", () =>
   document.getElementById("clientTypeSelect").value = "pf";
   document.getElementById("clientPfNationality").value = "brasileira";
   document.getElementById("clientPfRgEmitter").value = "SSP/MG";
-  document.getElementById("clientPfCity").value = "Frutal";
-  document.getElementById("clientPfUf").value = "MG";
+  ["clientPf", "clientPj", "clientMenor"].forEach(px => {
+    document.getElementById(px + "City").value = "Frutal";
+    document.getElementById(px + "Uf").value = "MG";
+    document.getElementById(px + "CepStatus").textContent = "";
+  });
   document.getElementById("clientPjRepRole").value = "Sócio-Administrador";
   document.getElementById("clientMenorNationality").value = "brasileiro(a), menor impúbere";
   document.getElementById("clientMenorCity").value = "Frutal";
@@ -7334,10 +7621,7 @@ document.getElementById("formClient").addEventListener("submit", async (e) => {
       cpf: doc,
       parentage: document.getElementById("clientPfParentage").value.trim(),
       birthDate: document.getElementById("clientPfBirthDate").value,
-      address: document.getElementById("clientPfAddress").value.trim(),
-      cep: document.getElementById("clientPfCep").value.trim(),
-      city: document.getElementById("clientPfCity").value.trim() || "Frutal",
-      uf: document.getElementById("clientPfUf").value.trim() || "MG"
+      ...readClientAddress("clientPf")
     };
   } else if (clientType === "pj") {
     clientName = document.getElementById("clientPjName").value.trim();
@@ -7350,8 +7634,7 @@ document.getElementById("formClient").addEventListener("submit", async (e) => {
       companyName: clientName,
       cnpj: doc,
       stateRegistration: document.getElementById("clientPjIe").value.trim(),
-      address: document.getElementById("clientPjAddress").value.trim(),
-      cep: document.getElementById("clientPjCep").value.trim(),
+      ...readClientAddress("clientPj"),
       repName: document.getElementById("clientPjRepName").value.trim(),
       repRole: document.getElementById("clientPjRepRole").value.trim() || "Sócio-Administrador",
       repCpf: document.getElementById("clientPjRepCpf").value.trim(),
@@ -7374,10 +7657,7 @@ document.getElementById("formClient").addEventListener("submit", async (e) => {
       repName: document.getElementById("clientMenorRepName").value.trim(),
       repCpf: document.getElementById("clientMenorRepCpf").value.trim(),
       repRg: document.getElementById("clientMenorRepRg").value.trim(),
-      address: document.getElementById("clientMenorAddress").value.trim(),
-      cep: document.getElementById("clientMenorCep").value.trim(),
-      city: document.getElementById("clientMenorCity").value.trim() || "Frutal",
-      uf: document.getElementById("clientMenorUf").value.trim() || "MG"
+      ...readClientAddress("clientMenor")
     };
   }
 
@@ -7462,6 +7742,7 @@ Use o cadastro existente (busque pelo nome ou CPF na lista de clientes).`);
   renderClients();
   renderOverview();
   showToast("Cliente salvo com sucesso!", "💰");
+  document.dispatchEvent(new CustomEvent("cliente-salvo", { detail: newObj }));
 });
 
 window.editClient = function(id) {
@@ -7477,23 +7758,19 @@ window.editClient = function(id) {
     document.getElementById("clientPfName").value = item.name || "";
     document.getElementById("clientPfGender").value = item.gender || "Feminino";
     document.getElementById("clientPfNationality").value = item.nationality || "brasileira";
-    document.getElementById("clientPfMarital").value = item.maritalStatus || "Solteiro(a)";
+    document.getElementById("clientPfMarital").value = item.maritalStatus || "";
     document.getElementById("clientPfProfession").value = item.profession || "";
     document.getElementById("clientPfRg").value = item.rg || "";
     document.getElementById("clientPfRgEmitter").value = item.rgEmitter || "SSP/MG";
     document.getElementById("clientPfCpf").value = item.cpf || item.doc || "";
     document.getElementById("clientPfParentage").value = item.parentage || "";
     document.getElementById("clientPfBirthDate").value = item.birthDate || "";
-    document.getElementById("clientPfAddress").value = item.address || "";
-    document.getElementById("clientPfCep").value = item.cep || "";
-    document.getElementById("clientPfCity").value = item.city || "Frutal";
-    document.getElementById("clientPfUf").value = item.uf || "MG";
+    fillClientAddress("clientPf", item);
   } else if (cType === "pj") {
     document.getElementById("clientPjName").value = item.companyName || item.name || "";
     document.getElementById("clientPjCnpj").value = item.cnpj || item.doc || "";
     document.getElementById("clientPjIe").value = item.stateRegistration || "";
-    document.getElementById("clientPjAddress").value = item.address || "";
-    document.getElementById("clientPjCep").value = item.cep || "";
+    fillClientAddress("clientPj", item);
     document.getElementById("clientPjRepName").value = item.repName || "";
     document.getElementById("clientPjRepRole").value = item.repRole || "Sócio-Administrador";
     document.getElementById("clientPjRepCpf").value = item.repCpf || "";
@@ -7508,10 +7785,7 @@ window.editClient = function(id) {
     document.getElementById("clientMenorRepName").value = item.repName || "";
     document.getElementById("clientMenorRepCpf").value = item.repCpf || "";
     document.getElementById("clientMenorRepRg").value = item.repRg || "";
-    document.getElementById("clientMenorAddress").value = item.address || "";
-    document.getElementById("clientMenorCep").value = item.cep || "";
-    document.getElementById("clientMenorCity").value = item.city || "Frutal";
-    document.getElementById("clientMenorUf").value = item.uf || "MG";
+    fillClientAddress("clientMenor", item);
   }
 
   document.getElementById("clientPhone").value = item.phone || "";
@@ -7561,7 +7835,7 @@ window.viewClientDetail = function(id) {
           ${clientContracts.map(doc => `
             <div style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; background:var(--surface); border:1px solid var(--border); border-radius:6px; flex-wrap:wrap;">
               <div>
-                <div style="font-size:0.85rem; font-weight:600;">${doc.area ? `${esc(doc.area)} — ` : ''}${esc(doc.title || doc.typeName)}</div>
+                <div style="font-size:0.85rem; font-weight:600;">${doc.area ? `${esc(doc.area)} — ` : ''}${esc(contractObjectOf(doc) !== "-" ? contractObjectOf(doc) : (doc.title || doc.typeName))}</div>
                 <div style="font-size:0.75rem; color:var(--text-muted);">
                   ${formatDateBR(doc.date)}${doc.value ? ` &bull; ${formatBRL(doc.value)}` : ''}${doc.linkedCase ? ` &bull; Processo <code style="font-size:0.7rem;">${esc(doc.linkedCase)}</code>` : ''}
                 </div>
@@ -7773,6 +8047,7 @@ window.viewClientDetail = function(id) {
     </div>
 
     ${contractsHtml}
+    ${clientAttendancesHtml(c.id)}
 
     ${c.notes ? `
       <div style="background:#fffdfa; border:1px solid #fcd34d; border-radius:6px; padding:0.85rem 1rem;">
@@ -8600,7 +8875,68 @@ function setReceivableLock(item) {
     : "";
 }
 
+// Estorno de pagamento: desfaz uma baixa feita por engano. O recibo é apagado
+// (fica guardado na Lixeira, de onde o administrador pode restaurar) e o
+// recebível volta para "Pendente". O Caixa se ajusta sozinho, porque é
+// calculado a partir dos recebíveis.
+async function reverseReceivablePayment(id) {
+  const rec = AppState.receivables.find(r => r.id === id);
+  if (!rec) return false;
+  const { error: delErr } = await sb.from("receipts").delete().eq("receivable_id", id);
+  if (delErr) {
+    alert("Não foi possível cancelar o recibo: " + friendlyDbError(delErr));
+    return false;
+  }
+  const { data, error } = await sb.from("receivables")
+    .update({ status: "Pendente", paid_date: null, receipt_number: null })
+    .eq("id", id).select().single();
+  if (error) {
+    alert("O recibo foi cancelado, mas não foi possível voltar a cobrança para pendente: " + friendlyDbError(error));
+    return false;
+  }
+  const idx = AppState.receivables.findIndex(r => r.id === id);
+  if (idx !== -1) AppState.receivables[idx] = mapReceivableFromDb(data);
+  AppState.receipts = AppState.receipts.filter(x => x.receivableId !== id);
+  return true;
+}
+
+window.reverseReceivable = async function(id) {
+  const rec = AppState.receivables.find(r => r.id === id);
+  if (!rec) return;
+  if (!confirm(
+    `Estornar o pagamento de "${rec.desc}" (${formatBRL(rec.value)})?\n\n` +
+    `O recibo ${rec.receiptNumber || ""} será cancelado (fica guardado na Lixeira) e a cobrança volta para "Pendente".`
+  )) return;
+  if (await reverseReceivablePayment(id)) {
+    renderFinancial();
+    renderReceipts();
+    renderOverview();
+    showToast("Pagamento estornado. A cobrança voltou para pendente.", "↩");
+  }
+};
+
 window.deleteReceivable = async function(id) {
+  const rec = AppState.receivables.find(r => r.id === id);
+  // Já pago (com recibo): o recibo impede a exclusão. Oferece estornar e excluir.
+  if (rec && (rec.status === "Recebido" || rec.receiptNumber)) {
+    if (!confirm(
+      `Esta cobrança já foi paga e tem o recibo ${rec.receiptNumber || ""}.\n\n` +
+      "Para excluir, o pagamento será estornado (o recibo vai para a Lixeira) e a cobrança será apagada. Continuar?"
+    )) return;
+    if (!(await reverseReceivablePayment(id))) return;
+    const { error } = await sb.from("receivables").delete().eq("id", id);
+    if (error) {
+      alert("O pagamento foi estornado, mas não foi possível excluir a cobrança: " + friendlyDbError(error));
+      renderFinancial();
+      return;
+    }
+    AppState.receivables = AppState.receivables.filter(r => r.id !== id);
+    renderFinancial();
+    renderReceipts();
+    renderOverview();
+    showToast("Cobrança excluída (recibo cancelado e guardado na Lixeira).");
+    return;
+  }
   if (confirm("Deseja realmente remover esta cobrança?")) {
     const { error } = await sb.from("receivables").delete().eq("id", id);
     if (error) {
@@ -9315,6 +9651,16 @@ function setupNavigation() {
   document.getElementById("searchReceipts").addEventListener("input", renderReceipts);
   document.getElementById("filterReceiptPaymentMethod").addEventListener("change", renderReceipts);
 
+  // Clicar no número vermelho abre Tarefas já filtrado nas suas
+  const navBadgeTasks = document.getElementById("navBadgeTasks");
+  if (navBadgeTasks) navBadgeTasks.addEventListener("click", (e) => {
+    e.stopPropagation();
+    switchTab("tarefas");
+    const user = currentProfile && currentProfile.full_name;
+    const sel = document.getElementById("filterTaskAssignee");
+    if (user && sel && sel.value !== user) document.getElementById("btnFilterMyTasks").click();
+  });
+
   // Tasks filter listeners
   document.getElementById("filterTaskAssignee").addEventListener("change", renderTasks);
   document.getElementById("filterTaskStatus").addEventListener("change", renderTasks);
@@ -9355,6 +9701,7 @@ function switchTab(targetId) {
     "agenda": "Agenda & Prazos",
     "consultas": "Agenda & Prazos",
     "clientes": "Gestão de Clientes & Honorários",
+    "atendimentos": "Novo Atendimento — Ficha de Atendimento",
     "documentos": "Documentos Jurídicos & Minutas",
     "processos": "Acompanhamento Processual",
     "tarefas": "Gestão de Tarefas & Prazos Internos",
@@ -9375,6 +9722,8 @@ function switchTab(targetId) {
     renderAppointments();
   } else if (targetId === "documentos") {
     initDocumentsModule();
+  } else if (targetId === "atendimentos") {
+    initAttendancesModule();
   } else if (targetId === "relatorios") {
     renderFinancialReports();
   } else if (targetId === "tarefas") {
@@ -9392,6 +9741,7 @@ function switchTab(targetId) {
 // 4. MÓDULO DE TAREFAS (NOVO)
 // ==========================================
 function renderTasks() {
+  updateMyTasksBadge();
   const tbody = document.querySelector("#tableTasks tbody");
   if (!tbody) return;
   tbody.innerHTML = "";
@@ -9499,6 +9849,41 @@ function renderTasks() {
     `;
     tbody.appendChild(tr);
   });
+}
+
+// --- NOTIFICAÇÃO DE TAREFAS ---
+// Conta as tarefas não concluídas cujo responsável é o usuário logado (pelo
+// nome do perfil, o mesmo que aparece em "Responsável"; quem tem advogado
+// vinculado também recebe as atribuídas ao nome do advogado). Quando chega
+// uma tarefa nova para a pessoa (inclusive criada por outro computador, via
+// tempo real), mostra um aviso.
+let myTasksKnownIds = null;
+function myTaskNames() {
+  const names = [];
+  if (currentProfile && currentProfile.full_name) names.push(currentProfile.full_name);
+  if (currentProfile && currentProfile.lawyer_id) {
+    const l = AppState.lawyers.find(x => x.id === currentProfile.lawyer_id);
+    if (l && l.name) names.push(l.name);
+  }
+  return names.map(n => searchNorm(n).trim()).filter(Boolean);
+}
+function updateMyTasksBadge() {
+  const badge = document.getElementById("navBadgeTasks");
+  if (!badge) return;
+  const names = myTaskNames();
+  const mine = names.length
+    ? AppState.tasks.filter(t => t.status !== "Concluída" && names.includes(searchNorm(t.assignee).trim()))
+    : [];
+  badge.textContent = mine.length > 99 ? "99+" : String(mine.length);
+  badge.style.display = mine.length ? "" : "none";
+
+  const ids = new Set(mine.map(t => String(t.id)));
+  if (myTasksKnownIds) {
+    const novas = mine.filter(t => !myTasksKnownIds.has(String(t.id)) && !/^\d+$/.test(String(t.id)));
+    if (novas.length === 1) showToast(`Nova tarefa para você: ${novas[0].title}`, "🔔");
+    else if (novas.length > 1) showToast(`${novas.length} novas tarefas para você.`, "🔔");
+  }
+  myTasksKnownIds = ids;
 }
 
 window.toggleTaskDone = async function(id, isChecked) {
@@ -10848,6 +11233,10 @@ function mapClientFromDb(row) {
     parentage: row.parentage,
     birthDate: row.birth_date,
     address: row.address,
+    street: row.street || "",
+    addressNumber: row.address_number || "",
+    complement: row.address_complement || "",
+    neighborhood: row.neighborhood || "",
     cep: row.cep,
     city: row.city,
     uf: row.uf,
@@ -10898,6 +11287,14 @@ function mapClientToDb(obj) {
     parentage: obj.parentage || null,
     birth_date: obj.birthDate || null,
     address: obj.address || null,
+    // Partes do endereço: só vão para o banco depois que a migração 0031
+    // criar as colunas (antes disso o endereço completo continua salvo).
+    ...(CLIENT_ADDRESS_PARTS_READY ? {
+      street: obj.street || null,
+      address_number: obj.addressNumber || null,
+      address_complement: obj.complement || null,
+      neighborhood: obj.neighborhood || null
+    } : {}),
     cep: obj.cep || null,
     city: obj.city || null,
     uf: obj.uf || null,
@@ -10925,8 +11322,12 @@ function mapClientToDb(obj) {
   };
 }
 
+// true quando o banco já tem as colunas do endereço separado (migração 0031)
+let CLIENT_ADDRESS_PARTS_READY = false;
+
 async function fetchClients() {
   const { data, error } = await sb.from("clients").select("*").order("created_at", { ascending: false });
+  if (!error && data && data.length) CLIENT_ADDRESS_PARTS_READY = Object.prototype.hasOwnProperty.call(data[0], "street");
   if (error) {
     console.error("Erro ao carregar clientes do Supabase:", error);
     showToast("Não foi possível carregar os clientes do banco de dados.", "⚠");
@@ -11642,9 +12043,9 @@ async function bootApp() {
 // igual sempre foi. Os demais têm uma lista de módulos PERMITIDOS (mais
 // fácil de auditar que lista de proibidos, com tantos perfis diferentes).
 const ROLE_ALLOWED_TABS = {
-  advogada_associada: ["visao-geral", "agenda", "clientes", "documentos", "processos", "tarefas", "equipe"],
+  advogada_associada: ["visao-geral", "agenda", "clientes", "atendimentos", "documentos", "processos", "tarefas", "equipe"],
   financeiro: ["agenda", "clientes", "documentos", "processos", "tarefas", "financeiro", "recibos"],
-  apoio_juridico: ["agenda", "processos", "inss-administrativo", "documentos", "tarefas", "clientes"],
+  apoio_juridico: ["agenda", "processos", "inss-administrativo", "documentos", "tarefas", "clientes", "atendimentos"],
   recepcao: ["agenda", "tarefas"]
 };
 
@@ -11840,7 +12241,8 @@ const TRASH_TABLE_LABELS = {
   cashbook_entries: "Lançamento do caixa",
   rpv_alvaras: "RPV / Alvará",
   inss_processes: "Processo INSS",
-  lawyers: "Membro da equipe"
+  lawyers: "Membro da equipe",
+  attendances: "Ficha de atendimento"
 };
 
 function trashSummary(row) {
@@ -12491,7 +12893,7 @@ function gdQualificacao() {
 
   if (gdEhPj()) {
     const razao = gdRaw("gdPjRazao") || "[RAZÃO SOCIAL]";
-    const cnpj = gdTxt("gdPjCnpj") || "[CNPJ]";
+    const cnpj = gdTxt("gdPjCnpj");
     const ie = gdTxt("gdPjIe");
     const endPJ = gdTxt("gdPjEndereco") || end;
     const cepPJ = gdRaw("gdPjCep") ? `, CEP ${gdTxt("gdPjCep")}` : "";
@@ -12500,7 +12902,8 @@ function gdQualificacao() {
     const repCPF = gdTxt("gdPjRepCpf");
     const repRG = gdTxt("gdPjRepRg");
 
-    let txt = `<strong>${esc(razao.toUpperCase())}</strong>, pessoa jurídica de direito privado, inscrita no CNPJ sob o nº ${cnpj}`;
+    let txt = `<strong>${esc(razao.toUpperCase())}</strong>, pessoa jurídica de direito privado`;
+    if (cnpj) txt += `, inscrita no CNPJ sob o nº ${cnpj}`;
     if (ie) txt += `, Inscrição Estadual nº ${ie}`;
     if (endPJ) txt += `, com sede na ${endPJ}, na cidade de ${cidadeUf}${cepPJ}`;
     txt += `, neste ato representada por seu ${repCargo} <strong>${esc(repNome.toUpperCase())}</strong>`;
@@ -12564,46 +12967,46 @@ function gdAssinaturaUnica(nome, qualidade) {
         </div>`;
 }
 
-// Cláusula de honorários do contrato, conforme a área
-function gdClausulaHonorarios(area) {
-  const servico = gdTxt("gdContServico") || "[DESCREVER O SERVIÇO]";
+// Itens de honorários preenchidos, conforme a área (sem texto: o que não foi
+// preenchido não entra no contrato). Usado no texto e na conferência.
+function gdItensHonorarios(area) {
   const centavos = gdValorCentavos();
   const valor = centavos
     ? `R$ ${(centavos / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${gdCapitalizar(gdValorCompleto(centavos))})`
     : "";
   const pagto = gdTxt("gdPagamento");
-  const item = (t) => `<p style="padding-left:2em">— ${t}</p>`;
-  const abertura = `<p>A CONSTITUINTE pagará ao CONSTITUÍDO, em remuneração dos serviços contratados (<strong>${servico}</strong>), os seguintes honorários:</p>`;
-  const documentos = `<p>A CONSTITUINTE obriga-se a fornecer ao CONSTITUÍDO todos os documentos que lhe forem solicitados, dentro do prazo legal, providência essa necessária ao perfeito andamento do processo.</p>`;
-  const aDefinir = item("[HONORÁRIOS A DEFINIR].");
-
+  const itens = [];
   if (area === "previdenciario" || area === "auxilioacidente") {
     const pct = gdTxt("gdPctAtrasado");
     const parcelas = gdTxt("gdParcelasBeneficio");
-    let itens = "";
-    if (valor && pagto) itens += item(`${valor}, pagos da seguinte forma: ${pagto};`);
-    if (pct) itens += item(`${pct} dos valores apurados referentes ao pagamento dos benefícios atrasados, que serão pagos após a liberação desses valores;`);
-    if (parcelas) itens += item(`${parcelas}, após a implementação do benefício, cujo pagamento poderá ser combinado com a CONSTITUÍDA.`);
-    return abertura + (itens || aDefinir) + documentos;
-  }
-
-  if (area === "trabalhista") {
+    if (valor && pagto) itens.push(`${valor}, pagos da seguinte forma: ${pagto}`);
+    if (pct) itens.push(`${pct} dos valores apurados referentes ao pagamento dos benefícios atrasados, que serão pagos após a liberação desses valores`);
+    if (parcelas) itens.push(`${parcelas}, após a implementação do benefício, cujo pagamento poderá ser combinado com a CONSTITUÍDA`);
+  } else if (area === "trabalhista") {
     const n = gdRaw("gdTrabPct").replace(/\D/g, "");
-    const pct = n ? `${n}% sobre o valor bruto obtido em acordo ou sentença, incluindo FGTS e Seguro Desemprego` : "[% A DEFINIR]";
-    let itens = "";
-    if (valor && pagto) itens += item(`Valor fixo de ${valor}, a ser pago ${pagto};`);
-    itens += item(`${pct}, a ser pago após o recebimento dos valores pelo CONSTITUINTE, no prazo de até 5 (cinco) dias úteis da data do crédito.`);
-    return abertura + itens
-      + `<p>Os honorários de êxito são devidos ainda que o resultado favorável se dê por acordo celebrado em qualquer fase do processo, inclusive antes da distribuição da ação.</p>`
-      + documentos;
+    if (valor && pagto) itens.push(`Valor fixo de ${valor}, a ser pago ${pagto}`);
+    if (n) itens.push(`${n}% sobre o valor bruto obtido em acordo ou sentença, incluindo FGTS e Seguro Desemprego, a ser pago após o recebimento dos valores pelo CONSTITUINTE, no prazo de até 5 (cinco) dias úteis da data do crédito`);
+  } else {
+    const livre = gdTxt("gdOutrosLivre");
+    if (valor && pagto) itens.push(`Honorários fixos de ${valor}, pagos da seguinte forma: ${pagto}`);
+    if (livre) itens.push(livre.replace(/[.;]\s*$/, ""));
   }
+  return itens;
+}
 
-  // Outros
-  const livre = gdTxt("gdOutrosLivre");
-  let itens = "";
-  if (valor && pagto) itens += item(`Honorários fixos de ${valor}, pagos da seguinte forma: ${pagto};`);
-  if (livre) itens += item(`${livre}.`);
-  return abertura + (itens || aDefinir) + documentos;
+// Cláusula de honorários do contrato, conforme a área
+function gdClausulaHonorarios(area) {
+  const servico = gdTxt("gdContServico");
+  const itens = gdItensHonorarios(area);
+  // ";" entre os itens e "." no último
+  const lista = itens.map((t, i) => `<p style="padding-left:2em">— ${t}${i === itens.length - 1 ? "." : ";"}</p>`).join("");
+  const abertura = `<p>A CONSTITUINTE pagará ao CONSTITUÍDO, em remuneração dos serviços contratados${servico ? ` (<strong>${servico}</strong>)` : ""}, os seguintes honorários:</p>`;
+  const documentos = `<p>A CONSTITUINTE obriga-se a fornecer ao CONSTITUÍDO todos os documentos que lhe forem solicitados, dentro do prazo legal, providência essa necessária ao perfeito andamento do processo.</p>`;
+  // Parágrafo do êxito trabalhista só quando há % de êxito
+  const exitoTrab = area === "trabalhista" && gdRaw("gdTrabPct").replace(/\D/g, "")
+    ? `<p>Os honorários de êxito são devidos ainda que o resultado favorável se dê por acordo celebrado em qualquer fase do processo, inclusive antes da distribuição da ação.</p>`
+    : "";
+  return abertura + lista + exitoTrab + documentos;
 }
 
 // Monta o documento no modelo do escritório. Devolve título e HTML da folha.
@@ -12727,6 +13130,9 @@ function gdValidar(docType) {
   }
   if (docType === "contrato" && gdValorCentavos() > 0 && !gdRaw("gdPagamento")) {
     return { msg: "⚠ Preencha a forma de pagamento do valor fixo: sem ela, o valor não aparece no contrato.", el: "gdPagamento" };
+  }
+  if (docType === "contrato" && gdItensHonorarios(gdEl("gdContArea").value).length === 0) {
+    return { msg: "⚠ Preencha ao menos um honorário (valor fixo com a forma de pagamento, ou o percentual de êxito).", el: "gdValor" };
   }
   return null;
 }
@@ -13246,6 +13652,518 @@ function printGeneratedDoc() {
   }, 500);
 }
 
+// ==========================================
+// NOVO ATENDIMENTO — fichas de atendimento por área (mesmas perguntas da
+// ficha de atendimento do escritório). Ficam na tabela "attendances",
+// ligadas ao cliente, e aparecem no "Histórico de atendimentos" da ficha dele.
+// ==========================================
+
+const AT_AREA_NAMES = { trabalhista: "Trabalhista", previdenciario: "Previdenciário", civel: "Cível", criminal: "Criminal" };
+const AT_SIM_NAO = ["Sim", "Não"];
+
+// Campos do cliente (comuns às 4 fichas; nascimento/NIT só onde a ficha pede)
+function atClientFields(area) {
+  return [
+    { k: "nome", l: "Nome completo", w: 2 },
+    { k: "cpf", l: area === "civel" ? "CPF / CNPJ" : "CPF", mask: "doc" },
+    { k: "rg", l: "RG" },
+    { k: "orgao", l: "Órgão emissor" },
+    ...(area === "previdenciario" || area === "criminal" ? [{ k: "nasc", l: "Data de nascimento", t: "date" }] : []),
+    ...(area === "previdenciario" ? [{ k: "nit", l: "NIT / PIS" }] : []),
+    { k: "ec", l: "Estado civil", t: "select", o: ["solteiro(a)", "casado(a)", "divorciado(a)", "viúvo(a)", "em união estável"] },
+    { k: "prof", l: "Profissão" },
+    { k: "tel", l: "Telefone" },
+    ...(area !== "criminal" ? [{ k: "email", l: "E-mail" }] : []),
+    { k: "end", l: "Endereço", w: 2 },
+    { k: "cidade", l: "Cidade" },
+    { k: "uf", l: "UF" },
+    { k: "fil", l: "Filiação", w: 2 }
+  ];
+}
+
+// Seções específicas de cada área
+const AT_SECTIONS = {
+  trabalhista: [
+    { t: "Dados do vínculo", f: [
+      { k: "empresa", l: "Empresa (reclamada)", w: 2 }, { k: "cnpj", l: "CNPJ", mask: "doc" }, { k: "cargo", l: "Cargo" },
+      { k: "salario", l: "Salário" }, { k: "admissao", l: "Admissão", t: "date" }, { k: "demissao", l: "Demissão", t: "date" },
+      { k: "tipoDemissao", l: "Tipo de demissão", t: "select", o: ["Sem justa causa", "Com justa causa", "Pedido de demissão", "Rescisão indireta", "Acordo (§6º CLT)", "Ainda empregado"] },
+      { k: "fgts", l: "Recebeu FGTS?", t: "select", o: ["Sim, integralmente", "Sim, parcialmente", "Não recebeu"] }
+    ] },
+    { t: "Verbas violadas", checks: { k: "verbas", itens: ["Horas extras não pagas", "Adicional noturno", "Intervalo intrajornada", "DSR não pago", "Férias não gozadas / não pagas", "13º salário", "Aviso prévio", "Multa 40% FGTS", "Salário não pago", "Insalubridade / periculosidade", "Dano moral", "Vínculo a reconhecer"] } },
+    { t: "Jornada de trabalho", f: [
+      { k: "entrada", l: "Entrada", t: "time" }, { k: "saida", l: "Saída", t: "time" }, { k: "intervalo", l: "Intervalo (min)", t: "number" },
+      { k: "obsJornada", l: "Observações sobre jornada", t: "textarea", w: 4 }
+    ] },
+    { t: "Testemunhas", f: [
+      { k: "test1", l: "Testemunha 1", w: 2 }, { k: "test1Contato", l: "Contato" },
+      { k: "test2", l: "Testemunha 2", w: 2 }, { k: "test2Contato", l: "Contato" }
+    ] },
+    { t: "Documentos do cliente", checks: { k: "docs", itens: ["CTPS", "Holerites", "Termo de rescisão (TRCT)", "Extrato FGTS", "Registro de ponto", "Seguro-desemprego", "Contrato de trabalho", "Mensagens / e-mails"] } },
+    { t: "Relato / observações para a petição", f: [{ k: "relato", l: "Relato", t: "textarea", w: 4, rows: 5 }] }
+  ],
+  previdenciario: [
+    { t: "Benefício pretendido", checks: { k: "beneficios", itens: ["Aposentadoria por idade", "Aposentadoria por tempo", "Aposentadoria especial", "BPC/LOAS", "Auxílio-doença", "Auxílio por incapacidade permanente", "Auxílio-acidente", "Pensão por morte", "Salário-maternidade", "Revisão de benefício", "Restabelecimento", "Outro"] },
+      f: [{ k: "beneficioOutro", l: "Especificar (se \"Outro\")", w: 4 }] },
+    { t: "Histórico previdenciário", f: [
+      { k: "tempoContrib", l: "Tempo de contribuição estimado" },
+      { k: "cnis", l: "Possui CNIS?", t: "select", o: ["Sim", "Não", "Parcial"] },
+      { k: "requerido", l: "Benefício requerido no INSS?", t: "select", o: ["Sim, negado", "Sim, cessado", "Não requereu"] },
+      { k: "numBeneficio", l: "Número do benefício" },
+      { k: "dataNegativa", l: "Data da negativa / cessação", t: "date" },
+      { k: "motivoNegativa", l: "Motivo da negativa", w: 2 }
+    ] },
+    { t: "Condição de saúde (se aplicável)", f: [
+      { k: "cid", l: "CID / Diagnóstico", w: 2 }, { k: "laudos", l: "Possui laudos?", t: "select", o: AT_SIM_NAO },
+      { k: "limitacao", l: "Descrição da limitação", t: "textarea", w: 4 }
+    ] },
+    { t: "Documentos do cliente", checks: { k: "docs", itens: ["CNIS", "CTPS", "Laudos médicos", "Carta de indeferimento", "Declaração de renda (BPC)", "Certidão de óbito (pensão)", "Comprovante de contribuições", "PPP (perfil profissiográfico)"] } },
+    { t: "Relato / observações para a petição", f: [{ k: "relato", l: "Relato", t: "textarea", w: 4, rows: 5 }] }
+  ],
+  civel: [
+    { t: "Dados da parte contrária (réu)", f: [
+      { k: "reuNome", l: "Nome / Razão social", w: 2 }, { k: "reuDoc", l: "CPF / CNPJ", mask: "doc" },
+      { k: "reuEnd", l: "Endereço", w: 2 }, { k: "reuTel", l: "Telefone" }
+    ] },
+    { t: "Tipo de demanda", checks: { k: "demandas", itens: ["Dano moral", "Dano material", "Cobrança", "Revisão contratual", "Rescisão de contrato", "Obrigação de fazer", "Consumidor (CDC)", "Família", "Vizinhança / imóvel", "Inventário / herança", "Acidente de trânsito", "Responsabilidade médica", "Outro"] },
+      f: [{ k: "demandaOutro", l: "Especificar (se \"Outro\")", w: 4 }] },
+    { t: "Fatos e pedidos", f: [
+      { k: "dataFato", l: "Data do fato", t: "date" }, { k: "valor", l: "Valor envolvido" },
+      { k: "fatos", l: "Descrição dos fatos", t: "textarea", w: 4, rows: 4 },
+      { k: "pedido", l: "O que o cliente quer (pedido)", t: "textarea", w: 4 }
+    ] },
+    { t: "Tentativa prévia de resolução", f: [
+      { k: "amigavel", l: "Tentou amigavelmente?", t: "select", o: ["Sim, sem êxito", "Não tentou"] },
+      { k: "procon", l: "Foi ao Procon / órgão?", t: "select", o: AT_SIM_NAO },
+      { k: "processoExiste", l: "Já existe processo?", t: "select", o: AT_SIM_NAO },
+      { k: "numProcesso", l: "Número do processo" }
+    ] },
+    { t: "Documentos do cliente", checks: { k: "docs", itens: ["Contrato", "Notas fiscais / recibos", "Fotos / prints / vídeos", "Boletim de ocorrência", "E-mails / mensagens", "Laudos periciais", "Comprovantes de pagamento", "Protocolo de reclamação"] } },
+    { t: "Observações para a petição", f: [{ k: "relato", l: "Observações", t: "textarea", w: 4, rows: 4 }] }
+  ],
+  criminal: [
+    { t: "Situação processual", f: [
+      { k: "posicao", l: "Posição no processo", t: "select", o: ["Indiciado / Investigado", "Réu (ação penal em curso)", "Preso em flagrante", "Preso preventivamente", "Condenado (recurso)", "Vítima"] },
+      { k: "numProcesso", l: "Número do processo / IPL" }, { k: "delegacia", l: "Delegacia / Vara Criminal", w: 2 },
+      { k: "dataFato", l: "Data do fato", t: "date" }
+    ] },
+    { t: "Crime imputado", checks: { k: "crimes", itens: ["Furto / Roubo", "Estelionato", "Lesão corporal", "Ameaça", "Tráfico de drogas", "Porte ilegal de arma", "Crimes contra a honra", "Violência doméstica", "Crimes digitais", "Outro"] },
+      f: [{ k: "crimeOutro", l: "Especificar", w: 4 }] },
+    { t: "Versão do cliente", f: [{ k: "versao", l: "Versão do cliente", t: "textarea", w: 4, rows: 5 }] },
+    { t: "Antecedentes", f: [
+      { k: "antecedentes", l: "Possui antecedentes?", t: "select", o: ["Não", "Sim"] },
+      { k: "penaCumprida", l: "Pena já cumprida?", t: "select", o: ["Não", "Sim"] },
+      { k: "detalheAntecedentes", l: "Detalhar antecedentes", t: "textarea", w: 4 }
+    ] },
+    { t: "Urgências", f: [
+      { k: "preso", l: "Cliente está preso?", t: "select", o: ["Não", "Sim — flagrante", "Sim — preventiva", "Sim — condenado"] },
+      { k: "prazoImediato", l: "Prazo imediato", w: 2 }
+    ] }
+  ]
+};
+
+let atCurrentArea = "";
+
+function atField(f) {
+  const id = "at_" + f.k;
+  const flex = f.w ? `flex:${f.w};` : "";
+  let input;
+  if (f.t === "select") {
+    input = `<select id="${id}"><option value="">Selecione</option>${f.o.map(o => `<option>${esc(o)}</option>`).join("")}</select>`;
+  } else if (f.t === "textarea") {
+    input = `<textarea id="${id}" rows="${f.rows || 3}"></textarea>`;
+  } else {
+    input = `<input type="${f.t || "text"}" id="${id}"${f.mask === "doc" ? ' data-at-mask="doc" inputmode="numeric"' : ""}>`;
+  }
+  return `<div class="form-field" style="${flex} min-width:${f.t === "textarea" || (f.w || 1) >= 4 ? "100%" : "160px"};"><label for="${id}">${esc(f.l)}</label>${input}</div>`;
+}
+
+function atSectionHtml(sec) {
+  const checks = sec.checks ? `<div class="at-checklist">${sec.checks.itens.map(it => `
+      <label class="at-check"><input type="checkbox" name="at_chk_${sec.checks.k}" value="${esc(it)}"> ${esc(it)}</label>`).join("")}</div>` : "";
+  const fields = sec.f ? `<div class="form-row at-fields">${sec.f.map(atField).join("")}</div>` : "";
+  return `<div class="gd-bloco"><div class="gd-bloco-title">${esc(sec.t)}</div>${checks}${fields}</div>`;
+}
+
+function atResponsavelSection() {
+  const advs = AppState.lawyers.filter(l => l.position === "Advogado(a)").map(l => l.name);
+  const team = getTaskAssigneeNames();
+  return atSectionHtml({ t: "Responsável pela petição inicial", f: [
+    { k: "advogado", l: "Advogado do atendimento", t: "select", o: advs },
+    { k: "elabora", l: "Quem elabora a petição", t: "select", o: [...team, "Outro"] },
+    { k: "elaboraOutro", l: "Especificar quem elaborará" },
+    { k: "prazo", l: "Prazo para entrega", t: "date" },
+    { k: "data", l: "Data do atendimento", t: "date" },
+    { k: "prioridade", l: "Prioridade", t: "select", o: ["Urgente", "Normal", "Baixa"] }
+  ] }) + `<small class="doc-fees-hint" style="margin:-0.5rem 0 0;">Com "quem elabora" e "prazo" preenchidos, o sistema cria a tarefa de elaborar a petição para essa pessoa.</small>`;
+}
+
+function atRenderForm(area) {
+  atCurrentArea = area;
+  document.querySelectorAll("#atAreaBtns [data-at-area]").forEach(b => {
+    b.className = "btn " + (b.dataset.atArea === area ? "btn-primary" : "btn-secondary");
+  });
+  document.getElementById("atFichaBox").style.display = area ? "" : "none";
+  if (!area) { document.getElementById("atFichaCampos").innerHTML = ""; return; }
+  document.getElementById("atFichaTitle").textContent = `Ficha de Atendimento — ${AT_AREA_NAMES[area]}`;
+  document.getElementById("atFichaCampos").innerHTML =
+    atSectionHtml({ t: "Dados do cliente", f: atClientFields(area) }) +
+    AT_SECTIONS[area].map(atSectionHtml).join("") +
+    atResponsavelSection();
+  document.querySelectorAll('#atFichaCampos [data-at-mask="doc"]').forEach(el => {
+    el.addEventListener("input", () => { el.value = formatCpfOuCnpj(el.value.replace(/\D/g, "")); });
+  });
+  const dataEl = document.getElementById("at_data");
+  if (dataEl && !dataEl.value) dataEl.value = getOffsetDate(0);
+  atFillFromClient();
+}
+
+// Dados do cliente vinculado preenchem o bloco "Dados do cliente" (só campos vazios)
+function atFillFromClient(force) {
+  const cl = AppState.clients.find(c => c.id === document.getElementById("atClient").value);
+  if (!cl || !atCurrentArea) return;
+  const ecMap = (m) => {
+    const x = searchNorm(m || "");
+    if (x.includes("uniao")) return "em união estável";
+    if (x.includes("casad")) return "casado(a)";
+    if (x.includes("divorc")) return "divorciado(a)";
+    if (x.includes("viuv")) return "viúvo(a)";
+    if (x.includes("solteir")) return "solteiro(a)";
+    return "";
+  };
+  const vals = {
+    nome: cl.minorName || cl.name, cpf: cl.cpf || cl.doc || cl.cnpj, rg: cl.rg, orgao: cl.rgEmitter, nasc: cl.birthDate,
+    ec: ecMap(cl.maritalStatus), prof: cl.profession, tel: cl.whatsapp || cl.phone, email: cl.email,
+    end: cl.address, cidade: cl.city, uf: cl.uf, fil: cl.parentage
+  };
+  Object.entries(vals).forEach(([k, v]) => {
+    const el = document.getElementById("at_" + k);
+    if (el && v && (force || !el.value)) el.value = v;
+  });
+}
+
+function atPopulateClientSelect(keepId) {
+  const sel = document.getElementById("atClient");
+  if (!sel) return;
+  const current = keepId || sel.value;
+  const term = document.getElementById("atClientSearch").value;
+  const list = AppState.clients
+    .filter(c => c.id === current || matchesSearch(term, c.name, c.doc, c.cpf, c.cnpj))
+    .slice()
+    .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  sel.innerHTML = '<option value="">— Sem cliente cadastrado (preencher a ficha à mão) —</option>' +
+    list.slice(0, 300).map(c => `<option value="${c.id}">${esc(c.name)}${c.doc ? ` (${esc(c.doc)})` : ""}</option>`).join("");
+  if (current && [...sel.options].some(o => o.value === current)) sel.value = current;
+  else if (term && list.length === 1) { sel.value = list[0].id; atFillFromClient(true); }
+}
+
+function atCollect() {
+  const campos = {};
+  document.querySelectorAll("#atFichaCampos input:not([type=checkbox]), #atFichaCampos select, #atFichaCampos textarea").forEach(el => {
+    if (el.id && el.id.startsWith("at_") && el.value.trim()) campos[el.id.slice(3)] = el.value.trim();
+  });
+  const checks = {};
+  document.querySelectorAll("#atFichaCampos input[type=checkbox]:checked").forEach(el => {
+    const k = el.name.replace(/^at_chk_/, "");
+    (checks[k] = checks[k] || []).push(el.value);
+  });
+  return { campos, checks };
+}
+
+function atLoadIntoForm(at) {
+  document.getElementById("atId").value = at.id;
+  document.getElementById("atClientSearch").value = "";
+  atPopulateClientSelect(at.clientId || "");
+  document.getElementById("atClient").value = at.clientId || "";
+  atRenderForm(at.area);
+  const d = at.data || {};
+  Object.entries(d.campos || {}).forEach(([k, v]) => { const el = document.getElementById("at_" + k); if (el) el.value = v; });
+  Object.entries(d.checks || {}).forEach(([k, arr]) => {
+    document.querySelectorAll(`#atFichaCampos input[name="at_chk_${k}"]`).forEach(el => { el.checked = arr.includes(el.value); });
+  });
+  document.getElementById("atFormTitle").textContent = "✏️ Editando atendimento";
+  document.getElementById("btnAtSave").textContent = "💾 Salvar alterações";
+}
+
+function atResetForm() {
+  document.getElementById("formAtendimento").reset();
+  document.getElementById("atId").value = "";
+  document.getElementById("atFormTitle").textContent = "🗂 Novo Atendimento";
+  document.getElementById("btnAtSave").textContent = "✔ Concluir atendimento";
+  atPopulateClientSelect("");
+  atRenderForm("");
+}
+
+function mapAttendanceFromDb(row) {
+  return {
+    id: row.id, clientId: row.client_id, clientName: row.client_name || "", area: row.area,
+    date: row.attendance_date, lawyerName: row.lawyer_name || "", petitionAuthor: row.petition_author || "",
+    deadline: row.deadline, priority: row.priority || "", data: row.data || {},
+    createdByName: row.created_by_name || "", createdAt: row.created_at
+  };
+}
+
+async function fetchAttendances() {
+  try {
+    const { data, error } = await sb.from("attendances").select("*").order("attendance_date", { ascending: false }).order("created_at", { ascending: false });
+    if (error) { AppState.attendancesUnavailable = true; return []; }
+    AppState.attendancesUnavailable = false;
+    return (data || []).map(mapAttendanceFromDb);
+  } catch (e) {
+    AppState.attendancesUnavailable = true;
+    return [];
+  }
+}
+
+// Ficha pronta para ver/imprimir (folha branca)
+function atFichaSheetHtml(at) {
+  const d = at.data || {};
+  const campos = d.campos || {};
+  const checks = d.checks || {};
+  const fmt = (f, v) => f.t === "date" ? formatDateBR(v) : v;
+  const grid = (fields) => {
+    const itens = fields.filter(f => campos[f.k]).map(f => {
+      const full = f.t === "textarea" || (f.w || 1) >= 4;
+      return `<div class="at-f-item${full ? " at-f-full" : ""}"><span>${esc(f.l)}</span><div>${esc(fmt(f, campos[f.k])).replace(/\n/g, "<br>")}</div></div>`;
+    }).join("");
+    return itens ? `<div class="at-f-grid">${itens}</div>` : "";
+  };
+  const sec = (s) => {
+    const marcados = s.checks ? (checks[s.checks.k] || []) : [];
+    const checksHtml = marcados.length ? `<ul class="at-f-checks">${marcados.map(x => `<li>☑ ${esc(x)}</li>`).join("")}</ul>` : "";
+    const g = s.f ? grid(s.f) : "";
+    return (checksHtml || g) ? `<div class="at-f-sec"><h4>${esc(s.t)}</h4>${checksHtml}${g}</div>` : "";
+  };
+  const resp = [
+    { k: "advogado", l: "Advogado do atendimento" }, { k: "elabora", l: "Quem elabora a petição" },
+    { k: "elaboraOutro", l: "Especificar quem elaborará" }, { k: "prazo", l: "Prazo para entrega", t: "date" },
+    { k: "data", l: "Data do atendimento", t: "date" }, { k: "prioridade", l: "Prioridade" }
+  ];
+  return `
+    <div class="at-f-head">
+      <div class="at-f-office">CACILDA SOUZA ADVOCACIA — Ficha ${esc(AT_AREA_NAMES[at.area] || "")}</div>
+      <div class="at-f-sub">OAB/MG 159.859 · Rua Gonçalves Dias, 308 – Centro – Frutal/MG</div>
+      <div class="at-f-sub">Atendimento em ${formatDateBR(at.date)}${at.createdByName ? ` · registrado por ${esc(at.createdByName)}` : ""}</div>
+    </div>
+    ${sec({ t: "Dados do cliente", f: atClientFields(at.area) })}
+    ${(AT_SECTIONS[at.area] || []).map(sec).join("")}
+    ${sec({ t: "Responsável pela petição inicial", f: resp })}
+  `;
+}
+
+function atShowSheet(id, imprimir) {
+  const at = (AppState.attendances || []).find(a => a.id === id);
+  if (!at) return;
+  const sheet = document.getElementById("atViewSheet");
+  sheet.innerHTML = atFichaSheetHtml(at);
+  document.getElementById("atViewTitle").textContent = `Ficha ${AT_AREA_NAMES[at.area] || ""} — ${at.clientName || "sem cliente"}`;
+  document.getElementById("btnAtViewDocs").style.display = at.clientId ? "" : "none";
+  document.getElementById("btnAtViewDocs").dataset.clientId = at.clientId || "";
+  document.getElementById("btnAtViewEdit").dataset.atId = at.id;
+  openModal("modalAtendimentoView");
+  if (imprimir) setTimeout(atPrintSheet, 150);
+}
+window.atShowSheet = atShowSheet;
+
+function atPrintSheet() {
+  const stage = document.getElementById("printStage");
+  const source = document.getElementById("atViewSheet");
+  if (!stage || !source) return;
+  stage.innerHTML = "";
+  stage.appendChild(source.cloneNode(true));
+  document.documentElement.classList.add("printing-active");
+  document.body.classList.add("printing-active");
+  window.print();
+  setTimeout(() => {
+    document.documentElement.classList.remove("printing-active");
+    document.body.classList.remove("printing-active");
+    stage.innerHTML = "";
+  }, 500);
+}
+
+function renderAttendances() {
+  const tbody = document.querySelector("#tableAtendimentos tbody");
+  if (!tbody) return;
+  if (AppState.attendancesUnavailable) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.25rem; color:var(--text-muted);">Atendimentos indisponíveis: rode a migração 0031 no Supabase.</td></tr>`;
+    return;
+  }
+  const term = document.getElementById("searchAtendimentos").value;
+  const area = document.getElementById("filterAtArea").value;
+  const list = (AppState.attendances || []).filter(a =>
+    (!area || a.area === area) && matchesSearch(term, a.clientName, a.lawyerName, a.petitionAuthor, AT_AREA_NAMES[a.area]));
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.25rem; color:var(--text-muted);">${(AppState.attendances || []).length ? "Nenhum atendimento encontrado com esse filtro." : "Nenhum atendimento registrado ainda."}</td></tr>`;
+    return;
+  }
+  const prioBadge = { Urgente: "badge-danger", Normal: "badge-info", Baixa: "badge-neutral" };
+  tbody.innerHTML = list.map(a => `
+    <tr>
+      <td>${formatDateBR(a.date)}</td>
+      <td><strong>${esc(a.clientName || "—")}</strong>${a.clientId ? "" : ' <span style="font-size:0.72rem; color:var(--text-muted);">(sem cadastro)</span>'}</td>
+      <td>${esc(AT_AREA_NAMES[a.area] || a.area)}</td>
+      <td>${esc(a.lawyerName || "—")}</td>
+      <td>${esc(a.petitionAuthor || "—")}${a.deadline ? ` · ${formatDateBR(a.deadline)}` : ""}</td>
+      <td>${a.priority ? `<span class="badge-status ${prioBadge[a.priority] || "badge-neutral"}">${esc(a.priority)}</span>` : "—"}</td>
+      <td style="text-align:right;">
+        <div class="actions-cell" style="justify-content:flex-end;">
+          <button class="btn-icon" title="Ver ficha" onclick="atShowSheet('${a.id}')">👁 Ver</button>
+          <button class="btn-icon" title="Imprimir ficha" onclick="atShowSheet('${a.id}', true)">🖨</button>
+          <button class="btn-icon" title="Editar" onclick="atEdit('${a.id}')">✏</button>
+          <button class="btn-icon" title="Excluir" onclick="atDelete('${a.id}')">🗑</button>
+        </div>
+      </td>
+    </tr>`).join("");
+}
+
+window.atEdit = function(id) {
+  const at = (AppState.attendances || []).find(a => a.id === id);
+  if (!at) return;
+  closeModal("modalAtendimentoView");
+  closeModal("modalClientDetail");
+  switchTab("atendimentos");
+  atLoadIntoForm(at);
+  document.getElementById("formAtendimento").scrollIntoView({ behavior: "smooth", block: "start" });
+};
+
+window.atDelete = async function(id) {
+  if (!confirm("Excluir esta ficha de atendimento? (ela fica guardada na Lixeira)")) return;
+  const { error } = await sb.from("attendances").delete().eq("id", id);
+  if (error) { alert("Não foi possível excluir: " + friendlyDbError(error)); return; }
+  AppState.attendances = AppState.attendances.filter(a => a.id !== id);
+  renderAttendances();
+  showToast("Ficha de atendimento excluída.");
+};
+
+function initAttendancesModule() {
+  if (initAttendancesModule.done) { renderAttendances(); return; }
+  initAttendancesModule.done = true;
+  atPopulateClientSelect("");
+  document.getElementById("atClientSearch").addEventListener("input", () => atPopulateClientSelect());
+  document.getElementById("atClient").addEventListener("change", () => atFillFromClient(true));
+  document.querySelectorAll("#atAreaBtns [data-at-area]").forEach(b => b.addEventListener("click", () => {
+    if (atCurrentArea && atCurrentArea !== b.dataset.atArea && !confirm("Trocar a área? As respostas específicas da ficha atual serão descartadas.")) return;
+    atRenderForm(b.dataset.atArea);
+  }));
+  document.getElementById("btnAtReset").addEventListener("click", () => { if (confirm("Limpar a ficha?")) atResetForm(); });
+  document.getElementById("btnAtNewClient").addEventListener("click", () => {
+    atWaitingNewClient = true;
+    document.getElementById("btnOpenNewClientModal").click();
+  });
+  document.getElementById("searchAtendimentos").addEventListener("input", renderAttendances);
+  document.getElementById("filterAtArea").addEventListener("change", renderAttendances);
+  document.getElementById("btnAtViewPrint").addEventListener("click", atPrintSheet);
+  document.getElementById("btnAtViewEdit").addEventListener("click", (e) => atEdit(e.currentTarget.dataset.atId));
+  document.getElementById("btnAtViewDocs").addEventListener("click", (e) => {
+    const clientId = e.currentTarget.dataset.clientId;
+    closeModal("modalAtendimentoView");
+    closeModal("modalClientDetail");
+    switchTab("documentos");
+    startDocGeneration("procuracao");
+    const sel = document.getElementById("docClientSelect");
+    sel.value = clientId;
+    sel.dispatchEvent(new Event("change"));
+  });
+  document.getElementById("formAtendimento").addEventListener("submit", atSubmit);
+  renderAttendances();
+}
+
+// Cliente cadastrado pelo botão "+ Cadastrar novo cliente" já fica vinculado
+let atWaitingNewClient = false;
+document.addEventListener("cliente-salvo", (e) => {
+  if (!atWaitingNewClient || !e.detail) return;
+  atWaitingNewClient = false;
+  document.getElementById("atClientSearch").value = "";
+  atPopulateClientSelect(e.detail.id);
+  document.getElementById("atClient").value = e.detail.id;
+  atFillFromClient(true);
+});
+
+async function atSubmit(e) {
+  e.preventDefault();
+  if (AppState.attendancesUnavailable) {
+    alert("Os atendimentos ainda não estão ativos no banco de dados (falta rodar a migração 0031 no Supabase).");
+    return;
+  }
+  if (!atCurrentArea) { alert("Escolha a área do atendimento."); return; }
+  const { campos, checks } = atCollect();
+  const clientId = document.getElementById("atClient").value || null;
+  const cl = clientId ? AppState.clients.find(c => c.id === clientId) : null;
+  const clientName = (cl && cl.name) || campos.nome || "";
+  if (!clientName) { alert("Vincule um cliente ou preencha o nome do cliente na ficha."); document.getElementById("at_nome").focus(); return; }
+
+  const author = campos.elabora === "Outro" ? (campos.elaboraOutro || "") : (campos.elabora || "");
+  const payload = {
+    client_id: clientId, client_name: clientName, area: atCurrentArea,
+    attendance_date: campos.data || getOffsetDate(0), lawyer_name: campos.advogado || null,
+    petition_author: author || null, deadline: campos.prazo || null, priority: campos.prioridade || null,
+    data: { campos, checks }
+  };
+  const editId = document.getElementById("atId").value;
+  const btn = document.getElementById("btnAtSave");
+  btn.disabled = true;
+  let result;
+  if (editId) {
+    result = await sb.from("attendances").update(payload).eq("id", editId).select().single();
+  } else {
+    payload.created_by = currentProfile ? currentProfile.id : null;
+    payload.created_by_name = currentProfile ? currentProfile.full_name : null;
+    result = await sb.from("attendances").insert(payload).select().single();
+  }
+  btn.disabled = false;
+  if (result.error) { alert("Não foi possível salvar o atendimento: " + friendlyDbError(result.error)); return; }
+  const saved = mapAttendanceFromDb(result.data);
+  AppState.attendances = [saved, ...(AppState.attendances || []).filter(a => a.id !== saved.id)];
+
+  // Petição com responsável e prazo: vira tarefa para essa pessoa (só na criação)
+  let taskMsg = "";
+  if (!editId && author && campos.prazo) {
+    const prio = { Urgente: "Alta", Normal: "Média", Baixa: "Baixa" }[campos.prioridade] || "Média";
+    const newTask = await persistTask({
+      title: `Elaborar petição inicial (${AT_AREA_NAMES[atCurrentArea]}) - ${clientName}`,
+      assignee: author,
+      dueDate: campos.prazo,
+      priority: prio,
+      status: "Pendente",
+      desc: `Ficha de atendimento de ${formatDateBR(payload.attendance_date)}${campos.advogado ? ` (advogado: ${campos.advogado})` : ""}. Veja a ficha em Novo Atendimento ou no histórico do cliente.`,
+      clientId: clientId
+    });
+    if (newTask) { AppState.tasks.unshift(newTask); renderTasks(); taskMsg = ` Tarefa da petição criada para ${author}.`; }
+    else taskMsg = " Não foi possível criar a tarefa da petição — crie manualmente em Tarefas.";
+  }
+
+  atResetForm();
+  renderAttendances();
+  showToast((editId ? "Atendimento atualizado!" : "Atendimento concluído e salvo!") + taskMsg, "🗂");
+  atShowSheet(saved.id);
+}
+
+// Histórico de atendimentos na ficha do cliente
+function clientAttendancesHtml(clientId) {
+  const list = (AppState.attendances || []).filter(a => a.clientId === clientId);
+  return `
+    <div style="background:#ffffff; border:1px solid #dcd7e3; border-radius:8px; padding:1rem; margin-bottom:1rem;">
+      <div style="font-size:0.825rem; font-weight:700; color:var(--brand-primary); text-transform:uppercase; margin-bottom:0.6rem; border-bottom:1px solid #f1f5f9; padding-bottom:0.3rem; display:flex; justify-content:space-between; align-items:center;">
+        <span>🗂 Histórico de Atendimentos</span>
+        <span class="badge badge-neutral" style="font-size:0.7rem;">${list.length}</span>
+      </div>
+      ${list.length === 0 ? `<div style="font-size:0.85rem; color:var(--text-muted); padding:0.5rem 0;">Nenhum atendimento registrado para este cliente.</div>` : `
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+          ${list.map(a => `
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; background:var(--surface); border:1px solid var(--border); border-radius:6px; flex-wrap:wrap;">
+              <div>
+                <div style="font-size:0.85rem; font-weight:600;">${esc(AT_AREA_NAMES[a.area] || a.area)} — ${formatDateBR(a.date)}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">${a.lawyerName ? `Advogado: ${esc(a.lawyerName)}` : "Advogado não informado"}${a.petitionAuthor ? ` &bull; Petição: ${esc(a.petitionAuthor)}${a.deadline ? ` até ${formatDateBR(a.deadline)}` : ""}` : ""}${a.priority ? ` &bull; ${esc(a.priority)}` : ""}</div>
+              </div>
+              <div class="actions-cell">
+                <button class="btn-icon" title="Ver ficha" onclick="atShowSheet('${a.id}')">👁 Ver</button>
+                <button class="btn-icon" title="Imprimir ficha" onclick="atShowSheet('${a.id}', true)">🖨 Imprimir</button>
+              </div>
+            </div>`).join("")}
+        </div>`}
+    </div>`;
+}
+
 // RENDERIZAÇÃO DO HISTÓRICO DE DOCUMENTOS
 function renderDocHistory() {
   const countEl = document.getElementById("docHistoryBadgeCount");
@@ -13566,7 +14484,11 @@ async function handleImportClientsFile(evt) {
       whatsapp: (r["Telefone"] || "").toString().trim() || null,
       birthDate: impParseBrDate(r["Data Nascimento"]),
       cep: impOnlyDigits(r["Cep"]) || null,
-      address: addressParts.join(", ") || null,
+      address: composeAddress({ street: rua, addressNumber: numero, complement: complemento, neighborhood: bairro }) || null,
+      street: rua || null,
+      addressNumber: numero || null,
+      complement: complemento || null,
+      neighborhood: bairro || null,
       city: (r["Cidade"] || "").toString().trim() || null,
       uf: (r["Estado"] || "").toString().trim() || null
     });
