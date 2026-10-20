@@ -395,8 +395,9 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       align-items: center;
       justify-content: space-between;
       padding: 0 1.5rem;
-      position: sticky;
-      top: 0;
+      /* Fica no topo da página e rola junto com o conteúdo (antes ficava
+         preso no alto da tela, cobrindo parte do que se lia). */
+      position: relative;
       z-index: 20;
       box-shadow: 0 2px 8px rgba(64, 60, 91, 0.05);
     }
@@ -1650,12 +1651,25 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
     }
     .nav-btn.active .nav-icon { color: #17141f !important; }
     .cep-status { display:block; font-size:0.72rem; min-height:1em; margin-top:2px; }
+    /* Caixinha da recepção */
+    .caixinha-card { border-left: 4px solid var(--brand-gold, #B5993A) !important; }
+    .caixinha-row { display:flex; gap:1.25rem; align-items:center; flex-wrap:wrap; justify-content:space-between; }
+    .caixinha-actions { display:flex; gap:0.5rem; flex-wrap:wrap; }
+    .acc-badge { font-size:0.72rem; font-weight:700; white-space:nowrap; }
     /* Ficha de atendimento */
     .at-area-btns { display:flex; gap:0.5rem; flex-wrap:wrap; }
     .at-checklist { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:0.35rem 0.9rem; margin-bottom:0.6rem; }
     .at-check { display:flex; align-items:center; gap:0.45rem; font-weight:500; font-size:0.875rem; cursor:pointer; }
     .at-check input { width:auto; margin:0; }
     .at-fields { flex-wrap:wrap; }
+    .at-tab { width:100%; border-collapse:collapse; }
+    .at-tab th { font-size:0.72rem; text-transform:uppercase; text-align:left; color:var(--text-muted); padding:0.3rem 0.4rem; font-weight:700; }
+    .at-tab td { padding:0.25rem 0.3rem; vertical-align:middle; }
+    .at-tab td input, .at-tab td select { width:100%; min-width:110px; }
+    .at-tab td:last-child { width:40px; }
+    .at-f-table { width:100%; border-collapse:collapse; margin:0.3rem 0 0.4rem; font-size:9.5pt; }
+    .at-f-table th { text-align:left; font-size:7.5pt; text-transform:uppercase; color:#777; border-bottom:1px solid #ccc; padding:0.15rem 0.3rem; }
+    .at-f-table td { border-bottom:1px solid #eee; padding:0.2rem 0.3rem; }
     .doc-a4-sheet.at-ficha-sheet { display:block; min-height:0; padding:1.6cm 1.6cm; font-family:'Jost', 'Segoe UI', sans-serif; font-size:10.5pt; line-height:1.45; color:#1a1a2e; margin:0 auto; }
     .at-f-head { border-bottom:2px solid #B5993A; padding-bottom:0.6rem; margin-bottom:0.9rem; }
     .at-f-office { font-weight:800; color:#2E2E5A; font-size:12.5pt; letter-spacing:0.02em; }
@@ -3377,6 +3391,33 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
 
       <!-- 6. FINANCEIRO -->
       <section id="view-financeiro" class="view-pane">
+        <!-- CAIXINHA DA RECEPÇÃO (dinheiro em espécie) -->
+        <div class="card-box caixinha-card" id="caixinhaCard" style="margin-bottom:1.25rem;">
+          <div class="card-box-header" style="flex-wrap:wrap; gap:0.5rem;">
+            <h2 class="card-box-title">💵 Caixinha da recepção</h2>
+            <span id="caixinhaStatus" class="badge badge-neutral"></span>
+          </div>
+          <div id="caixinhaNotReady" class="doc-fees-hint" style="display:none; margin:0 0 0.75rem;">
+            A caixinha ainda não está ativa no banco de dados (falta rodar a atualização 0032 no Supabase).
+          </div>
+          <div class="caixinha-row">
+            <div>
+              <div class="kpi-card-header">Saldo da caixinha</div>
+              <div class="kpi-card-value" id="caixinhaSaldo">R$ 0,00</div>
+              <div class="kpi-card-sub" id="caixinhaSaldoSub">Dinheiro que deve estar na recepção</div>
+            </div>
+            <div class="caixinha-actions">
+              <button type="button" class="btn btn-primary" id="btnCxDespesa">− Despesa da caixinha</button>
+              <button type="button" class="btn btn-secondary" id="btnCxEntrada">+ Entrada em dinheiro</button>
+              <button type="button" class="btn btn-secondary" id="btnCxReforco" title="Dinheiro que saiu da conta do escritório para abastecer a caixinha">⇄ Reforço (da conta)</button>
+              <button type="button" class="btn btn-secondary" id="btnCxDeposito" title="Dinheiro da caixinha que foi depositado na conta do escritório">⇄ Depositar na conta</button>
+              <button type="button" class="btn btn-gold" id="btnCxConferir">✔ Conferir caixinha de hoje</button>
+              <button type="button" class="btn btn-secondary" id="btnCxExtrato">📜 Ver movimentos</button>
+            </div>
+          </div>
+          <div id="caixinhaClosings" style="margin-top:0.85rem;"></div>
+        </div>
+
         <!-- Financial summary -->
         <div class="dashboard-kpi-grid">
           <div class="kpi-card">
@@ -3466,9 +3507,10 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <button class="btn btn-sm btn-primary" id="btnOpenNewCashbookModal">+ Lançamento avulso</button>
           </div>
           <p style="font-size:0.8rem; color:var(--text-muted); margin:-0.25rem 0 0.9rem; line-height:1.5;">
-            Extrato único do escritório: os honorários <strong>recebidos</strong> (pela baixa), as despesas <strong>pagas</strong> e os
-            <strong>lançamentos avulsos</strong> (retirada de sócio, caixinha...). Só os avulsos podem ser editados aqui; os demais
-            vêm de Contas a Receber e Contas a Pagar.
+            Extrato do escritório nas duas contas — <strong>🏦 conta bancária</strong> e <strong>💵 caixinha da recepção</strong>:
+            honorários <strong>recebidos</strong> (pela baixa), despesas <strong>pagas</strong>, <strong>lançamentos avulsos</strong>
+            e <strong>transferências</strong> entre as contas (que não contam como receita nem despesa). Só os avulsos e as
+            transferências podem ser editados aqui; os demais vêm de Contas a Receber e Contas a Pagar.
           </p>
           <div class="dashboard-kpi-grid" style="margin-bottom:1rem;">
             <div class="kpi-card">
@@ -3484,9 +3526,19 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
               <div class="kpi-card-value" id="kpiCashbookBalance">R$ 0,00</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-card-header">Saldo total em caixa</div>
+              <div class="kpi-card-header">🏦 Saldo da conta</div>
+              <div class="kpi-card-value" id="kpiCashContaTotal">R$ 0,00</div>
+              <div class="kpi-card-sub">Conta bancária do escritório</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-header">💵 Saldo da caixinha</div>
+              <div class="kpi-card-value" id="kpiCashCaixinhaTotal">R$ 0,00</div>
+              <div class="kpi-card-sub">Dinheiro na recepção</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-card-header">Saldo total</div>
               <div class="kpi-card-value" id="kpiCashbookTotal">R$ 0,00</div>
-              <div class="kpi-card-sub">Tudo que entrou menos tudo que saiu</div>
+              <div class="kpi-card-sub">Conta + caixinha</div>
             </div>
           </div>
           <div class="module-toolbar">
@@ -3498,6 +3550,11 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
                 <option value="90">Últimos 90 dias</option>
                 <option value="ano">Este ano</option>
                 <option value="tudo">Tudo</option>
+              </select>
+              <select class="form-control-inline" id="cashAccount" aria-label="Conta">
+                <option value="">Conta + caixinha</option>
+                <option value="conta">🏦 Só a conta</option>
+                <option value="caixinha">💵 Só a caixinha</option>
               </select>
               <select class="form-control-inline" id="cashKind" aria-label="Tipo de movimento">
                 <option value="">Entradas e saídas</option>
@@ -3511,6 +3568,7 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
               <thead>
                 <tr>
                   <th>Data</th>
+                  <th>Conta</th>
                   <th>Origem</th>
                   <th>Descrição</th>
                   <th>Entrada</th>
@@ -4141,6 +4199,31 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             </div>
 
             <div class="form-field" style="margin-bottom:1.5rem;">
+              <label>Saldos iniciais (para o Caixa começar certo)</label>
+              <div class="form-row" style="margin-top:0.35rem;">
+                <div class="form-field">
+                  <label for="cfgContaInitialBalance" style="font-weight:500;">🏦 Saldo da conta (R$)</label>
+                  <input type="number" step="0.01" id="cfgContaInitialBalance" placeholder="0,00">
+                </div>
+                <div class="form-field">
+                  <label for="cfgContaInitialDate" style="font-weight:500;">em (data)</label>
+                  <input type="date" id="cfgContaInitialDate">
+                </div>
+                <div class="form-field">
+                  <label for="cfgCaixinhaInitialBalance" style="font-weight:500;">💵 Dinheiro na caixinha (R$)</label>
+                  <input type="number" step="0.01" id="cfgCaixinhaInitialBalance" placeholder="0,00">
+                </div>
+                <div class="form-field">
+                  <label for="cfgCaixinhaInitialDate" style="font-weight:500;">em (data)</label>
+                  <input type="date" id="cfgCaixinhaInitialDate">
+                </div>
+              </div>
+              <span style="font-size:0.75rem; color:#564F75; margin-top:2px;">
+                O saldo de cada conta passa a contar a partir dessa data: movimentos anteriores a ela ficam no histórico, mas não entram no saldo.
+              </span>
+            </div>
+
+            <div class="form-field" style="margin-bottom:1.5rem;">
               <label for="cfgCollectionTemplate">Modelo da mensagem de cobrança</label>
               <textarea id="cfgCollectionTemplate" rows="7"></textarea>
               <span style="font-size:0.75rem; color:var(--text-muted); margin-top:2px; line-height:1.5;">
@@ -4320,6 +4403,74 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
 </div>
 
 <!-- MODAL: MENSAGEM DE COBRANÇA (copiar) -->
+<div class="modal-backdrop" id="modalCashClosing">
+  <div class="modal-card" style="max-width:520px;">
+    <div class="modal-header">
+      <h3>✔ Conferência da caixinha</h3>
+      <button class="modal-close-btn" data-close="modalCashClosing">&times;</button>
+    </div>
+    <form id="formCashClosing" novalidate>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-field">
+            <label for="closingDate">Data da conferência</label>
+            <input type="date" id="closingDate">
+          </div>
+          <div class="form-field">
+            <label>Saldo no sistema</label>
+            <div class="kpi-card-value" id="closingExpected" style="font-size:1.3rem;">R$ 0,00</div>
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="closingCounted">Dinheiro contado na caixinha (R$) *</label>
+          <input type="number" step="0.01" min="0" id="closingCounted" placeholder="Conte as notas e moedas e digite o total">
+        </div>
+        <div id="closingDiff" style="font-weight:700; margin:0.25rem 0 0.75rem;"></div>
+        <div class="form-field">
+          <label for="closingNotes">Observação</label>
+          <textarea id="closingNotes" rows="2" placeholder="Ex: faltou o comprovante do café; troco do correio..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close="modalCashClosing">Cancelar</button>
+        <button type="submit" class="btn btn-gold">Registrar conferência</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalPayPaid">
+  <div class="modal-card" style="max-width:460px;">
+    <div class="modal-header">
+      <h3>✔ Pagar despesa</h3>
+      <button class="modal-close-btn" data-close="modalPayPaid">&times;</button>
+    </div>
+    <form id="formPayPaid" novalidate>
+      <input type="hidden" id="payPaidId">
+      <div class="modal-body">
+        <p id="payPaidInfo" style="font-size:0.9rem; margin-bottom:0.75rem;"></p>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="payPaidQuickDate">Data do pagamento</label>
+            <input type="date" id="payPaidQuickDate">
+          </div>
+          <div class="form-field">
+            <label for="payPaidQuickAccount">Pago com</label>
+            <select id="payPaidQuickAccount">
+              <option value="conta">🏦 Conta do escritório</option>
+              <option value="caixinha">💵 Caixinha da recepção</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close="modalPayPaid">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Confirmar pagamento</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="modalAtendimentoView">
   <div class="modal-card" style="max-width:900px;">
     <div class="modal-header">
@@ -5317,6 +5468,13 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <input type="date" id="baixaPaymentDate" required>
           </div>
           <div class="form-field">
+            <label for="baixaAccount">O dinheiro entrou em</label>
+            <select id="baixaAccount">
+              <option value="conta">🏦 Conta do escritório</option>
+              <option value="caixinha">💵 Caixinha da recepção</option>
+            </select>
+          </div>
+          <div class="form-field">
             <label for="baixaDocNumber">CPF / CNPJ do Sacado</label>
             <input type="text" id="baixaDocNumber" placeholder="000.000.000-00">
           </div>
@@ -5480,9 +5638,18 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <option value="Vencido">Vencido</option>
           </select>
         </div>
-        <div class="form-field" id="payPaidDateField" style="display:none;">
-          <label for="payPaidDate">Data do pagamento *</label>
-          <input type="date" id="payPaidDate">
+        <div class="form-row" id="payPaidDateField" style="display:none;">
+          <div class="form-field">
+            <label for="payPaidDate">Data do pagamento *</label>
+            <input type="date" id="payPaidDate">
+          </div>
+          <div class="form-field">
+            <label for="payPaidAccount">Pago com</label>
+            <select id="payPaidAccount">
+              <option value="conta">🏦 Conta do escritório</option>
+              <option value="caixinha">💵 Caixinha da recepção</option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -5656,10 +5823,18 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
       <div class="modal-body">
         <div class="form-row">
           <div class="form-field">
+            <label for="cashbookAccount">Conta *</label>
+            <select id="cashbookAccount" required>
+              <option value="conta">🏦 Conta do escritório</option>
+              <option value="caixinha">💵 Caixinha da recepção</option>
+            </select>
+          </div>
+          <div class="form-field">
             <label for="cashbookType">Tipo *</label>
             <select id="cashbookType" required>
               <option value="entrada">Entrada</option>
-              <option value="saida">Saída</option>
+              <option value="saida">Saída (despesa)</option>
+              <option value="transferencia">Transferência para a outra conta</option>
             </select>
           </div>
           <div class="form-field">
@@ -5667,18 +5842,36 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
             <input type="date" id="cashbookDate" required>
           </div>
         </div>
+        <div class="form-field" id="cashbookToField" style="display:none;">
+          <div class="doc-fees-hint" id="cashbookToText" style="margin:0;"></div>
+        </div>
         <div class="form-field">
           <label for="cashbookDesc">Descrição *</label>
-          <input type="text" id="cashbookDesc" required placeholder="Ex: Retirada de sócio, despesa de caixinha...">
+          <input type="text" id="cashbookDesc" required placeholder="Ex: Café e açúcar, envio pelos Correios, retirada de sócio...">
         </div>
         <div class="form-row">
           <div class="form-field">
-            <label for="cashbookCategory">Categoria (Opcional)</label>
-            <input type="text" id="cashbookCategory" placeholder="Ex: Retirada, Caixinha, Ajuste">
+            <label for="cashbookCategory">Categoria</label>
+            <input type="text" id="cashbookCategory" list="cashbookCategoryList" placeholder="Ex: Copa / café, Material de escritório">
+            <datalist id="cashbookCategoryList">
+              <option value="Copa / café"></option>
+              <option value="Material de escritório"></option>
+              <option value="Limpeza"></option>
+              <option value="Correios"></option>
+              <option value="Cartório"></option>
+              <option value="Transporte / estacionamento"></option>
+              <option value="Manutenção"></option>
+              <option value="Retirada de sócio"></option>
+              <option value="Outros"></option>
+            </datalist>
           </div>
           <div class="form-field">
             <label for="cashbookValue">Valor (R$) *</label>
             <input type="number" step="0.01" min="0.01" id="cashbookValue" required placeholder="0.00">
+          </div>
+          <div class="form-field">
+            <label for="cashbookPaidBy">Quem fez / responsável</label>
+            <input type="text" id="cashbookPaidBy" placeholder="Ex: Sani">
           </div>
         </div>
       </div>
@@ -5718,7 +5911,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261020-121625";
+const APP_VERSION = "20261020-145350";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -5857,6 +6050,7 @@ const AppState = {
     this.team = await fetchTeamMembers();
     this.monthlyGoals = await fetchMonthlyGoals();
     this.attendances = await fetchAttendances();
+    this.cashClosings = await fetchCashClosings();
   }
 };
 
@@ -6933,6 +7127,10 @@ function renderFinancial() {
     if ((p.status === "Pago" || p.status === "Pendente" || p.status === "Vencido") && isCurrentMonth(p.dueDate)) {
       expensesTotal += val;
     }
+  });
+  // saídas avulsas do caixa (inclusive as da caixinha), sem retirada de sócio
+  AppState.cashbookEntries.forEach(c => {
+    if (isCashExpense(c) && isCurrentMonth(c.date)) expensesTotal += Number(c.value || 0);
   });
 
   document.getElementById("kpiFinReceived").textContent = formatBRL(receivedTotal);
@@ -8518,6 +8716,7 @@ window.openBaixaModal = function(receivableId) {
   document.getElementById("baixaPaymentDate").value = getOffsetDate(0);
   document.getElementById("baixaDocNumber").value = getClientDocByName(r.client) || "";
   document.getElementById("baixaObservation").value = "";
+  document.getElementById("baixaAccount").value = "conta";
 
   openModal("modalBaixaReceivable");
 };
@@ -8550,7 +8749,8 @@ document.getElementById("formBaixaReceivable").addEventListener("submit", async 
     status: "Recebido",
     payment_method: paymentMethod,
     paid_date: paymentDate,
-    receipt_number: receiptNumber
+    receipt_number: receiptNumber,
+    ...(CASH_ACCOUNTS_READY ? { paid_account: document.getElementById("baixaAccount").value || "conta" } : {})
   }).eq("id", recId).neq("status", "Recebido").select().single();
 
   if (updateError) {
@@ -8780,6 +8980,11 @@ function renderOfficeSettings() {
   }
   const tplEl = document.getElementById("cfgCollectionTemplate");
   if (tplEl) tplEl.value = cfg.collectionTemplate || DEFAULT_COLLECTION_TEMPLATE;
+  const setv = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ""; };
+  setv("cfgContaInitialBalance", cfg.contaInitialBalance);
+  setv("cfgContaInitialDate", cfg.contaInitialDate);
+  setv("cfgCaixinhaInitialBalance", cfg.caixinhaInitialBalance);
+  setv("cfgCaixinhaInitialDate", cfg.caixinhaInitialDate);
 }
 
 document.getElementById("btnRestoreCollectionTemplate").addEventListener("click", () => {
@@ -8798,7 +9003,12 @@ document.getElementById("formOfficeSettings").addEventListener("submit", async (
     site: (document.getElementById("cfgOfficeSite")?.value || "www.cacildasouza.adv.br").trim(),
     email: document.getElementById("cfgOfficeEmail").value.trim() || "contato@cacildasouza.adv.br",
     boletoAssignee: document.getElementById("cfgBoletoAssignee").value.trim() || "Neto",
-    collectionTemplate: document.getElementById("cfgCollectionTemplate").value.trim()
+    collectionTemplate: document.getElementById("cfgCollectionTemplate").value.trim(),
+    cashInitials: true,
+    contaInitialBalance: document.getElementById("cfgContaInitialBalance").value === "" ? null : Number(document.getElementById("cfgContaInitialBalance").value),
+    contaInitialDate: document.getElementById("cfgContaInitialDate").value,
+    caixinhaInitialBalance: document.getElementById("cfgCaixinhaInitialBalance").value === "" ? null : Number(document.getElementById("cfgCaixinhaInitialBalance").value),
+    caixinhaInitialDate: document.getElementById("cfgCaixinhaInitialDate").value
   };
 
   const payload = mapOfficeSettingsToDb(formData);
@@ -8814,6 +9024,7 @@ document.getElementById("formOfficeSettings").addEventListener("submit", async (
 
   AppState.officeSettings = mapOfficeSettingsFromDb(data);
   populateLawyerSelects();
+  renderCashbook();
 
   const notice = document.getElementById("cfgSaveNotice");
   notice.style.display = "inline";
@@ -8888,7 +9099,7 @@ async function reverseReceivablePayment(id) {
     return false;
   }
   const { data, error } = await sb.from("receivables")
-    .update({ status: "Pendente", paid_date: null, receipt_number: null })
+    .update({ status: "Pendente", paid_date: null, receipt_number: null, ...(CASH_ACCOUNTS_READY ? { paid_account: null } : {}) })
     .eq("id", id).select().single();
   if (error) {
     alert("O recibo foi cancelado, mas não foi possível voltar a cobrança para pendente: " + friendlyDbError(error));
@@ -8977,6 +9188,7 @@ document.getElementById("formPayable").addEventListener("submit", async (e) => {
   // data do pagamento: só vale com status "Pago" (entra no Caixa nessa data)
   if (formData.status === "Pago") {
     formData.paidDate = document.getElementById("payPaidDate").value || getOffsetDate(0);
+    formData.paidAccount = document.getElementById("payPaidAccount").value || "conta";
   } else if (id) {
     const prevPay = AppState.payables.find(p => p.id === id);
     if (prevPay && prevPay.paidDate) formData.clearPaidDate = true;
@@ -9030,11 +9242,26 @@ document.getElementById("formPayable").addEventListener("submit", async (e) => {
   renderFinancialReports();
 });
 
-window.markPayablePaid = async function(id) {
+// "✔ Pagar": pergunta a data e de onde saiu o dinheiro (conta ou caixinha)
+window.markPayablePaid = function(id) {
   const item = AppState.payables.find(p => p.id === id);
   if (!item) return;
-  const today = getOffsetDate(0);
-  let { error } = await sb.from("payables").update({ status: "Pago", paid_date: today }).eq("id", id);
+  document.getElementById("payPaidId").value = id;
+  document.getElementById("payPaidInfo").innerHTML = `<strong>${esc(item.desc)}</strong> — ${esc(item.supplier || "")} · ${formatBRL(item.value)}`;
+  document.getElementById("payPaidQuickDate").value = getOffsetDate(0);
+  document.getElementById("payPaidQuickAccount").value = "conta";
+  openModal("modalPayPaid");
+};
+
+document.getElementById("formPayPaid").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const id = document.getElementById("payPaidId").value;
+  const item = AppState.payables.find(p => p.id === id);
+  if (!item) return;
+  const today = document.getElementById("payPaidQuickDate").value || getOffsetDate(0);
+  const account = document.getElementById("payPaidQuickAccount").value || "conta";
+  const upd = { status: "Pago", paid_date: today, ...(CASH_ACCOUNTS_READY ? { paid_account: account } : {}) };
+  let { error } = await sb.from("payables").update(upd).eq("id", id);
   if (error && /paid_date/i.test(error.message || "")) {
     // migração 0030 ainda não rodada: marca como pago sem a data
     ({ error } = await sb.from("payables").update({ status: "Pago" }).eq("id", id));
@@ -9045,10 +9272,13 @@ window.markPayablePaid = async function(id) {
   }
   item.status = "Pago";
   item.paidDate = today;
+  item.paidAccount = account;
+  closeModal("modalPayPaid");
   renderFinancial();
+  renderCashbook();
   renderOverview();
-  showToast("Despesa marcada como paga e lançada no Caixa.");
-};
+  showToast(`Despesa paga com ${account === "caixinha" ? "a caixinha" : "a conta do escritório"} e lançada no Caixa.`);
+});
 
 // --- MENSAGEM DE COBRANÇA (só copiar; o escritório não usa WhatsApp) ---
 function buildCollectionMessage(r) {
@@ -9095,7 +9325,7 @@ document.getElementById("btnCopyCollection").addEventListener("click", async () 
 // mostra a "Data do pagamento" só quando o status é Pago
 function syncPayPaidDateField() {
   const isPaid = document.getElementById("payStatus").value === "Pago";
-  document.getElementById("payPaidDateField").style.display = isPaid ? "" : "none";
+  document.getElementById("payPaidDateField").style.display = isPaid ? "flex" : "none";
   if (isPaid && !document.getElementById("payPaidDate").value) {
     document.getElementById("payPaidDate").value = getOffsetDate(0);
   }
@@ -9113,6 +9343,7 @@ window.editPayable = function(id) {
   document.getElementById("payDueDate").value = item.dueDate;
   document.getElementById("payStatus").value = item.status;
   document.getElementById("payPaidDate").value = item.paidDate || "";
+  document.getElementById("payPaidAccount").value = item.paidAccount || "conta";
   syncPayPaidDateField();
   document.getElementById("payMode").value = "unico";
   document.getElementById("payRepeatField").style.display = "none"; // parcelamento só na criação
@@ -9441,15 +9672,32 @@ function renderInssProcesses() {
 document.getElementById("filterInssStatus").addEventListener("change", renderInssProcesses);
 
 // --- CAIXA (integrado ao Financeiro) ---
-// Extrato único: honorários recebidos (baixa) + despesas pagas + lançamentos
-// avulsos. O saldo é calculado em ordem cronológica sobre TUDO; o período e
-// a busca só escolhem quais linhas aparecem.
+// Duas contas: "conta" (banco do escritório) e "caixinha" (dinheiro da
+// recepção). Extrato: honorários recebidos (baixa) + despesas pagas +
+// lançamentos avulsos + transferências entre as contas. Cada conta pode ter
+// saldo inicial numa data (Configurações): movimentos anteriores a ela não
+// entram no saldo daquela conta.
+const CASH_ACCOUNT_NAMES = { conta: "🏦 Conta", caixinha: "💵 Caixinha" };
+
+// Saída avulsa que é despesa (transferência e retirada de sócio não são)
+function isCashExpense(c) {
+  return c.type === "saida" && !/retirada/i.test(c.category || "");
+}
+
+function cashAccountStart(acc) {
+  const cfg = AppState.officeSettings || {};
+  const date = cfg[acc + "InitialDate"] || "";
+  const value = Number(cfg[acc + "InitialBalance"] || 0);
+  return { date, value };
+}
+
 function getCashMovements() {
   const moves = [];
   AppState.receivables.forEach(r => {
     if (r.status !== "Recebido") return;
     moves.push({
       key: "r-" + r.id, date: r.paidDate || r.dueDate || "", kind: "entrada", value: Number(r.value || 0),
+      account: r.paidAccount || "conta",
       origin: "Honorário recebido", desc: r.desc || "", extra: r.client || r.clientName || "", editable: false
     });
   });
@@ -9457,16 +9705,44 @@ function getCashMovements() {
     if (p.status !== "Pago") return;
     moves.push({
       key: "p-" + p.id, date: p.paidDate || p.dueDate || "", kind: "saida", value: Number(p.value || 0),
+      account: p.paidAccount || "conta",
       origin: "Despesa paga", desc: p.desc || "", extra: p.supplier || "", editable: false
     });
   });
   AppState.cashbookEntries.forEach(c => {
+    const base = { id: c.id, date: c.date || "", value: Number(c.value || 0), editable: true };
+    const extra = [c.category, c.paidBy ? `por ${c.paidBy}` : ""].filter(Boolean).join(" · ");
+    if (c.type === "transferencia") {
+      const from = c.account || "conta";
+      const to = c.toAccount || (from === "conta" ? "caixinha" : "conta");
+      const label = to === "caixinha" ? "Reforço da caixinha" : "Depósito da caixinha na conta";
+      moves.push({ ...base, key: "c-" + c.id + "-out", kind: "saida", account: from, transfer: true, origin: "Transferência", desc: c.desc || label, extra });
+      moves.push({ ...base, key: "c-" + c.id + "-in", kind: "entrada", account: to, transfer: true, origin: "Transferência", desc: c.desc || label, extra });
+      return;
+    }
     moves.push({
-      key: "c-" + c.id, id: c.id, date: c.date || "", kind: c.type === "entrada" ? "entrada" : "saida", value: Number(c.value || 0),
-      origin: "Lançamento avulso", desc: c.desc || "", extra: c.category || "", editable: true
+      ...base, key: "c-" + c.id, kind: c.type === "entrada" ? "entrada" : "saida", account: c.account || "conta",
+      origin: "Lançamento avulso", desc: c.desc || "", extra
     });
   });
-  return moves.sort((a, b) => (a.date || "").localeCompare(b.date || "") || a.key.localeCompare(b.key));
+  // Saldo inicial de cada conta e corte das datas anteriores a ele
+  const result = [];
+  ["conta", "caixinha"].forEach(acc => {
+    const start = cashAccountStart(acc);
+    const doAcc = moves.filter(m => m.account === acc && (!start.date || (m.date || "") >= start.date));
+    if (start.date) {
+      result.push({ key: "i-" + acc, date: start.date, kind: "entrada", value: start.value, account: acc, initial: true,
+        origin: "Saldo inicial", desc: "Saldo inicial informado em Configurações", extra: "", editable: false });
+    }
+    result.push(...doAcc);
+  });
+  return result.sort((a, b) => (a.date || "").localeCompare(b.date || "") || (a.initial ? -1 : b.initial ? 1 : 0) || a.key.localeCompare(b.key));
+}
+
+function cashBalance(acc, upToDate) {
+  return getCashMovements()
+    .filter(m => m.account === acc && (!upToDate || (m.date || "") <= upToDate))
+    .reduce((s, m) => s + (m.kind === "entrada" ? m.value : -m.value), 0);
 }
 
 function cashPeriodRange(kind) {
@@ -9483,10 +9759,22 @@ function renderCashbook() {
   const tbody = document.querySelector("#tableCashbook tbody");
   if (!tbody) return;
 
-  const all = getCashMovements();
+  const accFilter = document.getElementById("cashAccount").value;
+  const all = getCashMovements().filter(m => !accFilter || m.account === accFilter);
   let running = 0;
   all.forEach(m => { running += m.kind === "entrada" ? m.value : -m.value; m.balance = running; });
-  document.getElementById("kpiCashbookTotal").textContent = formatBRL(running);
+
+  const saldoConta = cashBalance("conta");
+  const saldoCaixinha = cashBalance("caixinha");
+  const setMoney = (id, v) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = formatBRL(v);
+    el.style.color = v < 0 ? "var(--danger)" : "";
+  };
+  setMoney("kpiCashContaTotal", saldoConta);
+  setMoney("kpiCashCaixinhaTotal", saldoCaixinha);
+  setMoney("kpiCashbookTotal", saldoConta + saldoCaixinha);
 
   const range = cashPeriodRange(document.getElementById("cashPeriod").value);
   const kindFilter = document.getElementById("cashKind").value;
@@ -9494,7 +9782,11 @@ function renderCashbook() {
 
   const inPeriod = all.filter(m => !range.from || (m.date >= range.from && m.date <= range.to));
   let inSum = 0, outSum = 0;
-  inPeriod.forEach(m => { if (m.kind === "entrada") inSum += m.value; else outSum += m.value; });
+  inPeriod.forEach(m => {
+    if (m.initial) return;
+    if (m.transfer && !accFilter) return; // entre as contas: não é receita nem despesa
+    if (m.kind === "entrada") inSum += m.value; else outSum += m.value;
+  });
   document.getElementById("kpiCashbookIn").textContent = formatBRL(inSum);
   document.getElementById("kpiCashbookOut").textContent = formatBRL(outSum);
   document.getElementById("kpiCashbookBalance").textContent = formatBRL(inSum - outSum);
@@ -9502,18 +9794,21 @@ function renderCashbook() {
 
   const rows = inPeriod
     .filter(m => !kindFilter || m.kind === kindFilter)
-    .filter(m => matchesSearch(search, m.desc, m.extra, m.origin, m.kind === "entrada" ? "entrada" : "saida saída"))
+    .filter(m => matchesSearch(search, m.desc, m.extra, m.origin, CASH_ACCOUNT_NAMES[m.account], m.kind === "entrada" ? "entrada" : "saida saída"))
     .reverse(); // mais recente primeiro (o saldo já foi calculado em ordem cronológica)
 
+  renderCaixinhaCard();
+
   if (rows.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:var(--text-muted);">${all.length ? "Nenhuma movimentação neste período/busca." : "Ainda não há movimentações no caixa."}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:1.5rem; color:var(--text-muted);">${all.length ? "Nenhuma movimentação neste período/busca." : "Ainda não há movimentações no caixa."}</td></tr>`;
     return;
   }
 
   tbody.innerHTML = rows.map(m => `
     <tr>
       <td>${formatDateBR(m.date)}</td>
-      <td><span class="badge ${m.editable ? "badge-neutral" : m.kind === "entrada" ? "badge-success" : "badge-danger"}">${esc(m.origin)}</span></td>
+      <td><span class="acc-badge">${CASH_ACCOUNT_NAMES[m.account] || m.account}</span></td>
+      <td><span class="badge ${m.transfer ? "badge-info" : m.initial ? "badge-neutral" : m.editable ? "badge-neutral" : m.kind === "entrada" ? "badge-success" : "badge-danger"}">${esc(m.origin)}</span></td>
       <td><strong>${esc(m.desc)}</strong>${m.extra ? `<div style="font-size:0.75rem; color:var(--text-muted);">${esc(m.extra)}</div>` : ""}</td>
       <td style="font-weight:700; color:var(--success);">${m.kind === "entrada" ? formatBRL(m.value) : ""}</td>
       <td style="font-weight:700; color:var(--danger);">${m.kind === "saida" ? formatBRL(m.value) : ""}</td>
@@ -9523,20 +9818,177 @@ function renderCashbook() {
           <div class="actions-cell" style="justify-content:flex-end;">
             <button class="btn-icon" title="Editar" onclick="editCashbookEntry('${m.id}')">✏</button>
             <button class="btn-icon" title="Excluir" onclick="deleteCashbookEntry('${m.id}')">🗑</button>
-          </div>` : `<span style="font-size:0.72rem; color:var(--text-muted);">vem do Financeiro</span>`}
+          </div>` : `<span style="font-size:0.72rem; color:var(--text-muted);">${m.initial ? "em Configurações" : "vem do Financeiro"}</span>`}
       </td>
     </tr>`).join("");
 }
 
-document.getElementById("cashPeriod").addEventListener("change", renderCashbook);
-document.getElementById("cashKind").addEventListener("change", renderCashbook);
-document.getElementById("btnOpenNewCashbookModal").addEventListener("click", () => {
+// --- CAIXINHA DA RECEPÇÃO: saldo, atalhos e conferência diária ---
+function mapCashClosingFromDb(r) {
+  return {
+    id: r.id, account: r.account, date: r.closing_date, expected: Number(r.expected || 0), counted: Number(r.counted || 0),
+    difference: Number(r.difference || 0), notes: r.notes || "", by: r.created_by_name || "", createdAt: r.created_at
+  };
+}
+
+async function fetchCashClosings() {
+  try {
+    const { data, error } = await sb.from("cash_closings").select("*").order("closing_date", { ascending: false }).order("created_at", { ascending: false }).limit(60);
+    if (error) return [];
+    return (data || []).map(mapCashClosingFromDb);
+  } catch (e) {
+    return [];
+  }
+}
+
+function renderCaixinhaCard() {
+  const card = document.getElementById("caixinhaCard");
+  if (!card) return;
+  document.getElementById("caixinhaNotReady").style.display = CASH_ACCOUNTS_READY ? "none" : "";
+  const saldo = cashBalance("caixinha");
+  const el = document.getElementById("caixinhaSaldo");
+  el.textContent = formatBRL(saldo);
+  el.style.color = saldo < 0 ? "var(--danger)" : "var(--success)";
+  const start = cashAccountStart("caixinha");
+  document.getElementById("caixinhaSaldoSub").textContent = start.date
+    ? `Dinheiro que deve estar na recepção (desde ${formatDateBR(start.date)})`
+    : "Informe o dinheiro inicial da caixinha em Configurações para o saldo começar certo.";
+
+  const hoje = getOffsetDate(0);
+  const closings = (AppState.cashClosings || []).filter(c => c.account === "caixinha");
+  const deHoje = closings.find(c => c.date === hoje);
+  const status = document.getElementById("caixinhaStatus");
+  if (deHoje) {
+    const hora = deHoje.createdAt ? new Date(deHoje.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
+    status.className = "badge " + (Math.abs(deHoje.difference) < 0.005 ? "badge-success" : "badge-warn");
+    status.textContent = `✔ Conferida hoje${hora ? " às " + hora : ""}${deHoje.by ? " por " + deHoje.by : ""}` +
+      (Math.abs(deHoje.difference) < 0.005 ? " — bateu" : ` — diferença ${formatBRL(deHoje.difference)}`);
+  } else {
+    status.className = "badge badge-danger";
+    status.textContent = "⚠ Ainda não conferida hoje";
+  }
+
+  const box = document.getElementById("caixinhaClosings");
+  if (!closings.length) { box.innerHTML = ""; return; }
+  box.innerHTML = `
+    <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.3rem;">Últimas conferências</div>
+    <div class="table-responsive"><table class="data-table">
+      <thead><tr><th>Data</th><th>No sistema</th><th>Contado</th><th>Diferença</th><th>Quem</th><th>Observação</th></tr></thead>
+      <tbody>${closings.slice(0, 5).map(c => `
+        <tr>
+          <td>${formatDateBR(c.date)}</td><td>${formatBRL(c.expected)}</td><td>${formatBRL(c.counted)}</td>
+          <td style="font-weight:700; color:${Math.abs(c.difference) < 0.005 ? "var(--success)" : "var(--danger)"};">${Math.abs(c.difference) < 0.005 ? "bateu" : formatBRL(c.difference)}</td>
+          <td>${esc(c.by || "—")}</td><td style="font-size:0.8rem;">${esc(c.notes || "")}</td>
+        </tr>`).join("")}</tbody>
+    </table></div>`;
+}
+
+function openCashbookModal(preset) {
+  if (!CASH_ACCOUNTS_READY && preset && (preset.account === "caixinha" || preset.type === "transferencia")) {
+    alert("A caixinha ainda não está ativa no banco de dados (falta rodar a atualização 0032 no Supabase).");
+    return;
+  }
   document.getElementById("formCashbook").reset();
   document.getElementById("cashbookId").value = "";
   document.getElementById("cashbookDate").value = getOffsetDate(0);
-  document.getElementById("modalCashbookTitle").textContent = "Novo lançamento avulso no Caixa";
+  document.getElementById("cashbookAccount").value = (preset && preset.account) || "conta";
+  document.getElementById("cashbookType").value = (preset && preset.type) || "entrada";
+  document.getElementById("cashbookDesc").value = (preset && preset.desc) || "";
+  document.getElementById("cashbookCategory").value = (preset && preset.category) || "";
+  document.getElementById("cashbookPaidBy").value = (currentProfile && currentProfile.full_name) || "";
+  document.getElementById("modalCashbookTitle").textContent = (preset && preset.title) || "Novo lançamento avulso no Caixa";
+  syncCashbookTransferField();
   openModal("modalCashbook");
+}
+
+function syncCashbookTransferField() {
+  const isTransfer = document.getElementById("cashbookType").value === "transferencia";
+  const from = document.getElementById("cashbookAccount").value;
+  const to = from === "conta" ? "caixinha" : "conta";
+  document.getElementById("cashbookToField").style.display = isTransfer ? "" : "none";
+  document.getElementById("cashbookToText").innerHTML = isTransfer
+    ? `Sai de <strong>${CASH_ACCOUNT_NAMES[from]}</strong> e entra na <strong>${CASH_ACCOUNT_NAMES[to]}</strong>. Não conta como receita nem despesa.`
+    : "";
+}
+document.getElementById("cashbookType").addEventListener("change", syncCashbookTransferField);
+document.getElementById("cashbookAccount").addEventListener("change", syncCashbookTransferField);
+
+document.getElementById("btnCxDespesa").addEventListener("click", () => openCashbookModal({ account: "caixinha", type: "saida", title: "Despesa paga com a caixinha" }));
+document.getElementById("btnCxEntrada").addEventListener("click", () => openCashbookModal({ account: "caixinha", type: "entrada", title: "Entrada de dinheiro na caixinha" }));
+document.getElementById("btnCxReforco").addEventListener("click", () => openCashbookModal({ account: "conta", type: "transferencia", desc: "Reforço da caixinha", title: "Reforço da caixinha (dinheiro da conta)" }));
+document.getElementById("btnCxDeposito").addEventListener("click", () => openCashbookModal({ account: "caixinha", type: "transferencia", desc: "Depósito da caixinha na conta", title: "Depósito do dinheiro da caixinha na conta" }));
+document.getElementById("btnCxExtrato").addEventListener("click", () => {
+  document.getElementById("cashAccount").value = "caixinha";
+  renderCashbook();
+  document.getElementById("cashCard").scrollIntoView({ behavior: "smooth", block: "start" });
 });
+
+function syncClosingDiff() {
+  const date = document.getElementById("closingDate").value || getOffsetDate(0);
+  const expected = cashBalance("caixinha", date);
+  document.getElementById("closingExpected").textContent = formatBRL(expected);
+  const raw = document.getElementById("closingCounted").value;
+  const diffEl = document.getElementById("closingDiff");
+  if (raw === "") { diffEl.textContent = ""; return expected; }
+  const diff = Number(raw) - expected;
+  diffEl.style.color = Math.abs(diff) < 0.005 ? "var(--success)" : "var(--danger)";
+  diffEl.textContent = Math.abs(diff) < 0.005 ? "✔ Bateu com o sistema."
+    : diff > 0 ? `Sobrando ${formatBRL(diff)} em relação ao sistema.` : `Faltando ${formatBRL(-diff)} em relação ao sistema.`;
+  return expected;
+}
+document.getElementById("closingCounted").addEventListener("input", syncClosingDiff);
+document.getElementById("closingDate").addEventListener("change", syncClosingDiff);
+
+document.getElementById("btnCxConferir").addEventListener("click", () => {
+  if (!CASH_ACCOUNTS_READY) {
+    alert("A caixinha ainda não está ativa no banco de dados (falta rodar a atualização 0032 no Supabase).");
+    return;
+  }
+  document.getElementById("formCashClosing").reset();
+  document.getElementById("closingDate").value = getOffsetDate(0);
+  syncClosingDiff();
+  openModal("modalCashClosing");
+  setTimeout(() => document.getElementById("closingCounted").focus(), 50);
+});
+
+document.getElementById("formCashClosing").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const raw = document.getElementById("closingCounted").value;
+  if (raw === "") { alert("Digite quanto dinheiro foi contado na caixinha."); return; }
+  const date = document.getElementById("closingDate").value || getOffsetDate(0);
+  const expected = syncClosingDiff();
+  const counted = Number(raw);
+  const difference = Math.round((counted - expected) * 100) / 100;
+  const notes = document.getElementById("closingNotes").value.trim();
+  const { data, error } = await sb.from("cash_closings").insert({
+    account: "caixinha", closing_date: date, expected, counted, difference, notes: notes || null,
+    created_by: currentProfile ? currentProfile.id : null, created_by_name: currentProfile ? currentProfile.full_name : null
+  }).select().single();
+  if (error) { alert("Não foi possível registrar a conferência: " + friendlyDbError(error)); return; }
+  AppState.cashClosings = [mapCashClosingFromDb(data), ...(AppState.cashClosings || [])];
+
+  // Diferença: oferece lançar um ajuste para o saldo do sistema bater com o dinheiro
+  if (Math.abs(difference) >= 0.005 && confirm(
+    `A caixinha está ${difference > 0 ? "com " + formatBRL(difference) + " a mais" : "com " + formatBRL(-difference) + " a menos"} que o sistema.\n\n` +
+    "Lançar um ajuste para o saldo do sistema ficar igual ao dinheiro contado?\n(Cancele se for procurar o comprovante que faltou antes.)"
+  )) {
+    const { data: adj, error: adjErr } = await sb.from("cashbook_entries").insert(mapCashbookToDb({
+      date, type: difference > 0 ? "entrada" : "saida", account: "caixinha",
+      desc: `Ajuste da conferência de ${formatDateBR(date)}`, category: "Ajuste de conferência",
+      value: Math.abs(difference), paidBy: currentProfile ? currentProfile.full_name : ""
+    })).select().single();
+    if (adjErr) alert("A conferência foi registrada, mas não foi possível lançar o ajuste: " + friendlyDbError(adjErr));
+    else AppState.cashbookEntries.push(mapCashbookFromDb(adj));
+  }
+  closeModal("modalCashClosing");
+  renderCashbook();
+  showToast(Math.abs(difference) < 0.005 ? "Conferência registrada: o caixa bateu! ✔" : "Conferência registrada com diferença.", "💵");
+});
+
+document.getElementById("cashPeriod").addEventListener("change", renderCashbook);
+document.getElementById("cashKind").addEventListener("change", renderCashbook);
+document.getElementById("cashAccount").addEventListener("change", renderCashbook);
+document.getElementById("btnOpenNewCashbookModal").addEventListener("click", () => openCashbookModal());
 
 document.getElementById("formCashbook").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -9546,8 +9998,15 @@ document.getElementById("formCashbook").addEventListener("submit", async (e) => 
     date: document.getElementById("cashbookDate").value,
     desc: document.getElementById("cashbookDesc").value.trim(),
     category: document.getElementById("cashbookCategory").value.trim(),
-    value: Number(document.getElementById("cashbookValue").value || 0)
+    value: Number(document.getElementById("cashbookValue").value || 0),
+    account: document.getElementById("cashbookAccount").value || "conta",
+    paidBy: document.getElementById("cashbookPaidBy").value.trim()
   };
+  if (formData.type === "transferencia") formData.toAccount = formData.account === "conta" ? "caixinha" : "conta";
+  if (!CASH_ACCOUNTS_READY && (formData.account === "caixinha" || formData.type === "transferencia")) {
+    alert("A caixinha e as transferências ainda não estão ativas no banco de dados (falta rodar a atualização 0032 no Supabase).");
+    return;
+  }
 
   const payload = mapCashbookToDb(formData);
   const submitBtnCashbook = document.querySelector('#formCashbook button[type="submit"]');
@@ -9591,12 +10050,15 @@ window.editCashbookEntry = function(id) {
   document.getElementById("cashbookDesc").value = item.desc;
   document.getElementById("cashbookCategory").value = item.category || "";
   document.getElementById("cashbookValue").value = item.value;
+  document.getElementById("cashbookAccount").value = item.account || "conta";
+  document.getElementById("cashbookPaidBy").value = item.paidBy || "";
+  syncCashbookTransferField();
   document.getElementById("modalCashbookTitle").textContent = "Editar Lançamento";
   openModal("modalCashbook");
 };
 
 window.deleteCashbookEntry = async function(id) {
-  if (confirm("Deseja realmente remover este lançamento avulso do caixa?")) {
+  if (confirm("Deseja realmente remover este lançamento do caixa?")) {
     const { error } = await sb.from("cashbook_entries").delete().eq("id", id);
     if (error) {
       alert("Não foi possível excluir: " + friendlyDbError(error));
@@ -10494,6 +10956,20 @@ function renderFinancialReports() {
     if (!dateStr) return false;
     const d = new Date(dateStr + "T00:00:00");
     return d.getFullYear() === selYear && d.getMonth() === selMonth;
+  });
+
+  // Saídas avulsas do caixa também são despesas (as da caixinha numa categoria própria)
+  AppState.cashbookEntries.forEach(c => {
+    if (!isCashExpense(c)) return;
+    if (periodVal !== "all") {
+      if (!c.date) return;
+      const d = new Date(c.date + "T00:00:00");
+      if (d.getFullYear() !== selYear || d.getMonth() !== selMonth) return;
+    }
+    filteredPayables.push({
+      desc: c.desc, supplier: c.paidBy || "", value: c.value, dueDate: c.date, status: "Pago",
+      category: c.account === "caixinha" ? "Despesas da caixinha" : (c.category || "Outras Despesas")
+    });
   });
 
   const totalExpenses = filteredPayables.reduce((sum, p) => sum + Number(p.value || 0), 0);
@@ -11585,6 +12061,7 @@ function mapReceivableFromDb(row) {
     // do Financeiro (o campo abria vazio ao editar).
     paymentMethod: row.payment_method === "Boleto bancário" ? "Boleto" : row.payment_method,
     paidDate: row.paid_date,
+    paidAccount: row.paid_account || "",
     receiptNumber: row.receipt_number,
     notes: row.notes,
     splitType: row.split_type,
@@ -11649,7 +12126,8 @@ function mapPayableFromDb(row) {
     value: row.value,
     dueDate: row.due_date,
     status: row.status,
-    paidDate: row.paid_date || ""
+    paidDate: row.paid_date || "",
+    paidAccount: row.paid_account || ""
   };
 }
 
@@ -11666,6 +12144,10 @@ function mapPayableToDb(obj) {
   // sistema continua salvando normalmente mesmo antes da migração 0030.
   if (obj.paidDate) payload.paid_date = obj.paidDate;
   else if (obj.clearPaidDate) payload.paid_date = null;
+  if (CASH_ACCOUNTS_READY) {
+    if (obj.paidAccount) payload.paid_account = obj.paidAccount;
+    else if (obj.clearPaidDate) payload.paid_account = null;
+  }
   return payload;
 }
 
@@ -11790,7 +12272,11 @@ function mapOfficeSettingsFromDb(row) {
     site: row.site,
     email: row.email,
     boletoAssignee: row.boleto_assignee,
-    collectionTemplate: row.collection_template || ""
+    collectionTemplate: row.collection_template || "",
+    contaInitialBalance: row.conta_initial_balance,
+    contaInitialDate: row.conta_initial_date || "",
+    caixinhaInitialBalance: row.caixinha_initial_balance,
+    caixinhaInitialDate: row.caixinha_initial_date || ""
   };
 }
 
@@ -11810,11 +12296,21 @@ function mapOfficeSettingsToDb(obj) {
   if (obj.collectionTemplate !== undefined && obj.collectionTemplate !== null && obj.collectionTemplate !== "") {
     payload.collection_template = obj.collectionTemplate;
   }
+  if (CASH_ACCOUNTS_READY && obj.cashInitials) {
+    payload.conta_initial_balance = obj.contaInitialBalance;
+    payload.conta_initial_date = obj.contaInitialDate || null;
+    payload.caixinha_initial_balance = obj.caixinhaInitialBalance;
+    payload.caixinha_initial_date = obj.caixinhaInitialDate || null;
+  }
   return payload;
 }
 
+// true quando o banco já tem caixinha/conta (migração 0032)
+let CASH_ACCOUNTS_READY = false;
+
 async function fetchOfficeSettings() {
   const { data, error } = await sb.from("office_settings").select("*").eq("id", true).single();
+  if (!error && data) CASH_ACCOUNTS_READY = Object.prototype.hasOwnProperty.call(data, "caixinha_initial_balance");
   if (error) {
     console.error("Erro ao carregar configurações do Supabase:", error);
     showToast("Não foi possível carregar as Configurações do escritório — usando valores padrão.", "⚠");
@@ -11831,7 +12327,10 @@ function mapCashbookFromDb(row) {
     type: row.type,
     desc: row.description,
     category: row.category,
-    value: row.value
+    value: row.value,
+    account: row.account || "conta",
+    toAccount: row.to_account || "",
+    paidBy: row.paid_by || ""
   };
 }
 
@@ -11842,6 +12341,11 @@ function mapCashbookToDb(obj) {
     description: obj.desc || null,
     category: obj.category || null,
     value: obj.value ?? 0,
+    ...(CASH_ACCOUNTS_READY ? {
+      account: obj.account || "conta",
+      to_account: obj.type === "transferencia" ? (obj.toAccount || null) : null,
+      paid_by: obj.paidBy || null
+    } : {}),
     created_by: currentProfile ? currentProfile.id : null
   };
 }
@@ -12242,7 +12746,8 @@ const TRASH_TABLE_LABELS = {
   rpv_alvaras: "RPV / Alvará",
   inss_processes: "Processo INSS",
   lawyers: "Membro da equipe",
-  attendances: "Ficha de atendimento"
+  attendances: "Ficha de atendimento",
+  cash_closings: "Conferência da caixinha"
 };
 
 function trashSummary(row) {
@@ -13684,16 +14189,57 @@ function atClientFields(area) {
 // Seções específicas de cada área
 const AT_SECTIONS = {
   trabalhista: [
-    { t: "Dados do vínculo", f: [
-      { k: "empresa", l: "Empresa (reclamada)", w: 2 }, { k: "cnpj", l: "CNPJ", mask: "doc" }, { k: "cargo", l: "Cargo" },
-      { k: "salario", l: "Salário" }, { k: "admissao", l: "Admissão", t: "date" }, { k: "demissao", l: "Demissão", t: "date" },
+    { t: "Contrato de trabalho", f: [
+      { k: "empresa", l: "Empresa (reclamada)", w: 2 }, { k: "cnpj", l: "CNPJ", mask: "doc" },
+      { k: "funcaoCtps", l: "Função registrada na CTPS" }, { k: "funcaoReal", l: "Função real (o que fazia de fato)", w: 2 },
+      { k: "admissao", l: "Admissão", t: "date" }, { k: "demissao", l: "Demissão", t: "date" },
       { k: "tipoDemissao", l: "Tipo de demissão", t: "select", o: ["Sem justa causa", "Com justa causa", "Pedido de demissão", "Rescisão indireta", "Acordo (§6º CLT)", "Ainda empregado"] },
-      { k: "fgts", l: "Recebeu FGTS?", t: "select", o: ["Sim, integralmente", "Sim, parcialmente", "Não recebeu"] }
+      { k: "localTrabalhoEnd", l: "Endereço do local de trabalho", w: 2 },
+      { k: "localTrabalhoCidade", l: "Cidade do local de trabalho (define a vara)" }
+    ] },
+    { t: "Remuneração", checks: { k: "remuneracaoExtra", itens: ["Recebia salário “por fora”", "Recebia comissão", "Recebia gratificação"] }, f: [
+      { k: "salarioInicial", l: "Salário inicial" }, { k: "salarioFinal", l: "Salário final" },
+      { k: "remuneracaoExtraDetalhe", l: "Valores e forma de pagamento do “por fora”, comissão ou gratificação", t: "textarea", w: 4 }
+    ] },
+    { t: "FGTS", f: [
+      { k: "fgtsDepositado", l: "O FGTS foi depositado", t: "select", o: ["Todos os meses", "Parte dos meses", "Nenhum mês", "Não sei"] },
+      { k: "fgtsMulta40", l: "A multa de 40% foi paga", t: "select", o: ["Sim", "Não", "Não se aplica"] },
+      { k: "fgtsExtrato", l: "Extrato do FGTS anexado", t: "select", o: ["Sim", "Não"] }
+    ] },
+    { t: "O que o TRCT (termo de rescisão) pagou", checks: { k: "trctVerbas", itens: ["Saldo de salário", "Aviso prévio", "Férias vencidas + 1/3", "Férias proporcionais + 1/3", "13º proporcional", "Multa 40% do FGTS", "Horas extras", "Outras verbas"] }, f: [
+      { k: "trctValor", l: "Valor total recebido no TRCT" }, { k: "trctData", l: "Data do pagamento", t: "date" },
+      { k: "trctOutras", l: "Outras verbas / observações", w: 2 }
+    ] },
+    { t: "Férias por período aquisitivo", f: [
+      { k: "ferias", t: "table", l: "Uma linha por período aquisitivo", add: "+ Adicionar período", cols: [
+        { k: "periodo", l: "Período aquisitivo (ex.: 2023/2024)" },
+        { k: "gozou", l: "Gozou?", t: "select", o: ["Sim", "Não", "Parcialmente"] },
+        { k: "recebeu", l: "Recebeu?", t: "select", o: ["Sim", "Não", "Parcialmente"] },
+        { k: "data", l: "Data (gozo ou pagamento)", t: "date" }
+      ] }
+    ] },
+    { t: "13º salário por ano", f: [
+      { k: "decimo", t: "table", l: "Uma linha por ano", add: "+ Adicionar ano", cols: [
+        { k: "ano", l: "Ano" },
+        { k: "recebeu", l: "Recebeu?", t: "select", o: ["Sim", "Não", "Parcialmente"] },
+        { k: "data", l: "Data do pagamento", t: "date" }
+      ] }
     ] },
     { t: "Verbas violadas", checks: { k: "verbas", itens: ["Horas extras não pagas", "Adicional noturno", "Intervalo intrajornada", "DSR não pago", "Férias não gozadas / não pagas", "13º salário", "Aviso prévio", "Multa 40% FGTS", "Salário não pago", "Insalubridade / periculosidade", "Dano moral", "Vínculo a reconhecer"] } },
-    { t: "Jornada de trabalho", f: [
-      { k: "entrada", l: "Entrada", t: "time" }, { k: "saida", l: "Saída", t: "time" }, { k: "intervalo", l: "Intervalo (min)", t: "number" },
+    { t: "Jornada contratual (a do contrato)", f: [
+      { k: "contratoEntrada", l: "Entrada", t: "time" }, { k: "contratoSaida", l: "Saída", t: "time" },
+      { k: "contratoIntervalo", l: "Intervalo (min)", t: "number" }
+    ] },
+    { t: "Jornada real (a que fazia de fato)", checks: { k: "diasTrabalhados", itens: ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo", "Feriados"] }, f: [
+      { k: "entrada", l: "Entrada", t: "time" }, { k: "saida", l: "Saída", t: "time" },
+      { k: "intervalo", l: "Intervalo efetivamente gozado (min)", t: "number" },
       { k: "obsJornada", l: "Observações sobre jornada", t: "textarea", w: 4 }
+    ] },
+    { t: "Controle de ponto", f: [
+      { k: "ponto", l: "Havia controle de ponto?", t: "select", o: ["Sim — eletrônico / biométrico", "Sim — cartão / relógio", "Sim — folha manual", "Não havia"] },
+      { k: "pontoQuem", l: "Quem anotava o ponto", t: "select", o: ["O próprio empregado", "A empresa / encarregado", "Outro"] },
+      { k: "pontoPre", l: "O ponto era pré-assinalado (horário já impresso)?", t: "select", o: ["Sim", "Não", "Não sei"] },
+      { k: "pontoReal", l: "O ponto registrava o horário real?", t: "select", o: ["Sim", "Não", "Às vezes"] }
     ] },
     { t: "Testemunhas", f: [
       { k: "test1", l: "Testemunha 1", w: 2 }, { k: "test1Contato", l: "Contato" },
@@ -13764,7 +14310,39 @@ const AT_SECTIONS = {
 
 let atCurrentArea = "";
 
+// Tabela com uma linha por período (férias, 13º): inputs sem id, lidos por
+// data-col; linhas adicionadas/removidas na hora.
+function atTableRowHtml(f, vals) {
+  vals = vals || {};
+  const cell = (c) => {
+    const v = vals[c.k] || "";
+    if (c.t === "select") {
+      return `<select data-col="${c.k}"><option value="">—</option>${c.o.map(o => `<option${o === v ? " selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+    }
+    return `<input type="${c.t || "text"}" data-col="${c.k}" value="${esc(v)}">`;
+  };
+  return `<tr>${f.cols.map(c => `<td>${cell(c)}</td>`).join("")}<td><button type="button" class="btn-icon" title="Remover linha" data-at-delrow>✕</button></td></tr>`;
+}
+
+function atTableField(f) {
+  return `<div class="form-field" style="min-width:100%;">
+    <label>${esc(f.l)}</label>
+    <div class="table-responsive"><table class="at-tab" data-at-table="${f.k}">
+      <thead><tr>${f.cols.map(c => `<th>${esc(c.l)}</th>`).join("")}<th></th></tr></thead>
+      <tbody>${atTableRowHtml(f)}</tbody>
+    </table></div>
+    <button type="button" class="btn btn-sm btn-secondary" data-at-addrow="${f.k}" style="margin-top:0.4rem; align-self:flex-start;">${esc(f.add || "+ Adicionar linha")}</button>
+  </div>`;
+}
+
+function atAllFields(area) {
+  const list = [...atClientFields(area)];
+  (AT_SECTIONS[area] || []).forEach(sec => (sec.f || []).forEach(f => list.push(f)));
+  return list;
+}
+
 function atField(f) {
+  if (f.t === "table") return atTableField(f);
   const id = "at_" + f.k;
   const flex = f.w ? `flex:${f.w};` : "";
   let input;
@@ -13810,6 +14388,22 @@ function atRenderForm(area) {
     atSectionHtml({ t: "Dados do cliente", f: atClientFields(area) }) +
     AT_SECTIONS[area].map(atSectionHtml).join("") +
     atResponsavelSection();
+  document.querySelectorAll("#atFichaCampos [data-at-addrow]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const f = atAllFields(atCurrentArea).find(x => x.k === btn.dataset.atAddrow);
+      document.querySelector(`#atFichaCampos table[data-at-table="${f.k}"] tbody`).insertAdjacentHTML("beforeend", atTableRowHtml(f));
+    });
+  });
+  document.getElementById("atFichaCampos").onclick = (ev) => {
+    const del = ev.target.closest("[data-at-delrow]");
+    if (!del) return;
+    const tbody = del.closest("tbody");
+    del.closest("tr").remove();
+    if (!tbody.children.length) {
+      const f = atAllFields(atCurrentArea).find(x => x.k === tbody.closest("table").dataset.atTable);
+      tbody.insertAdjacentHTML("beforeend", atTableRowHtml(f));
+    }
+  };
   document.querySelectorAll('#atFichaCampos [data-at-mask="doc"]').forEach(el => {
     el.addEventListener("input", () => { el.value = formatCpfOuCnpj(el.value.replace(/\D/g, "")); });
   });
@@ -13867,7 +14461,16 @@ function atCollect() {
     const k = el.name.replace(/^at_chk_/, "");
     (checks[k] = checks[k] || []).push(el.value);
   });
-  return { campos, checks };
+  const tabelas = {};
+  document.querySelectorAll("#atFichaCampos table[data-at-table]").forEach(tb => {
+    const rows = [...tb.querySelectorAll("tbody tr")].map(tr => {
+      const row = {};
+      tr.querySelectorAll("[data-col]").forEach(el => { if (el.value.trim()) row[el.dataset.col] = el.value.trim(); });
+      return row;
+    }).filter(row => Object.keys(row).length);
+    if (rows.length) tabelas[tb.dataset.atTable] = rows;
+  });
+  return { campos, checks, tabelas };
 }
 
 function atLoadIntoForm(at) {
@@ -13880,6 +14483,11 @@ function atLoadIntoForm(at) {
   Object.entries(d.campos || {}).forEach(([k, v]) => { const el = document.getElementById("at_" + k); if (el) el.value = v; });
   Object.entries(d.checks || {}).forEach(([k, arr]) => {
     document.querySelectorAll(`#atFichaCampos input[name="at_chk_${k}"]`).forEach(el => { el.checked = arr.includes(el.value); });
+  });
+  Object.entries(d.tabelas || {}).forEach(([k, rows]) => {
+    const f = atAllFields(at.area).find(x => x.k === k);
+    const tbody = document.querySelector(`#atFichaCampos table[data-at-table="${k}"] tbody`);
+    if (f && tbody && rows.length) tbody.innerHTML = rows.map(r => atTableRowHtml(f, r)).join("");
   });
   document.getElementById("atFormTitle").textContent = "✏️ Editando atendimento";
   document.getElementById("btnAtSave").textContent = "💾 Salvar alterações";
@@ -13921,12 +14529,21 @@ function atFichaSheetHtml(at) {
   const campos = d.campos || {};
   const checks = d.checks || {};
   const fmt = (f, v) => f.t === "date" ? formatDateBR(v) : v;
+  const tabelas = d.tabelas || {};
+  const tableView = (f) => {
+    const rows = tabelas[f.k] || [];
+    if (!rows.length) return "";
+    const fmtCell = (c, v) => c.t === "date" ? formatDateBR(v) : v;
+    return `<table class="at-f-table"><thead><tr>${f.cols.map(c => `<th>${esc(c.l)}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${f.cols.map(c => `<td>${r[c.k] ? esc(fmtCell(c, r[c.k])) : "—"}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+  };
   const grid = (fields) => {
+    const tabs = fields.filter(f => f.t === "table").map(tableView).join("");
+    fields = fields.filter(f => f.t !== "table");
     const itens = fields.filter(f => campos[f.k]).map(f => {
       const full = f.t === "textarea" || (f.w || 1) >= 4;
       return `<div class="at-f-item${full ? " at-f-full" : ""}"><span>${esc(f.l)}</span><div>${esc(fmt(f, campos[f.k])).replace(/\n/g, "<br>")}</div></div>`;
     }).join("");
-    return itens ? `<div class="at-f-grid">${itens}</div>` : "";
+    return (itens ? `<div class="at-f-grid">${itens}</div>` : "") + tabs;
   };
   const sec = (s) => {
     const marcados = s.checks ? (checks[s.checks.k] || []) : [];
@@ -14086,7 +14703,7 @@ async function atSubmit(e) {
     return;
   }
   if (!atCurrentArea) { alert("Escolha a área do atendimento."); return; }
-  const { campos, checks } = atCollect();
+  const { campos, checks, tabelas } = atCollect();
   const clientId = document.getElementById("atClient").value || null;
   const cl = clientId ? AppState.clients.find(c => c.id === clientId) : null;
   const clientName = (cl && cl.name) || campos.nome || "";
@@ -14097,7 +14714,7 @@ async function atSubmit(e) {
     client_id: clientId, client_name: clientName, area: atCurrentArea,
     attendance_date: campos.data || getOffsetDate(0), lawyer_name: campos.advogado || null,
     petition_author: author || null, deadline: campos.prazo || null, priority: campos.prioridade || null,
-    data: { campos, checks }
+    data: { campos, checks, tabelas }
   };
   const editId = document.getElementById("atId").value;
   const btn = document.getElementById("btnAtSave");
