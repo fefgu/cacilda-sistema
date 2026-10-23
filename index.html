@@ -1681,7 +1681,12 @@ table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 
     .at-f-item div { font-size:10pt; color:#111; }
     .at-f-full { grid-column:1 / -1; }
     .at-f-checks { list-style:none; padding:0; margin:0 0 0.4rem; display:grid; grid-template-columns:1fr 1fr; gap:0.15rem 1.2rem; font-size:10pt; }
-    @media print { body.printing-active #printStage .at-ficha-sheet { width:auto; padding:1.2cm 1.4cm; box-shadow:none; } }
+    /* Impressão da ficha: margens da folha em todas as páginas (não só na 1ª) */
+    @page fichaAtendimento { size: A4; margin: 1.3cm 1.4cm 1.3cm 1.4cm; }
+    @media print {
+      body.printing-active #printStage.stage-ficha { width:auto; page: fichaAtendimento; }
+      body.printing-active #printStage .at-ficha-sheet { width:auto; min-height:0; padding:0; box-shadow:none; }
+    }
     /* Número de tarefas pendentes atribuídas ao usuário logado */
     .nav-badge {
       margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px;
@@ -5911,7 +5916,7 @@ function esc(value) {
 // Aviso de versão nova. APP_VERSION é carimbado pelo script de publicação
 // (preparar-deploy.ps1) junto com o arquivo version.json; em desenvolvimento
 // fica "dev" e a checagem não roda.
-const APP_VERSION = "20261020-145350";
+const APP_VERSION = "20261023-121754";
 let updateBannerShown = false;
 
 async function checkForNewVersion() {
@@ -14588,12 +14593,14 @@ function atPrintSheet() {
   if (!stage || !source) return;
   stage.innerHTML = "";
   stage.appendChild(source.cloneNode(true));
+  stage.classList.add("stage-ficha");
   document.documentElement.classList.add("printing-active");
   document.body.classList.add("printing-active");
   window.print();
   setTimeout(() => {
     document.documentElement.classList.remove("printing-active");
     document.body.classList.remove("printing-active");
+    stage.classList.remove("stage-ficha");
     stage.innerHTML = "";
   }, 500);
 }
@@ -14639,6 +14646,7 @@ window.atEdit = function(id) {
   closeModal("modalAtendimentoView");
   closeModal("modalClientDetail");
   switchTab("atendimentos");
+  initAttendancesModule();
   atLoadIntoForm(at);
   document.getElementById("formAtendimento").scrollIntoView({ behavior: "smooth", block: "start" });
 };
@@ -14669,21 +14677,25 @@ function initAttendancesModule() {
   });
   document.getElementById("searchAtendimentos").addEventListener("input", renderAttendances);
   document.getElementById("filterAtArea").addEventListener("change", renderAttendances);
-  document.getElementById("btnAtViewPrint").addEventListener("click", atPrintSheet);
-  document.getElementById("btnAtViewEdit").addEventListener("click", (e) => atEdit(e.currentTarget.dataset.atId));
-  document.getElementById("btnAtViewDocs").addEventListener("click", (e) => {
-    const clientId = e.currentTarget.dataset.clientId;
-    closeModal("modalAtendimentoView");
-    closeModal("modalClientDetail");
-    switchTab("documentos");
-    startDocGeneration("procuracao");
-    const sel = document.getElementById("docClientSelect");
-    sel.value = clientId;
-    sel.dispatchEvent(new Event("change"));
-  });
   document.getElementById("formAtendimento").addEventListener("submit", atSubmit);
   renderAttendances();
 }
+
+// Botões da janela da ficha: ligados já ao abrir o sistema. Antes só eram
+// ligados ao entrar em "Novo Atendimento", e quem abria a ficha pelo histórico
+// do cliente clicava em Imprimir/Editar e nada acontecia.
+document.getElementById("btnAtViewPrint").addEventListener("click", atPrintSheet);
+document.getElementById("btnAtViewEdit").addEventListener("click", (e) => atEdit(e.currentTarget.dataset.atId));
+document.getElementById("btnAtViewDocs").addEventListener("click", (e) => {
+  const clientId = e.currentTarget.dataset.clientId;
+  closeModal("modalAtendimentoView");
+  closeModal("modalClientDetail");
+  switchTab("documentos");
+  startDocGeneration("procuracao");
+  const sel = document.getElementById("docClientSelect");
+  sel.value = clientId;
+  sel.dispatchEvent(new Event("change"));
+});
 
 // Cliente cadastrado pelo botão "+ Cadastrar novo cliente" já fica vinculado
 let atWaitingNewClient = false;
